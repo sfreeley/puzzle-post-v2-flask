@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+    <head>
+        {% if title %}
+        <title>{{title}} - PuzzlePost v2</title>
+        {% else %}
+        <title>Welcome to PuzzlePost v2!</title>
+        {% endif %}
+    </head>
+    <body>
+        <nav>
+            PuzzlePost v2: 
+            <a href="{{ url_for('index') }}">Home</a>
+            {% if current_user.is_anonymous %}
+            <a href="{{ url_for('login') }}">Login</a>
+            {% else %}
+            <a href="{{ url_for('logout') }}">Logout</a>
+            {% endif %}
+
+        </nav>
+        <hr>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+            
+        </ul>
+        {% endif %}
+        
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </body>
+</html>

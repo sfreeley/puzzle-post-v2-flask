@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+    <head>
+        {% if title %}
+        <title>{{title}} - PuzzlePost v2</title>
+        {% else %}
+        <title>Welcome to PuzzlePost v2!</title>
+        {% endif %}
+    </head>
+    <body>
+        {% extends "base.html" %}
+        
+        {% block content %}
+        <h1>Hello, {{ current_user.username }}!!</h1>
+        {% for puzzle in puzzles %}
+        <div><p>{{puzzle.user.username}}:</p> <b>{{puzzle.pieces}}, {{puzzle.title}}</b></div>
+        {% endfor %}
+        {% endblock %}
+    </body>
+</html>
