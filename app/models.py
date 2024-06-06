@@ -45,12 +45,11 @@ class User(UserMixin, db.Model):
 
 class Puzzle(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    cloudinary_url: so.Mapped[str]
+    # cloudinary_url: so.Mapped[str]
     pieces: so.Mapped[int]
     title: so.Mapped[str] = so.mapped_column(sa.String(64))
     manufacturer: so.Mapped[str] = so.mapped_column(sa.String(64))
     description: so.Mapped[str] = so.mapped_column(sa.String(120))
-    
     # returns current time in UTC (standard for server side irregardless of location)
     timestamp: so.Mapped[datetime] = so.mapped_column(index=True, default=lambda: datetime.now(timezone.utc))
     is_available: so.Mapped[bool]

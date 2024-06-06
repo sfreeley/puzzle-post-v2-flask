@@ -5,6 +5,8 @@ from app.models import User
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
+from config import Config
+import cloudinary
 
 
 # controls what viewer will see (view functions!)
@@ -133,3 +135,16 @@ def user(username):
             progress_count = progress_count + 1
             # return in_progress
     return render_template('user.html', user=user, puzzles=puzzles, sharing_count=sharing_count, progress_count=progress_count)
+
+# CLOUDINARY
+# @app.route("/upload", methods=['GET', 'POST'])
+# def upload_img():
+    
+#     cloudinary.config(cloud_name=Config.cloudinary_cloud_name, api_key=Config.cloudinary_api_key, api_secret=Config.cloudinary_api_secret)
+#     upload_result = None
+#     if request.method == 'POST':
+#         file_to_upload = request.file['file']
+#         upload_result = cloudinary.uploader.upload(file_to_upload)
+#         img_url = upload_result["url"]
+        # return render_template('user.html', img_url=img_url)
+
