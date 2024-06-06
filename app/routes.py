@@ -97,20 +97,39 @@ def register():
 def user(username):
     # will get matching username from db and if no match will send 404 error to user (not found)
     user = db.first_or_404(sa.select(User).where(User.username == username))
+    sharing_count = 0
+    progress_count = 0
     puzzles = [
         {
             'author': user,
             'pieces': 1000,
             'title': 'Puppies',
             'manufacturer': 'Ravensburger',
-            'description': 'good condition' 
+            'description': 'good condition',
+            'is_available': True,
+            'is_requested': False,
+            'in_progress': False,
+            'is_deleted': False
+
         },
         {
             'author': user,
             'pieces': 1000,
             'title': 'Kitties',
             'manufacturer': 'Puzzler',
-            'description': 'excellent condition' 
-        } 
+            'description': 'excellent condition',
+            'is_available': False,
+            'is_requested': False,
+            'in_progress': True,
+            'is_deleted': False
+        }
+
     ]
-    return render_template('user.html', user=user, puzzles=puzzles)
+    for puzzle in puzzles:
+        if puzzle.get('is_available') == True:
+            sharing_count = sharing_count + 1
+            # return sharing_count
+        if puzzle.get('in_progress') == True:
+            progress_count = progress_count + 1
+            # return in_progress
+    return render_template('user.html', user=user, puzzles=puzzles, sharing_count=sharing_count, progress_count=progress_count)
