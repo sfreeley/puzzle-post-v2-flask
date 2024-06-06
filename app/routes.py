@@ -129,7 +129,7 @@ def user(username):
         if puzzle.get('is_available') == True:
             sharing_count = sharing_count + 1
             # return sharing_count
-        if puzzle.get('in_progress') == True:
+        elif puzzle.get('in_progress') == True:
             progress_count = progress_count + 1
             # return in_progress
     return render_template('user.html', user=user, puzzles=puzzles, sharing_count=sharing_count, progress_count=progress_count)
