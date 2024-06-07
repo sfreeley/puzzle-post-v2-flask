@@ -17,6 +17,10 @@ import cloudinary
 @app.route('/index')
 @login_required
 def index():
+    # user = User()
+    # avatar = user.create_avatar(128)
+
+
     puzzles = [
         {
           'user': {'username': 'AgathaPuzzler'},
@@ -31,7 +35,7 @@ def index():
     ]
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
-    return render_template('index.html', title='Home', puzzles=puzzles)
+    return render_template('index.html', title='Home', puzzles=puzzles )
 
 # LOGIN
 # will now accept get and post requests to server

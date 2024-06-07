@@ -13,7 +13,14 @@
         {% block content %}
         <h1>Hello, {{ current_user.username }}!!</h1>
         {% for puzzle in puzzles %}
-        <div><p>{{puzzle.user.username}}:</p> <b>{{puzzle.pieces}}, {{puzzle.title}}</b></div>
+        <tr valign="top">
+            
+            <td><h1>User: {{ puzzle.user.username }}</h1></td>
+        </tr>
+        <div>
+        <br>
+        {{puzzle.pieces}}, {{puzzle.title}}
+        </div>
         {% endfor %}
         {% endblock %}
     </body>

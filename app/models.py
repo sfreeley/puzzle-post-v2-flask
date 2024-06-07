@@ -10,6 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # is_authenticated, is_active, is_anonymous, get_id()
 from flask_login import UserMixin
 from app import db, login
+from hashlib import md5 
 
 # create User class
 # db.Model is a base class for all models from Flask-SQLAlchemy 
@@ -41,6 +42,11 @@ class User(UserMixin, db.Model):
     # checks to see if user's inputted password matches password hash created
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    # creating avatars for users
+    def create_avatar(self, size):
+        digest = md5(self.username.lower().encode('utf-8)')).hexdigest()
+        return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
 
 
 class Puzzle(db.Model):
