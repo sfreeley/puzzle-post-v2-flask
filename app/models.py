@@ -18,6 +18,8 @@ class User(UserMixin, db.Model):
     # so.Mapped[type] defines the type of column ie (string, int, etc)
     # this also makes the values required in data base (so cannot be null)
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
+    about_me: so.Mapped[Optional[str]] = so.mapped_column(sa.String(140))
     # cannot have more than one username or email; index helps make retrieving individual rows
     # easier (acts like identifier)
     username: so.Mapped[str] = so.mapped_column(sa.String(64), unique=True, index=True)

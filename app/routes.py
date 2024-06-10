@@ -5,6 +5,7 @@ from app.models import User
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
+from datetime import datetime, timezone
 from config import Config
 import cloudinary
 
@@ -139,6 +140,15 @@ def user(username):
             progress_count = progress_count + 1
             # return in_progress
     return render_template('user.html', user=user, puzzles=puzzles, sharing_count=sharing_count, progress_count=progress_count)
+
+# executed before any of the view functions are executed
+# checks if the current user is logged in and lets you set last seen as that time 
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.now(timezone.utc)
+        db.session.commit()
+
 
 # CLOUDINARY
 # @app.route("/upload", methods=['GET', 'POST'])
