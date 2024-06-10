@@ -23,4 +23,4 @@ db = SQLAlchemy(app)
 # db migration object
 migrate = Migrate(app, db)
 # routes will handle diff views when user requests url 
-from app import routes, models 
+from app import routes, models, errors
