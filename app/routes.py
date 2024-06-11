@@ -1,7 +1,7 @@
 from app import app, db
 from flask import render_template, flash, redirect, url_for, request
-from app.forms import LoginForm, RegistrationForm, EditProfileForm
-from app.models import User
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm
+from app.models import User, Puzzle, Category
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
@@ -24,7 +24,7 @@ def index():
 
     puzzles = [
         {
-          'user': {'username': 'AgathaPuzzler'},
+          'user': {'username': 'SuzieQ!'},
           'pieces': 1000,
           'title': 'Cocoa Beach' 
         },
@@ -36,7 +36,7 @@ def index():
     ]
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
-    return render_template('index.html', title='Home', puzzles=puzzles )
+    return render_template('index.html', title='Home', puzzles=puzzles)
 
 # LOGIN
 # will now accept get and post requests to server
@@ -171,6 +171,31 @@ def edit_profile():
         form.username.data = current_user.username
         form.about_me.data = current_user.about_me
     return render_template('edit_profile.html', title='Edit Profile', form=form, user=user)
+
+# CREATE PUZZLE
+@app.route('/create_puzzle', methods=['GET', 'POST'])
+def create_puzzle():
+    form = CreatePuzzleForm()
+    categories = Category.query.all()
+    form.category_id.choices = [(category.id, category.name) for category in categories]
+    if form.validate_on_submit():
+        new_puzzle = Puzzle(
+        title = form.title.data,
+        pieces = form.pieces.data,
+        manufacturer = form.manufacturer.data,
+        # here
+        category_id = form.category_id.data,
+        description = form.description.data,
+        timestamp = datetime.now(timezone.utc),
+        is_available = True,
+        in_progress = False,
+        is_requested = False,
+        is_deleted = False
+        )  
+        db.session.add(new_puzzle)
+        db.session.commit()
+        return redirect(url_for('user', username=current_user.username))
+    return render_template('create_puzzle.html', title='Create Puzzle', form=form)
 
 
 # CLOUDINARY

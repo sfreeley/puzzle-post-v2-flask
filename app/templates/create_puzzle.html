@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Add Puzzle</h1>
+    <form action="" method="post">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.title.label }} <br>
+        {{ form.title(size=32) }} <br>
+        {% for error in form.title.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.pieces.label }} <br>
+        {{ form.pieces(size=32) }} <br>
+        {% for error in form.pieces.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.manufacturer.label }} <br>
+        {{ form.manufacturer(size=32) }} <br>
+        {% for error in form.manufacturer.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+       {{form.category_id.label}} <select name="{{ form.category_id.name}}"> {% for category_id, category_name in form.category_id.choices %}
+        <option value="{{ category_id }}">{{ category_name }}</option>
+        {% endfor %}
+       </select>
+    </p>
+    <p>
+        {{ form.description.label }} <br>
+        {{ form.description(size=32) }} <br>
+        {% for error in form.description.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}

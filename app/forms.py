@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_login import current_user
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
 from app import db
 import sqlalchemy as sa
@@ -49,4 +49,12 @@ class EditProfileForm(FlaskForm):
             user = User.query.filter_by(username=username).first()
             # return True or False
             return user 
-    
+
+class CreatePuzzleForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    pieces = StringField('Pieces', validators=[DataRequired()])
+    manufacturer = StringField('Manufacturer', validators=[DataRequired()])
+    # here changed
+    category_id = SelectField('Category', validators=[DataRequired()])
+    description = TextAreaField('Notes', validators=[Length(min=0, max=140)])
+    submit = SubmitField('Post Your Puzzle')

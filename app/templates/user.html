@@ -15,6 +15,7 @@
         </tr>
         {% if user == current_user %}
         <p><button><a href="{{ url_for('edit_profile') }}">Edit Profile</a></button></p>
+        <p><button><a href="{{ url_for('create_puzzle') }}">Add Puzzle</a></button></p>
         {% endif %}
     </table>
     

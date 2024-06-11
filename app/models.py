@@ -49,15 +49,23 @@ class User(UserMixin, db.Model):
     def create_avatar(self, size):
         digest = md5(self.username.lower().encode('utf-8)')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
+# Category Class
+class Category(db.Model):
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    name: so.Mapped[str] = so.mapped_column(sa.String(64))
 
+    # one to many relationship with puzzles
+    puzzles: so.WriteOnlyMapped['Puzzle'] = so.relationship(
+        back_populates='category')
 
 class Puzzle(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Category.id), index=True)
     # cloudinary_url: so.Mapped[str]
     pieces: so.Mapped[int]
     title: so.Mapped[str] = so.mapped_column(sa.String(64))
     manufacturer: so.Mapped[str] = so.mapped_column(sa.String(64))
-    description: so.Mapped[str] = so.mapped_column(sa.String(120))
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.String(120))
     # returns current time in UTC (standard for server side irregardless of location)
     timestamp: so.Mapped[datetime] = so.mapped_column(index=True, default=lambda: datetime.now(timezone.utc))
     is_available: so.Mapped[bool]
@@ -70,13 +78,19 @@ class Puzzle(db.Model):
     # connects to User table
     author: so.Mapped[User] = so.relationship(back_populates='puzzles')
 
+    # connects to Category table
+    category: so.Mapped[Category] = so.relationship(back_populates='puzzles')
+
     def __repr__(self):
         return '<Puzzle {}>'.format(self.description)
+
+
+    
 
 # class UserPicture(db.Model, Image):
 #     user_id: so.Mapped[int]
 
-# function that will load a user based on their id
+# function that will load a user based on their id (stores user's session)
 # flask-login will use this id for the user session so it knows who is logged in
 @login.user_loader
 def load_user(id):
