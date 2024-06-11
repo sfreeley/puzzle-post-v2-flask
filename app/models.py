@@ -10,7 +10,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # is_authenticated, is_active, is_anonymous, get_id()
 from flask_login import UserMixin
 from app import db, login
-from hashlib import md5 
+from hashlib import md5
+
 
 # create User class
 # db.Model is a base class for all models from Flask-SQLAlchemy 
@@ -52,15 +53,18 @@ class User(UserMixin, db.Model):
 # Category Class
 class Category(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    name: so.Mapped[str] = so.mapped_column(sa.String(64))
+    name: so.Mapped[str] = so.mapped_column(sa.String(64), unique=True, nullable=False)
 
-    # one to many relationship with puzzles
+    # one to many relationship with puzzles (1 category can have many puzzles)
     puzzles: so.WriteOnlyMapped['Puzzle'] = so.relationship(
         back_populates='category')
+    
+    def __repr__(self):
+        return '<Category {}>'.format(self.name)
 
 class Puzzle(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Category.id), index=True)
+    category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Category.id), nullable=False)
     # cloudinary_url: so.Mapped[str]
     pieces: so.Mapped[int]
     title: so.Mapped[str] = so.mapped_column(sa.String(64))

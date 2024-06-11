@@ -18,25 +18,24 @@ import cloudinary
 @app.route('/index')
 @login_required
 def index():
-    # user = User()
-    # avatar = user.create_avatar(128)
+    
+    puzzles_current_user = db.session.query(Puzzle).all()
 
-
-    puzzles = [
-        {
-          'user': {'username': 'SuzieQ!'},
-          'pieces': 1000,
-          'title': 'Cocoa Beach' 
-        },
-        {
-            'user': {'username': 'RavensburgerLover'},
-            'pieces': 500,
-            'title': 'Tranquility, ahhhh'
-        }
-    ]
+    # puzzles = [
+    #     {
+    #       'user': {'username': 'SuzieQ!'},
+    #       'pieces': 1000,
+    #       'title': 'Cocoa Beach' 
+    #     },
+    #     {
+    #         'user': {'username': 'RavensburgerLover'},
+    #         'pieces': 500,
+    #         'title': 'Tranquility, ahhhh'
+    #     }
+    # ]
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
-    return render_template('index.html', title='Home', puzzles=puzzles)
+    return render_template('index.html', title='Home', puzzles=puzzles_current_user)
 
 # LOGIN
 # will now accept get and post requests to server
@@ -106,40 +105,41 @@ def user(username):
     user = db.first_or_404(sa.select(User).where(User.username == username))
     sharing_count = 0
     progress_count = 0
-    puzzles = [
-        {
-            'author': user,
-            'pieces': 1000,
-            'title': 'Puppies',
-            'manufacturer': 'Ravensburger',
-            'description': 'good condition',
-            'is_available': True,
-            'is_requested': False,
-            'in_progress': False,
-            'is_deleted': False
+    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id).all()
+    # puzzles = [
+    #     {
+    #         'author': user,
+    #         'pieces': 1000,
+    #         'title': 'Puppies',
+    #         'manufacturer': 'Ravensburger',
+    #         'description': 'good condition',
+    #         'is_available': True,
+    #         'is_requested': False,
+    #         'in_progress': False,
+    #         'is_deleted': False
 
-        },
-        {
-            'author': user,
-            'pieces': 1000,
-            'title': 'Kitties',
-            'manufacturer': 'Puzzler',
-            'description': 'excellent condition',
-            'is_available': False,
-            'is_requested': False,
-            'in_progress': True,
-            'is_deleted': False
-        }
+    #     },
+    #     {
+    #         'author': user,
+    #         'pieces': 1000,
+    #         'title': 'Kitties',
+    #         'manufacturer': 'Puzzler',
+    #         'description': 'excellent condition',
+    #         'is_available': False,
+    #         'is_requested': False,
+    #         'in_progress': True,
+    #         'is_deleted': False
+    #     }
 
-    ]
-    for puzzle in puzzles:
-        if puzzle.get('is_available') == True:
+    # ]
+    for puzzle in puzzles_current_user:
+        if puzzle.is_available == True:
             sharing_count = sharing_count + 1
             # return sharing_count
-        elif puzzle.get('in_progress') == True:
+        elif puzzle.in_progress == True:
             progress_count = progress_count + 1
             # return in_progress
-    return render_template('user.html', user=user, puzzles=puzzles, sharing_count=sharing_count, progress_count=progress_count)
+    return render_template('user.html', puzzles=puzzles_current_user, user=user, sharing_count=sharing_count, progress_count=progress_count)
 
 # executed before any of the view functions are executed
 # checks if the current user is logged in and lets you set last seen as that time 
@@ -174,6 +174,7 @@ def edit_profile():
 
 # CREATE PUZZLE
 @app.route('/create_puzzle', methods=['GET', 'POST'])
+@login_required
 def create_puzzle():
     form = CreatePuzzleForm()
     categories = Category.query.all()
@@ -183,10 +184,10 @@ def create_puzzle():
         title = form.title.data,
         pieces = form.pieces.data,
         manufacturer = form.manufacturer.data,
-        # here
         category_id = form.category_id.data,
         description = form.description.data,
         timestamp = datetime.now(timezone.utc),
+        user_id = current_user.id,
         is_available = True,
         in_progress = False,
         is_requested = False,

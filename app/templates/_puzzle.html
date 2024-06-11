@@ -1,12 +1,14 @@
 <table>
     <tr valign="top">
-        <td><img src="{{ puzzle.author.create_avatar(80)}}"></td>
         <td>{{ puzzle.author.username }}</td>
+        <td><img src="{{ puzzle.author.create_avatar(80)}}"></td>
+        
         
     </tr>
     <p>
         <b>{{puzzle.title}}</b>
         <p>{{puzzle.pieces}}</p>
+        <p>{{puzzle.category.name}}</p>
         <p>{{puzzle.manufacturer}}</p>
         <p>{{puzzle.description}}</p>
     </p>

@@ -12,16 +12,12 @@
         
         {% block content %}
         <h1>Hello, {{ current_user.username }}!!</h1>
-        {% for puzzle in puzzles %}
-        <tr valign="top">
-            <td></td>
-            <td><h1>User: {{ puzzle.user.username }}</h1></td>
-        </tr>
+        
         <div>
-        <br>
-        {{puzzle.pieces}}, {{puzzle.title}}
-        </div>
+            {% for puzzle in puzzles %}
+            {% include '_puzzle.html' %}
         {% endfor %}
+        
         {% endblock %}
     </body>
 </html>
