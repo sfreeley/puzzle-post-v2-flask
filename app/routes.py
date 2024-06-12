@@ -8,10 +8,11 @@ import sqlalchemy as sa
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 load_dotenv()
-import os
-import cloudinary
-from cloudinary import uploader
+# import os
+# import cloudinary
+# from cloudinary import uploader
 from werkzeug.utils import secure_filename
+from config import Config
 
 
 # controls what viewer will see (view functions!)
@@ -146,25 +147,27 @@ def create_puzzle():
     categories = Category.query.all()
     form.category_id.choices = [(category.id, category.name) for category in categories]
     # CLOUDINARY
-    cloudinary.config(
-        cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
-        api_key = os.getenv('CLOUDINARY_API_KEY'),
-        api_secret = os.getenv('CLOUDINARY_API_SECRET'),
-        secure = True
-    )
+    # cloudinary.config(
+    #     cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
+    #     api_key = os.getenv('CLOUDINARY_API_KEY'),
+    #     api_secret = os.getenv('CLOUDINARY_API_SECRET'),
+    #     secure = True
+    # )
+   
     
-    
-    if form.validate_on_submit():
-        image_file = form.image.data
+    if form.validate_on_submit():  
+        uploaded_image = form.image.data     
+        saved_image = Config.photos.save(uploaded_image)
+        img_url = url_for('static', filename=f'img/{saved_image}')
         
-        app.logger.info('%s file_to_upload', image_file)
-        if image_file:
+        # app.logger.info('%s file_to_upload', image_file)
+        # if image_file:
             
-            upload_result = uploader.upload(image_file)
-            # except Exception as e:
-            #     print(f"Cloudinary upload error: {e}")
-        app.logger.info(upload_result)
-        img_url = upload_result['url']
+        #     upload_result = uploader.upload(image_file)
+        #     # except Exception as e:
+        #     #     print(f"Cloudinary upload error: {e}")
+        # app.logger.info(upload_result)
+        # img_url = upload_result['url']
         
         new_puzzle = Puzzle(
         title = form.title.data,

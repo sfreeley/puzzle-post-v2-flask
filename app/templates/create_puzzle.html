@@ -2,7 +2,7 @@
 
 {% block content %}
     <h1>Add Puzzle</h1>
-    <form action="" method="post">
+    <form action="{{ url_for('create_puzzle') }}" enctype="multipart/form-data" method="post">
     {{ form.hidden_tag() }}
     <p>
         {{ form.title.label }} <br>
@@ -13,7 +13,7 @@
     </p>
     <p>
         {{ form.image.label }} <br>
-        {{ form.image(type='file') }} <br>
+        {{ form.image(type='file') }} <br>>
         {% for error in form.image.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}

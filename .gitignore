@@ -166,3 +166,4 @@ __pycache__
 app.db
 config.py
 seed_data.py
+static/img

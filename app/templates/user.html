@@ -35,6 +35,9 @@
             {% for puzzle in puzzles %}
                 {% if puzzle.is_available %}
         <p>
+            <img src="{{puzzle.image_url}}">
+            
+            <p>{{puzzle.image_url}}</p>
             <b>{{puzzle.title}}</b>
             <p>{{puzzle.pieces}}</p>
             <p>{{puzzle.manufacturer}}</p>
