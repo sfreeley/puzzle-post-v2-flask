@@ -12,6 +12,13 @@
         {% endfor %}
     </p>
     <p>
+        {{ form.image.label }} <br>
+        {{ form.image(type='file') }} <br>
+        {% for error in form.image.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
         {{ form.pieces.label }} <br>
         {{ form.pieces(size=32) }} <br>
         {% for error in form.pieces.errors %}

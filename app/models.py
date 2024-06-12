@@ -53,7 +53,7 @@ class User(UserMixin, db.Model):
 # Category Class
 class Category(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    name: so.Mapped[str] = so.mapped_column(sa.String(64), unique=True, nullable=False)
+    name: so.Mapped[str] = so.mapped_column(sa.String(64), nullable=False)
 
     # one to many relationship with puzzles (1 category can have many puzzles)
     puzzles: so.WriteOnlyMapped['Puzzle'] = so.relationship(
@@ -65,7 +65,7 @@ class Category(db.Model):
 class Puzzle(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Category.id), nullable=False)
-    # cloudinary_url: so.Mapped[str]
+    image_url: so.Mapped[str] = so.mapped_column(nullable=False)
     pieces: so.Mapped[int]
     title: so.Mapped[str] = so.mapped_column(sa.String(64))
     manufacturer: so.Mapped[str] = so.mapped_column(sa.String(64))

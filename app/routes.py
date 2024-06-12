@@ -6,8 +6,12 @@ from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
 from datetime import datetime, timezone
-from config import Config
+from dotenv import load_dotenv
+load_dotenv()
+import os
 import cloudinary
+from cloudinary import uploader
+from werkzeug.utils import secure_filename
 
 
 # controls what viewer will see (view functions!)
@@ -17,25 +21,13 @@ import cloudinary
 @app.route('/')
 @app.route('/index')
 @login_required
-def index():
-    
-    puzzles_current_user = db.session.query(Puzzle).all()
+def index(): 
+    puzzles = db.session.query(Puzzle).all()
 
-    # puzzles = [
-    #     {
-    #       'user': {'username': 'SuzieQ!'},
-    #       'pieces': 1000,
-    #       'title': 'Cocoa Beach' 
-    #     },
-    #     {
-    #         'user': {'username': 'RavensburgerLover'},
-    #         'pieces': 500,
-    #         'title': 'Tranquility, ahhhh'
-    #     }
-    # ]
+    
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
-    return render_template('index.html', title='Home', puzzles=puzzles_current_user)
+    return render_template('index.html', title='Home', puzzles=puzzles)
 
 # LOGIN
 # will now accept get and post requests to server
@@ -106,32 +98,7 @@ def user(username):
     sharing_count = 0
     progress_count = 0
     puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id).all()
-    # puzzles = [
-    #     {
-    #         'author': user,
-    #         'pieces': 1000,
-    #         'title': 'Puppies',
-    #         'manufacturer': 'Ravensburger',
-    #         'description': 'good condition',
-    #         'is_available': True,
-    #         'is_requested': False,
-    #         'in_progress': False,
-    #         'is_deleted': False
-
-    #     },
-    #     {
-    #         'author': user,
-    #         'pieces': 1000,
-    #         'title': 'Kitties',
-    #         'manufacturer': 'Puzzler',
-    #         'description': 'excellent condition',
-    #         'is_available': False,
-    #         'is_requested': False,
-    #         'in_progress': True,
-    #         'is_deleted': False
-    #     }
-
-    # ]
+    
     for puzzle in puzzles_current_user:
         if puzzle.is_available == True:
             sharing_count = sharing_count + 1
@@ -160,7 +127,6 @@ def edit_profile():
             current_user.username = form.username.data
             current_user.about_me = form.about_me.data
             db.session.commit()
-            # flash('The new you awaits...')
             return redirect(url_for('user', username=current_user.username))
         else:
             flash("Username already taken")
@@ -179,9 +145,30 @@ def create_puzzle():
     form = CreatePuzzleForm()
     categories = Category.query.all()
     form.category_id.choices = [(category.id, category.name) for category in categories]
+    # CLOUDINARY
+    cloudinary.config(
+        cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
+        api_key = os.getenv('CLOUDINARY_API_KEY'),
+        api_secret = os.getenv('CLOUDINARY_API_SECRET'),
+        secure = True
+    )
+    
+    
     if form.validate_on_submit():
+        image_file = form.image.data
+        
+        app.logger.info('%s file_to_upload', image_file)
+        if image_file:
+            
+            upload_result = uploader.upload(image_file)
+            # except Exception as e:
+            #     print(f"Cloudinary upload error: {e}")
+        app.logger.info(upload_result)
+        img_url = upload_result['url']
+        
         new_puzzle = Puzzle(
         title = form.title.data,
+        image_url = img_url,
         pieces = form.pieces.data,
         manufacturer = form.manufacturer.data,
         category_id = form.category_id.data,
