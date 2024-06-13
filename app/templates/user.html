@@ -35,7 +35,7 @@
             {% for puzzle in puzzles %}
                 {% if puzzle.is_available %}
         <p>
-            <img src="{{puzzle.image_url}}">
+            <img src="{{ puzzle.image_url }}" style="width: 400px">
             
             <p>{{puzzle.image_url}}</p>
             <b>{{puzzle.title}}</b>
@@ -47,7 +47,7 @@
             {% endfor %}
         {% endif %}
         
-
+        <h2>In Progress Puzzles</h2>
         {% if progress_count == 0 %}
         <p> You're not working on any puzzles right now...</p>
         {% else %}

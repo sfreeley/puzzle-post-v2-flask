@@ -1,5 +1,5 @@
 from app import app, db
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm
 from app.models import User, Puzzle, Category
 from flask_login import current_user, login_user, logout_user, login_required
@@ -139,65 +139,37 @@ def edit_profile():
         form.about_me.data = current_user.about_me
     return render_template('edit_profile.html', title='Edit Profile', form=form, user=user)
 
+@app.route("/uploads/<filename>")
+def get_file(filename):
+    return send_from_directory(Config.UPLOADED_PHOTOS_DEST, filename)
+
 # CREATE PUZZLE
 @app.route('/create_puzzle', methods=['GET', 'POST'])
 @login_required
 def create_puzzle():
     form = CreatePuzzleForm()
     categories = Category.query.all()
-    form.category_id.choices = [(category.id, category.name) for category in categories]
-    # CLOUDINARY
-    # cloudinary.config(
-    #     cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
-    #     api_key = os.getenv('CLOUDINARY_API_KEY'),
-    #     api_secret = os.getenv('CLOUDINARY_API_SECRET'),
-    #     secure = True
-    # )
-   
+    form.category_id.choices = [(category.id, category.name) for category in categories]  
     
     if form.validate_on_submit():  
         uploaded_image = form.image.data     
         saved_image = Config.photos.save(uploaded_image)
-        img_url = url_for('static', filename=f'img/{saved_image}')
-        
-        # app.logger.info('%s file_to_upload', image_file)
-        # if image_file:
-            
-        #     upload_result = uploader.upload(image_file)
-        #     # except Exception as e:
-        #     #     print(f"Cloudinary upload error: {e}")
-        # app.logger.info(upload_result)
-        # img_url = upload_result['url']
-        
+        file_url = url_for('get_file', filename=saved_image)
         new_puzzle = Puzzle(
-        title = form.title.data,
-        image_url = img_url,
-        pieces = form.pieces.data,
-        manufacturer = form.manufacturer.data,
-        category_id = form.category_id.data,
-        description = form.description.data,
-        timestamp = datetime.now(timezone.utc),
-        user_id = current_user.id,
-        is_available = True,
-        in_progress = False,
-        is_requested = False,
-        is_deleted = False
+            title = form.title.data,
+            image_url = file_url,
+            pieces = form.pieces.data,
+            manufacturer = form.manufacturer.data,
+            category_id = form.category_id.data,
+            description = form.description.data,
+            timestamp = datetime.now(timezone.utc),
+            user_id = current_user.id,
+            is_available = True,
+            in_progress = False,
+            is_requested = False,
+            is_deleted = False
         )  
         db.session.add(new_puzzle)
         db.session.commit()
         return redirect(url_for('user', username=current_user.username))
     return render_template('create_puzzle.html', title='Create Puzzle', form=form)
-
-
-# CLOUDINARY
-# @app.route("/upload", methods=['GET', 'POST'])
-# def upload_img():
-    
-#     cloudinary.config(cloud_name=Config.cloudinary_cloud_name, api_key=Config.cloudinary_api_key, api_secret=Config.cloudinary_api_secret)
-#     upload_result = None
-#     if request.method == 'POST':
-#         file_to_upload = request.file['file']
-#         upload_result = cloudinary.uploader.upload(file_to_upload)
-#         img_url = upload_result["url"]
-        # return render_template('user.html', img_url=img_url)
-
