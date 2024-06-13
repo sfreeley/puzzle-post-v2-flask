@@ -41,18 +41,22 @@
                             <img src="{{ puzzle.image_url }}" style="width: 200px">
                             
                             
-                            <b>{{puzzle.title}}</b>
-                            <p>{{puzzle.pieces}}</p>
-                            <p>{{puzzle.manufacturer}}</p>
+                            <p><b>{{puzzle.title}}</b></p>
+                            <p>Pieces: {{puzzle.pieces}}</p>
+                            <p>Manufacturer: {{puzzle.manufacturer}}</p>
                             
                         </p>
+                            {% if puzzle.description != "" %}
                         <div class="puzzle-desc">
                             <h4>Notes</h4>
                             <p>{{ puzzle.description }}</p>
-                        </div>
-                        {% if current_user.id == puzzle.user_id %}
+                            {% endif %}
+                            {% if current_user.id == puzzle.user_id %}
                         <button><a href="{{ url_for('confirm_delete', puzzle_id=puzzle.id) }}">Delete</a></button>
                         {% endif %}
+                    </div>
+                    </div>
+                        
                     {% endif %}
                 {% endfor %}
             {% endif %}
