@@ -59,3 +59,6 @@ class CreatePuzzleForm(FlaskForm):
     category_id = SelectField('Category', validators=[DataRequired()])
     description = TextAreaField('Notes', validators=[Length(min=0, max=140)])
     submit = SubmitField('Post Your Puzzle')
+
+
+

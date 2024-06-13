@@ -22,49 +22,67 @@
     <hr>
   
     <p>{{puzzles}}</p>
-
-    <div> 
-        <p>sharing_count</p>{{sharing_count}} 
-        <p>progress_count</p>{{progress_count}} 
+    <p>sharing_count</p>{{sharing_count}} 
+    <p>progress_count</p>{{progress_count}}
+  
+    <div class="content">
         {% if puzzles|length == 0 %}
-        <p> No puzzles just yet... </p>
+            <p> No puzzles just yet... </p>
         {% elif sharing_count == 0 %}
-        <p> You're not sharing any puzzles right now...</p>
+            <p> You're not sharing any puzzles right now...</p>
         {% else %}
-        <h3>Sharing:</h3>
-            {% for puzzle in puzzles %}
-                {% if puzzle.is_available %}
-        <p>
-            <img src="{{ puzzle.image_url }}" style="width: 400px">
             
-            <p>{{puzzle.image_url}}</p>
-            <b>{{puzzle.title}}</b>
-            <p>{{puzzle.pieces}}</p>
-            <p>{{puzzle.manufacturer}}</p>
-            <p>{{puzzle.description}}</p>
-        </p>
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-        
-        <h2>In Progress Puzzles</h2>
-        {% if progress_count == 0 %}
-        <p> You're not working on any puzzles right now...</p>
-        {% else %}
-        <h3> In Progress: </h3>
-            {%for puzzle in puzzles%}
-                {% if puzzle.in_progress %}
-        <p>
-            <b>{{puzzle.title}}</b>
-            <p>{{puzzle.pieces}}</p>
-            <p>{{puzzle.manufacturer}}</p>
-            <p>{{puzzle.description}}</p>
-        </p>
-                {% endif %}
-            {% endfor %}
-        {% endif %}
+                <h3><b>Sharing</b></h3>
+                
+                {% for puzzle in puzzles %}
+                    {% if puzzle.is_available %}
+                    <div class="puzzle">
+                        <p>
+                            <img src="{{ puzzle.image_url }}" style="width: 200px">
+                            
+                            
+                            <b>{{puzzle.title}}</b>
+                            <p>{{puzzle.pieces}}</p>
+                            <p>{{puzzle.manufacturer}}</p>
+                            
+                        </p>
+                        <div class="puzzle-desc">
+                            <h4>Notes</h4>
+                            <p>{{ puzzle.description }}</p>
+                        </div>
+                        {% if current_user.id == puzzle.user_id %}
+                        <button><a href="{{ url_for('confirm_delete', puzzle_id=puzzle.id) }}">Delete</a></button>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+                
+                
+                
+            </div>
+     
+    </div>
+  
         
     
-    </div>
+    <h2>In Progress Puzzles</h2>
+    {% if progress_count == 0 %}
+    <p> You're not working on any puzzles right now...</p>
+    {% else %}
+    <h3> In Progress: </h3>
+        {%for puzzle in puzzles%}
+            {% if puzzle.in_progress %}
+    <p>
+        <b>{{puzzle.title}}</b>
+        <p>{{puzzle.pieces}}</p>
+        <p>{{puzzle.manufacturer}}</p>
+        <p>{{puzzle.description}}</p>
+    </p>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    
+
+    
     
 {%endblock%}

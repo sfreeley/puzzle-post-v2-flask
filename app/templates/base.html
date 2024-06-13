@@ -6,6 +6,40 @@
         {% else %}
         <title>Welcome to PuzzlePost v2!</title>
         {% endif %}
+
+        <style>
+            .title {
+                margin: 5px;
+            }
+    
+            .content {
+                margin-top: 10px;
+                width: 100%;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+    
+            .puzzle {
+                flex: 20%;
+                padding: 10px;
+                margin: 30px;
+                background-color: #f3f3f3;
+                inline-size: 100%;
+            }
+
+            .puzzle_desc {
+            padding: 10px;
+            margin: 5px;
+            background-color: #ffffff;
+            color: #004835;
+        }
+
+        .name {
+            color: #00a36f;
+            text-decoration: none;
+        }
+        </style>
     </head>
     <body>
         <nav>
@@ -20,6 +54,7 @@
 
         </nav>
         <hr>
+        
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <ul>
@@ -31,6 +66,8 @@
         {% endif %}
         
         {% endwith %}
+        <div class="content"></div>
         {% block content %}{% endblock %}
+        </div>
     </body>
 </html>

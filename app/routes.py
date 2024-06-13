@@ -139,6 +139,7 @@ def edit_profile():
         form.about_me.data = current_user.about_me
     return render_template('edit_profile.html', title='Edit Profile', form=form, user=user)
 
+# get image url 
 @app.route("/uploads/<filename>")
 def get_file(filename):
     return send_from_directory(Config.UPLOADED_PHOTOS_DEST, filename)
@@ -173,3 +174,28 @@ def create_puzzle():
         db.session.commit()
         return redirect(url_for('user', username=current_user.username))
     return render_template('create_puzzle.html', title='Create Puzzle', form=form)
+
+@app.route('/puzzle/delete/<int:puzzle_id>', methods=['GET', 'DELETE'])
+@login_required
+def delete_puzzle(puzzle_id):
+      
+    # get the entry from db
+    try:
+        puzzle_by_id = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
+    except Exception as e:
+        flash("Something went wrong")
+        return redirect(url_for('user', username=current_user.username))
+    else:
+        if puzzle_by_id and puzzle_by_id.user_id == current_user.id:
+            # delete from db
+            db.session.delete(puzzle_by_id)
+            db.session.commit()
+            return redirect(url_for('user', username=current_user.username))
+
+        
+@app.route('/puzzle/confirm_delete/<int:puzzle_id>', methods=['GET'])
+# ***confirm delete pop-up (bootstrap?); need to create a form (ie delete puzzle confirmation form (with another view))
+        # confirm if form.validate_on_submit():
+def confirm_delete(puzzle_id):
+    puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
+    return render_template('confirm_delete.html', puzzle=puzzle)
