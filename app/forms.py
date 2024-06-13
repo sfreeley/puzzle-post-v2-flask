@@ -1,11 +1,11 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileRequired
 from flask_login import current_user
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, FileField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, FileField, RadioField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
 from app import db
 import sqlalchemy as sa
-from app.models import User
+from app.models import User, Puzzle
 
 # first argument - description or label of field
 # second arg - validators optional - DataRequired checks to make sure field is not empty 
@@ -18,6 +18,7 @@ class LoginForm(FlaskForm):
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
+    # PasswordInput?
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
@@ -54,10 +55,13 @@ class EditProfileForm(FlaskForm):
 class CreatePuzzleForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     pieces = StringField('Pieces', validators=[DataRequired()])
+    # ***condition
+    condition = RadioField('Condition', validators=[DataRequired()])
     manufacturer = StringField('Manufacturer', validators=[DataRequired()])
-    image = FileField('Image', validators=[DataRequired()])
+    # ***add FileAllowed extensions
+    image = FileField('Image', validators=[FileRequired()])
     category_id = SelectField('Category', validators=[DataRequired()])
-    description = TextAreaField('Notes', validators=[Length(min=0, max=140)])
+    description = TextAreaField('Additional Notes', validators=[Length(min=0, max=140)])
     submit = SubmitField('Post Your Puzzle')
 
 

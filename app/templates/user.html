@@ -44,17 +44,19 @@
                             <p><b>{{puzzle.title}}</b></p>
                             <p>Pieces: {{puzzle.pieces}}</p>
                             <p>Manufacturer: {{puzzle.manufacturer}}</p>
+                            <p>Condition: {{puzzle.condition}}</p>
                             
                         </p>
-                            {% if puzzle.description != "" %}
                         <div class="puzzle-desc">
+                            {% if puzzle.description != "" %}
+                        
                             <h4>Notes</h4>
                             <p>{{ puzzle.description }}</p>
                             {% endif %}
                             {% if current_user.id == puzzle.user_id %}
                         <button><a href="{{ url_for('confirm_delete', puzzle_id=puzzle.id) }}">Delete</a></button>
                         {% endif %}
-                    </div>
+                        </div>
                     </div>
                         
                     {% endif %}

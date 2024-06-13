@@ -67,6 +67,7 @@ class Puzzle(db.Model):
     category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Category.id), nullable=False)
     image_url: so.Mapped[str] = so.mapped_column(nullable=False)
     pieces: so.Mapped[int]
+    condition: so.Mapped[str] = so.mapped_column(sa.String(64))
     title: so.Mapped[str] = so.mapped_column(sa.String(64))
     manufacturer: so.Mapped[str] = so.mapped_column(sa.String(64))
     description: so.Mapped[Optional[str]] = so.mapped_column(sa.String(120))
@@ -88,11 +89,6 @@ class Puzzle(db.Model):
     def __repr__(self):
         return '<Puzzle {}>'.format(self.description)
 
-
-    
-
-# class UserPicture(db.Model, Image):
-#     user_id: so.Mapped[int]
 
 # function that will load a user based on their id (stores user's session)
 # flask-login will use this id for the user session so it knows who is logged in

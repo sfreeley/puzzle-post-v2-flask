@@ -13,7 +13,7 @@
     </p>
     <p>
         {{ form.image.label }} <br>
-        {{ form.image(type='file') }} <br>>
+        {{ form.image(type='file') }} <br>
         {% for error in form.image.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
@@ -25,6 +25,18 @@
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
+    <p>
+        {{form.condition.label}}  
+        {% for (condition, _) in choices %}
+         <p>
+            <input type="radio" name="condition" value="{{ condition }}">
+            {{ condition }}
+        </input>
+         </p>
+       
+         {% endfor %}
+       
+     </p>
     <p>
         {{ form.manufacturer.label }} <br>
         {{ form.manufacturer(size=32) }} <br>
