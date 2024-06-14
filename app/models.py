@@ -50,21 +50,30 @@ class User(UserMixin, db.Model):
     def create_avatar(self, size):
         digest = md5(self.username.lower().encode('utf-8)')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
-# Category Class
+
+# ***association table b/w puzzle and category
+puzzle_category = sa.Table(
+    'puzzle_category',
+    db.metadata,
+    sa.Column('puzzle_id', sa.Integer, sa.ForeignKey('puzzle.id'), primary_key=True),
+    sa.Column('category_id', sa.Integer, sa.ForeignKey('category.id'), primary_key=True)
+)
+
 class Category(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(64), nullable=False)
 
-    # one to many relationship with puzzles (1 category can have many puzzles)
-    puzzles: so.WriteOnlyMapped['Puzzle'] = so.relationship(
-        back_populates='category')
+    # many to many relationship with puzzles (forward reference puzzle)
+    puzzles = so.relationship('Puzzle', secondary=puzzle_category,
+        backref='category')
     
     def __repr__(self):
         return '<Category {}>'.format(self.name)
 
+
 class Puzzle(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Category.id), nullable=False)
+    # category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Category.id), nullable=False)
     image_url: so.Mapped[str] = so.mapped_column(nullable=False)
     pieces: so.Mapped[int]
     condition: so.Mapped[str] = so.mapped_column(sa.String(64))
@@ -83,11 +92,15 @@ class Puzzle(db.Model):
     # connects to User table
     author: so.Mapped[User] = so.relationship(back_populates='puzzles')
 
-    # connects to Category table
-    category: so.Mapped[Category] = so.relationship(back_populates='puzzles')
+    # connects to Category table (one to many relationship)
+    # category: so.Mapped[Category] = so.relationship(back_populates='puzzles')
+
+    # connects to Category table (many to many relationship)
+    categories = so.relationship(Category, secondary=puzzle_category, backref='puzzle')
 
     def __repr__(self):
         return '<Puzzle {}>'.format(self.description)
+
 
 
 # function that will load a user based on their id (stores user's session)

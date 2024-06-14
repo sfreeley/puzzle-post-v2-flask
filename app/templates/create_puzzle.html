@@ -45,10 +45,8 @@
         {% endfor %}
     </p>
     <p>
-       {{form.category_id.label}} <select name="{{ form.category_id.name}}"> {% for category_id, category_name in form.category_id.choices %}
-        <option value="{{ category_id }}">{{ category_name }}</option>
-        {% endfor %}
-       </select>
+       {{form.categories.label}} <br>
+       {{form.categories(size='sm')}}
     </p>
     <p>
         {{ form.description.label }} <br>

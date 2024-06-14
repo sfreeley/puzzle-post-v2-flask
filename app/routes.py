@@ -150,7 +150,10 @@ def get_file(filename):
 def create_puzzle():
     form = CreatePuzzleForm()
     categories = Category.query.all()
-    form.category_id.choices = [(category.id, category.name) for category in categories]
+    # code changed here (used to be category_id.choices
+    form.categories.choices = [(category.id, category.name) for category in categories]
+    
+    # conditions
     conditions = ['Excellent', 'Good', 'Fair']
     form.condition.choices = [(condition, condition) for condition in conditions]
     
@@ -164,7 +167,7 @@ def create_puzzle():
             pieces = form.pieces.data,
             condition = form.condition.data,
             manufacturer = form.manufacturer.data,
-            category_id = form.category_id.data,
+            # category_id = form.category_id.data,
             description = form.description.data,
             timestamp = datetime.now(timezone.utc),
             user_id = current_user.id,
@@ -172,7 +175,10 @@ def create_puzzle():
             in_progress = False,
             is_requested = False,
             is_deleted = False
-        )  
+        ) 
+        for category_id in form.categories.data:
+            category = Category.query.get(category_id)
+            new_puzzle.categories.append(category) 
         db.session.add(new_puzzle)
         db.session.commit()
         return redirect(url_for('user', username=current_user.username))

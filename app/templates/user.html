@@ -45,6 +45,12 @@
                             <p>Pieces: {{puzzle.pieces}}</p>
                             <p>Manufacturer: {{puzzle.manufacturer}}</p>
                             <p>Condition: {{puzzle.condition}}</p>
+                           
+                            <p>Categories: {%for category in puzzle.categories %}
+                                {{category.name}}{% if not loop.last%}, {% endif %}
+                                {%endfor%}
+                            </p>
+                           
                             
                         </p>
                         <div class="puzzle-desc">
