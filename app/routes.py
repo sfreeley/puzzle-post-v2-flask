@@ -140,7 +140,7 @@ def edit_profile():
     return render_template('edit_profile.html', title='Edit Profile', form=form, user=user)
 
 # get image url 
-@app.route("/uploads/<filename>")
+@app.route('/uploads/<filename>')
 def get_file(filename):
     return send_from_directory(Config.UPLOADED_PHOTOS_DEST, filename)
 
@@ -150,7 +150,12 @@ def get_file(filename):
 def create_puzzle():
     form = CreatePuzzleForm()
     categories = Category.query.all()
-    form.category_id.choices = [(category.id, category.name) for category in categories]  
+    # code changed here (used to be category_id.choices
+    form.categories.choices = [(category.id, category.name) for category in categories]
+    
+    # conditions
+    conditions = ['Excellent', 'Good', 'Fair']
+    form.condition.choices = [(condition, condition) for condition in conditions]
     
     if form.validate_on_submit():  
         uploaded_image = form.image.data     
@@ -160,8 +165,9 @@ def create_puzzle():
             title = form.title.data,
             image_url = file_url,
             pieces = form.pieces.data,
+            condition = form.condition.data,
             manufacturer = form.manufacturer.data,
-            category_id = form.category_id.data,
+            # category_id = form.category_id.data,
             description = form.description.data,
             timestamp = datetime.now(timezone.utc),
             user_id = current_user.id,
@@ -169,11 +175,14 @@ def create_puzzle():
             in_progress = False,
             is_requested = False,
             is_deleted = False
-        )  
+        ) 
+        for category_id in form.categories.data:
+            category = Category.query.get(category_id)
+            new_puzzle.categories.append(category) 
         db.session.add(new_puzzle)
         db.session.commit()
         return redirect(url_for('user', username=current_user.username))
-    return render_template('create_puzzle.html', title='Create Puzzle', form=form)
+    return render_template('create_puzzle.html', title='Create Puzzle', form=form, choices=form.condition.choices)
 
 @app.route('/puzzle/delete/<int:puzzle_id>', methods=['GET', 'DELETE'])
 @login_required
@@ -194,8 +203,7 @@ def delete_puzzle(puzzle_id):
 
         
 @app.route('/puzzle/confirm_delete/<int:puzzle_id>', methods=['GET'])
-# ***confirm delete pop-up (bootstrap?); need to create a form (ie delete puzzle confirmation form (with another view))
-        # confirm if form.validate_on_submit():
+# ***confirm delete pop-up (bootstrap?)
 def confirm_delete(puzzle_id):
     puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
     return render_template('confirm_delete.html', puzzle=puzzle)
