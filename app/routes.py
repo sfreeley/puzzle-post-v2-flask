@@ -146,12 +146,100 @@ def edit_profile():
 def get_file(filename):
     return send_from_directory(Config.UPLOADED_PHOTOS_DEST, filename)
 
+# ***try code edit/create***
+# edit
+@app.route('/save_puzzle/<int:puzzle_id>', methods=['GET','POST'])
+# create
+@app.route('/save_puzzle', methods=['GET', 'POST'])
+@login_required
+
+# default puzzle_id is None
+def save_puzzle(puzzle_id=None):
+    form = CreatePuzzleForm()
+
+    categories = Category.query.all()
+    form.categories.choices = [(category.id, category.name) for category in categories]
+
+    conditions = ['Excellent', 'Good', 'Fair']
+    # first value of the condition 
+    form.condition.choices = [(condition, condition) for condition in conditions]
+  
+    # if puzzle id is there from the form with hiddenfield..
+    if puzzle_id:
+        # get puzzle from db by that puzzle_id and belongs to the user logged in
+        puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id, user_id=current_user.id).first()
+        if puzzle:
+            # pre-populate fields with corresponding info from db
+            if request.method == 'GET':
+                form.puzzle_id.data = puzzle.id
+                form.image.data = puzzle.image_url
+                form.title.data = puzzle.title
+                form.pieces.data = puzzle.pieces
+                form.condition.data = puzzle.condition
+                form.manufacturer.data = puzzle.manufacturer
+                form.description.data = puzzle.description
+                form.categories.data = [category.id for category in puzzle.categories]
+
+            if form.validate_on_submit():
+                puzzle.title = form.title.data
+                puzzle.pieces = form.pieces.data
+                puzzle.condition = form.condition.data
+                puzzle.manufacturer = form.manufacturer.data
+                puzzle.description = form.description.data
+                # get all the categories based on id of specific input from user and loop through 
+                puzzle.categories = [Category.query.get(category_id) for category_id in form.categories.data]
+                if form.image.data:
+                    uploaded_image = form.image.data
+                    saved_image = Config.photos.save(uploaded_image)
+                    file_url = url_for('get_file', filename=saved_image)
+                    puzzle.image_url = file_url
+
+                db.session.commit()
+                return redirect(url_for('user', username=current_user.username)) 
+    if puzzle_id is None:
+        if form.validate_on_submit():
+            puzzle = Puzzle(
+                user_id = current_user.id,
+                timestamp = datetime.now(timezone.utc),
+                is_available = True,
+                in_progress = False,
+                is_requested = False,
+                is_deleted = False
+            )
+            # if no exisiting puzzle, user input will be saved
+            puzzle.title = form.title.data
+            puzzle.pieces = form.pieces.data
+            puzzle.condition = form.condition.data
+            puzzle.manufacturer = form.manufacturer.data
+            puzzle.description = form.description.data
+            # get all the categories based on id of specific input from user and loop through 
+            puzzle.categories = [Category.query.get(category_id) for category_id in form.categories.data]
+
+            if form.image.data:
+                uploaded_image = form.image.data
+                saved_image = Config.photos.save(uploaded_image)
+                file_url = url_for('get_file', filename=saved_image)
+                puzzle.image_url = file_url
+            
+            db.session.add(puzzle)
+            db.session.commit()
+            return redirect(url_for('user', username=current_user.username))
+     
+    return render_template('create_puzzle.html', title='Save Puzzle', form=form, choices=form.condition.choices)
+
+
+
+
+
+
+
 # CREATE PUZZLE
 @app.route('/create_puzzle', methods=['GET', 'POST'])
 @login_required
 def create_puzzle():
     form = CreatePuzzleForm()
   
+    # categories
     categories = Category.query.all()
     form.categories.choices = [(category.id, category.name) for category in categories]
     

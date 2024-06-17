@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form action="{{ url_for('create_puzzle') }}" enctype="multipart/form-data" method="post">
+<form action="{{ url_for('save_puzzle', puzzle_id=form.puzzle_id.data ) }}" enctype="multipart/form-data" method="post">
 {{ form.hidden_tag() }}
-
 {{ form.puzzle_id}}
-{% if form.title.data is not none %}
+
+{% if form.puzzle_id is not none %}
     <h1>Edit Puzzle</h1>
 {%else%}
     <h1>Add Puzzle</h1>
@@ -34,16 +34,11 @@
     <p>
         {{form.condition.label}}  
         {% for (condition, _) in choices %}
-         <p>
-            {% if not form.condition.data %}
-            <input type="radio" name="condition" value="{{ condition }}">
-            {{ condition }}
-         </input>
-         {% else %}
+         
             <input type="radio" name="condition" value="{{ condition }}"{% if form.condition.data == condition %}checked{% endif %}>
             {{ condition }}
         </input>
-        {%endif%}
+       
          </p>
        
          {% endfor %}
