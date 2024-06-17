@@ -1,9 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
+<form action="{{ url_for('create_puzzle') }}" enctype="multipart/form-data" method="post">
+{{ form.hidden_tag() }}
+
+{{ form.puzzle_id}}
+{% if form.title.data is not none %}
+    <h1>Edit Puzzle</h1>
+{%else%}
     <h1>Add Puzzle</h1>
-    <form action="{{ url_for('create_puzzle') }}" enctype="multipart/form-data" method="post">
-    {{ form.hidden_tag() }}
+{% endif %}   
     <p>
         {{ form.title.label }} <br>
         {{ form.title(size=32) }} <br>
@@ -29,9 +35,15 @@
         {{form.condition.label}}  
         {% for (condition, _) in choices %}
          <p>
+            {% if not form.condition.data %}
             <input type="radio" name="condition" value="{{ condition }}">
             {{ condition }}
+         </input>
+         {% else %}
+            <input type="radio" name="condition" value="{{ condition }}"{% if form.condition.data == condition %}checked{% endif %}>
+            {{ condition }}
         </input>
+        {%endif%}
          </p>
        
          {% endfor %}
@@ -44,10 +56,19 @@
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
+    
     <p>
-       {{form.categories.label}} <br>
-       {{form.categories(size='sm')}}
-    </p>
+        <label for="categories">Categories:</label>
+        <select multiple id="categories" name="categories">
+        {% for option in form.categories.choices %}
+        {% if not form.categories.data %}
+        <option value="{{ option[0] }}">{{ option[1] }}</option>
+        {%else%}
+        <option value="{{ option[0] }}" {% if option[0] in form.categories.data %}selected{% endif %}>{{ option[1] }}</option>
+        {% endif %}
+        {% endfor %}
+        </select>
+    </p>  
     <p>
         {{ form.description.label }} <br>
         {{ form.description(size=32) }} <br>

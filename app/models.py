@@ -65,7 +65,7 @@ class Category(db.Model):
 
     # many to many relationship with puzzles (forward reference puzzle)
     puzzles = so.relationship('Puzzle', secondary=puzzle_category,
-        backref='category')
+        back_populates='categories')
     
     def __repr__(self):
         return '<Category {}>'.format(self.name)
@@ -95,8 +95,9 @@ class Puzzle(db.Model):
     # connects to Category table (one to many relationship)
     # category: so.Mapped[Category] = so.relationship(back_populates='puzzles')
 
-    # connects to Category table (many to many relationship)
-    categories = so.relationship(Category, secondary=puzzle_category, backref='puzzle')
+    
+    # back_populates-links puzzles in Category with categories relationship in Puzzle (bidirectional)
+    categories = so.relationship(Category, secondary=puzzle_category, back_populates='puzzles')
 
     def __repr__(self):
         return '<Puzzle {}>'.format(self.description)
