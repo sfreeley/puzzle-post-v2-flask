@@ -59,8 +59,8 @@ class CreatePuzzleForm(FlaskForm):
     condition = RadioField('Condition', validators=[DataRequired()])
     manufacturer = StringField('Manufacturer', validators=[DataRequired()])
     # ***add FileAllowed extensions
-    image = FileField('Image', validators=[FileRequired()])
-    # category_id = SelectField('Category', validators=[DataRequired()])
+    image = FileField('Image', validators=[ FileAllowed(['jpg', 'jpeg', 'png'])])
+    existing_image_url = HiddenField('existing_img_url')
     categories = SelectMultipleField('Categories', choices=[])
     description = TextAreaField('Additional Notes', validators=[Length(min=0, max=140)])
     submit = SubmitField('Submit')
