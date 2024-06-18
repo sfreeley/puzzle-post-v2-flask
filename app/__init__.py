@@ -15,7 +15,7 @@ when changes made, a new script added to repository that documents change
 from flask_migrate import Migrate
 # create application object as instance of class Flask
 # __name__ predefined var set to name of module in which it's used
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 # login
 login = LoginManager(app)

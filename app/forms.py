@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileRequired
 from flask_login import current_user
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, FileField, RadioField, SelectMultipleField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, FileField, RadioField, SelectMultipleField, HiddenField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
 from app import db
 import sqlalchemy as sa
@@ -53,16 +53,17 @@ class EditProfileForm(FlaskForm):
             return user 
 
 class CreatePuzzleForm(FlaskForm):
+    puzzle_id = HiddenField('puzzle_id')
     title = StringField('Title', validators=[DataRequired()])
     pieces = StringField('Pieces', validators=[DataRequired()])
     condition = RadioField('Condition', validators=[DataRequired()])
     manufacturer = StringField('Manufacturer', validators=[DataRequired()])
     # ***add FileAllowed extensions
-    image = FileField('Image', validators=[FileRequired()])
-    # category_id = SelectField('Category', validators=[DataRequired()])
-    categories = SelectMultipleField('Categories')
+    image = FileField('Image', validators=[ FileAllowed(['jpg', 'jpeg', 'png'])])
+    existing_image_url = HiddenField('existing_img_url')
+    categories = SelectMultipleField('Categories', choices=[])
     description = TextAreaField('Additional Notes', validators=[Length(min=0, max=140)])
-    submit = SubmitField('Post Your Puzzle')
+    submit = SubmitField('Submit')
 
 
 
