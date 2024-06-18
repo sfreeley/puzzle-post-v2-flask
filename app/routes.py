@@ -158,6 +158,7 @@ def save_puzzle(puzzle_id=None):
     # first value of the condition 
     form.condition.choices = [(condition, condition) for condition in conditions]
   
+    
     # if puzzle id is there from the form with hiddenfield..
     if puzzle_id:
         # get puzzle from db by that puzzle_id and belongs to the user logged in
@@ -192,8 +193,9 @@ def save_puzzle(puzzle_id=None):
 
                 db.session.commit()
                 return redirect(url_for('user', username=current_user.username)) 
+    # creating puzzle 
     if puzzle_id is None:
-        form.image.validators.append(FileRequired())
+        form.image.validators.append(FileRequired())        
         if form.validate_on_submit():
             puzzle = Puzzle(
                 user_id = current_user.id,

@@ -4,7 +4,7 @@
 <form action="{{ url_for('save_puzzle', puzzle_id=form.puzzle_id.data ) }}" enctype="multipart/form-data" method="post">
 {{ form.hidden_tag() }}
 
-{% if form.puzzle_id is not none %}
+{% if form.puzzle_id.data %}
     <h1>Edit Puzzle</h1>
 {%else%}
     <h1>Add Puzzle</h1>
@@ -24,12 +24,17 @@
         {% endfor %}
     </p>
     <p>
-        {% if form.existing_image_url %}
+        {% if form.existing_image_url.data  %}
+        
         <img src="{{ existing_image_url }}" style="max-width:200px;"> <br>
         <input type="hidden" name="existing_image_url" value="{{existing_image_url}}">
         {% else %}
-        <p></p>
+       
+        <p>
+            
+        </p>
         {% endif %}
+        
         {% for error in form.image.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
