@@ -28,6 +28,16 @@ class User(UserMixin, db.Model):
     # in this case, Optional allow column to be nullable or empty
     password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
 
+    # messages implementation
+    last_message_read_time: so.Mapped[Optional[datetime]]
+    messages_sent: so.WriteOnlyMapped['Message'] = so.relationship(
+        foreign_keys='Message.sender_requester_id', back_populates='author'
+    )
+
+    messages_received: so.WriteOnlyMapped['Message'] = so.relationship(
+        foreign_keys='Message.recipient_owner_id', back_populates='recipient'
+    )
+
     # connects to puzzle table (user can post many puzzles)
     # WriteOnlyMapped defines puzzles as collection type with Puzzle objects within it
     puzzles: so.WriteOnlyMapped['Puzzle'] = so.relationship(
@@ -91,18 +101,41 @@ class Puzzle(db.Model):
 
     # connects to User table
     author: so.Mapped[User] = so.relationship(back_populates='puzzles')
-
-    # connects to Category table (one to many relationship)
-    # category: so.Mapped[Category] = so.relationship(back_populates='puzzles')
-
-    
+ 
     # back_populates-links puzzles in Category with categories relationship in Puzzle (bidirectional)
     categories = so.relationship(Category, secondary=puzzle_category, back_populates='puzzles')
 
+    # messages = so.Mapped['Message'] = so.relationship(back_populates='puzzle') 
     def __repr__(self):
         return '<Puzzle {}>'.format(self.description)
 
+# Message
+class Message(db.Model):
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    puzzle_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Puzzle.id), index=True)
+    sender_requester_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+    recipient_owner_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+    content: so.Mapped[str] = so.mapped_column(sa.String(140))
+    timestamp: so.Mapped[datetime] = so.mapped_column(
+        index=True, default=lambda: datetime.now(timezone.utc))
+    
+    # user relationships
+    author: so.Mapped[User] = so.relationship(
+        foreign_keys="Message.sender_requester_id",
+        back_populates='messages_sent'
 
+    )
+    recipient: so.Mapped[User] = so.relationship(
+        foreign_keys="Message.recipient_owner_id",
+        back_populates="messages_received"
+    )
+
+    # puzzle relationship
+    
+    puzzle = so.relationship(Puzzle, backref='messages')
+    
+    def __repr__(self):
+        return '<Message{}>'.format(self.content)
 
 # function that will load a user based on their id (stores user's session)
 # flask-login will use this id for the user session so it knows who is logged in
