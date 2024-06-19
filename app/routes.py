@@ -142,7 +142,6 @@ def edit_profile():
 def get_file(filename):
     return send_from_directory(Config.UPLOADED_PHOTOS_DEST, filename)
 
-# ***try code edit/create***
 # edit
 @app.route('/save_puzzle/<int:puzzle_id>', methods=['GET','POST'])
 # create
@@ -295,3 +294,29 @@ def messages():
     user = db.session.query(User).filter_by(username=current_user.username).first()
     message_list = db.session.query(Message).filter_by(recipient=current_user).order_by(Message.timestamp.desc()).all()
     return render_template('messages.html', message_list=message_list, recipient=user)
+
+# ACCEPT Request
+@app.route('/approve_request/<requester>/<int:puzzle_id>', methods=['GET', 'POST'])
+@login_required
+def approve_request(requester, puzzle_id):
+    user = db.first_or_404(sa.select(User).where(User.username == requester))
+    puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
+    
+    # send pre-generated message to the requester of puzzle
+    message_to_requester = f'Your request for puzzle {puzzle.title} has been approved!'
+    msg = Message(
+        author=current_user,
+        recipient=user,
+        content=message_to_requester,
+        puzzle_id=puzzle_id,
+        timestamp=datetime.now(timezone.utc)
+    )
+    db.session.add(msg)
+    puzzle.user_id = user.id
+    puzzle.in_progress = True
+    puzzle.is_available = False
+    puzzle.is_requested = False
+    db.session.commit()
+
+    flash(f'You approved the puzzle request for {puzzle.title}. It now belongs to {puzzle.author.username}')
+    return redirect(url_for('messages'))
