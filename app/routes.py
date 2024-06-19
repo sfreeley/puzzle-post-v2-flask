@@ -1,7 +1,7 @@
 from app import app, db
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm
-from app.models import User, Puzzle, Category
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, MessageForm
+from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
@@ -19,7 +19,8 @@ from config import Config
 @app.route('/index')
 @login_required
 def index(): 
-    puzzles = db.session.query(Puzzle).all()
+    # only show puzzles that are not being requested
+    puzzles = db.session.query(Puzzle).filter_by(is_requested = False).all()
 
     
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
@@ -93,17 +94,18 @@ def user(username):
     # will get matching username from db and if no match will send 404 error to user (not found)
     user = db.first_or_404(sa.select(User).where(User.username == username))
     sharing_count = 0
+    requested_count = 0
     progress_count = 0
     puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id).all()
     
     for puzzle in puzzles_current_user:
         if puzzle.is_available == True:
             sharing_count = sharing_count + 1
-            # return sharing_count
         elif puzzle.in_progress == True:
-            progress_count = progress_count + 1
-            # return in_progress
-    return render_template('user.html', puzzles=puzzles_current_user, user=user, sharing_count=sharing_count, progress_count=progress_count)
+            progress_count = progress_count + 1    
+        elif puzzle.is_requested == True:
+            requested_count = requested_count + 1
+    return render_template('user.html', puzzles=puzzles_current_user, user=user, sharing_count=sharing_count, progress_count=progress_count, requested_count=requested_count)
 
 # executed before any of the view functions are executed
 # checks if the current user is logged in and lets you set last seen as that time 
@@ -226,15 +228,6 @@ def save_puzzle(puzzle_id=None):
      
     return render_template('create_puzzle.html', title='Save Puzzle', form=form, choices=form.condition.choices, existing_image_url = form.existing_image_url.data)
 
-
-
-
-
-
-
-
-
-
 # DELETE
 @app.route('/puzzle/delete/<int:puzzle_id>', methods=['GET', 'DELETE'])
 @login_required
@@ -259,3 +252,46 @@ def delete_puzzle(puzzle_id):
 def confirm_delete(puzzle_id):
     puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
     return render_template('confirm_delete.html', puzzle=puzzle)
+
+# SEND MESSAGE
+@app.route('/send_message/<recipient>/<int:puzzle_id>', methods=['GET', 'POST'])
+@login_required
+def send_message(recipient, puzzle_id):
+    user = db.first_or_404(sa.select(User).where(User.username == recipient))
+    puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
+    # would need to edit the puzzle's is_requested value - change to true and change all other boolean values to false
+    if not puzzle:
+        flash('Puzzle not found.')
+        return redirect(url_for('user', username=current_user.username))
+    
+    # edit these fields to signify puzzle is being requested- should no longer show up on homepage
+    puzzle.is_available = False
+    puzzle.is_requested = True
+    db.session.commit()
+
+    form = MessageForm(puzzle_id=puzzle_id, recipient=recipient)
+    if form.validate_on_submit():
+        msg = Message(
+            author=current_user, 
+            recipient=user, 
+            content=form.message.data, 
+            puzzle_id=form.puzzle_id.data,
+            timestamp=datetime.now(timezone.utc)
+        )
+        db.session.add(msg)
+        db.session.commit()
+        flash('Your message has been sent!')
+        return redirect(url_for('user', username=current_user.username))
+    
+    return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
+# work on replying to message received 
+@app.route('/messages')
+@login_required
+def messages():
+    # will update the last message read time to current time 
+    # will mark everything as read 
+    current_user.last_message_read_time = datetime.now(timezone.utc)
+    db.session.commit()
+    user = db.session.query(User).filter_by(username=current_user.username).first()
+    message_list = db.session.query(Message).filter_by(recipient=current_user).order_by(Message.timestamp.desc()).all()
+    return render_template('messages.html', message_list=message_list, recipient=user)

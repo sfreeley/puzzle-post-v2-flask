@@ -13,4 +13,5 @@
         <p>{{puzzle.manufacturer}}</p>
         <p>{{puzzle.description}}</p>
     </p>
+    <button><a href="{{ url_for('send_message', recipient=puzzle.author.username, puzzle_id=puzzle.id) }}">Request</a></button>
 </table>

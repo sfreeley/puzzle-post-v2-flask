@@ -78,6 +78,24 @@
   
         
     
+    <h2>Requested Puzzles</h2>
+    {% if requested_count == 0 %}
+    <p> No puzzle requests at the moment...</p>
+    {% else %}
+    <h3> Requested: </h3>
+        {%for puzzle in puzzles%}
+            {% if puzzle.is_requested %}
+    <p>
+        <b>{{puzzle.title}}</b>
+        <p>{{puzzle.pieces}}</p>
+        <p>{{puzzle.manufacturer}}</p>
+        <p>{{puzzle.description}}</p>
+    </p>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+
     <h2>In Progress Puzzles</h2>
     {% if progress_count == 0 %}
     <p> You're not working on any puzzles right now...</p>

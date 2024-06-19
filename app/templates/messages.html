@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>
+        Your Messages, {{recipient.username}}
+    </h1>
+    {% for message in message_list %}
+    <p>From:{{message.author.username}}</p>
+    <p>To: {{message.recipient.username}}</p>
+    <p>{{message.timestamp}}</p>
+    <p>Puzzle Requested: {{message.puzzle.title}}</p>
+    <img src="{{message.puzzle.image_url}}" style="max-width: 200px;">
+    <p>{{message.content}}</p>
+    <button><a href="{{ url_for('send_message', recipient=message.author.username, puzzle_id=message.puzzle.id) }}">Reply</a></button>
+    {%endfor%}
+{% endblock %}

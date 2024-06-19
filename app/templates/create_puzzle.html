@@ -29,10 +29,7 @@
         <img src="{{ existing_image_url }}" style="max-width:200px;"> <br>
         <input type="hidden" name="existing_image_url" value="{{existing_image_url}}">
         {% else %}
-       
-        <p>
-            
-        </p>
+        <p></p>
         {% endif %}
         
         {% for error in form.image.errors %}

@@ -1,7 +1,7 @@
 from app import app, db
 import sqlalchemy as sa
 import sqlalchemy.orm as so
-from app.models import User, Puzzle
+from app.models import User, Puzzle, Message
 
 # configuring a flask shell (python interpreter) within the application
 # so it can recognize everything within your app and 
@@ -13,5 +13,6 @@ def make_shell_context():
         'so': so,
         'db': db,
         'User': User,
-        'Puzzle': Puzzle
+        'Puzzle': Puzzle,
+        'Message': Message
     }
