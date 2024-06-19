@@ -13,8 +13,9 @@
     <p>{{message.content}}</p>
     {% if loop.index0 == 0  %}
     <button><a href="{{ url_for('send_message', recipient=message.author.username, puzzle_id=message.puzzle.id) }}">Reply</a></button>
-    {%if current_user.id == recipient.id%}
-    <button><a href="{{ url_for('approve_request', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a></button>
+    {%if current_user.id == recipient.id and current_user.id != message.puzzle.user_id%}
+    <button><a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a></button>
+    <button><a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a></button>
     
     {% endif %}
     {% endif %}
