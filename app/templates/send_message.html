@@ -7,9 +7,10 @@
 
 </h1>
 <form action="{{ url_for('send_message', recipient=recipient, puzzle_id=form.puzzle_id.data ) }}" enctype="multipart/form-data" method="post">
-{{ form.message.label }}
-{{ form.message(size=32) }}
-<p>{{ form.submit() }}</p>
+{{ form.hidden_tag() }}
+    {{ form.message.label }}
+    {{ form.message(size=32) }}
+    <p>{{ form.submit() }}</p>
 
 </form>
 {%endblock%}

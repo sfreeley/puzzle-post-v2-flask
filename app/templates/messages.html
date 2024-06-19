@@ -2,12 +2,14 @@
 
 {% block content %}
     <h1>
-        Messages
+        Your Messages
     </h1>
     {% for message in message_list %}
     <p>From:{{message.author.username}}</p>
-    <p>To: {{message.recipient}}</p>
+    <p>To: {{message.recipient.username}}</p>
     <p>{{message.timestamp}}</p>
     <p>Puzzle Requested: {{message.puzzle.title}}</p>
+    <img src="{{message.puzzle.image_url}}">
     <p>{{message.content}}</p>
+    {%endfor%}
 {% endblock %}

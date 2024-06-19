@@ -281,7 +281,7 @@ def send_message(recipient, puzzle_id):
         db.session.add(msg)
         db.session.commit()
         flash('Your message has been sent!')
-        return redirect(url_for('user', username=recipient))
+        return redirect(url_for('user', username=current_user.username))
     
     for field, errors in form.errors.items():
         for error in errors:
@@ -295,5 +295,5 @@ def messages():
     # will mark everything as read 
     current_user.last_message_read_time = datetime.now(timezone.utc)
     db.session.commit()
-    message_list = current_user.messages_received.select().order_by(Message.timestamp.desc())
+    message_list = db.session.query(Message).filter_by(recipient=current_user).order_by(Message.timestamp.desc()).all()
     return render_template('messages.html', message_list=message_list)
