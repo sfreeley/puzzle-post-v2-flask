@@ -3,14 +3,20 @@
 {% block content%}
 <h1>
     Send Message to {{recipient}}
-    {{puzzle.title}}
+    Regarding: {{puzzle.title}}
 
 </h1>
 <form action="{{ url_for('send_message', recipient=recipient, puzzle_id=form.puzzle_id.data ) }}" enctype="multipart/form-data" method="post">
 {{ form.hidden_tag() }}
+<div>
     {{ form.message.label }}
     {{ form.message(size=32) }}
+</div>
+<div>
     <p>{{ form.submit() }}</p>
+</div>
+    
+    
 
 </form>
 {%endblock%}

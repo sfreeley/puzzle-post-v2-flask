@@ -269,7 +269,7 @@ def send_message(recipient, puzzle_id):
     puzzle.is_requested = True
     db.session.commit()
 
-    form = MessageForm(puzzle_id=puzzle_id)
+    form = MessageForm(puzzle_id=puzzle_id, recipient=recipient)
     if form.validate_on_submit():
         msg = Message(
             author=current_user, 
@@ -283,11 +283,8 @@ def send_message(recipient, puzzle_id):
         flash('Your message has been sent!')
         return redirect(url_for('user', username=current_user.username))
     
-    for field, errors in form.errors.items():
-        for error in errors:
-            print(f"Error in {field}: {error}")
     return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
-
+# work on replying to message received 
 @app.route('/messages')
 @login_required
 def messages():
@@ -295,5 +292,6 @@ def messages():
     # will mark everything as read 
     current_user.last_message_read_time = datetime.now(timezone.utc)
     db.session.commit()
+    user = db.session.query(User).filter_by(username=current_user.username).first()
     message_list = db.session.query(Message).filter_by(recipient=current_user).order_by(Message.timestamp.desc()).all()
-    return render_template('messages.html', message_list=message_list)
+    return render_template('messages.html', message_list=message_list, recipient=user)
