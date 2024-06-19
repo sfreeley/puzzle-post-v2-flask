@@ -42,7 +42,16 @@ class User(UserMixin, db.Model):
     # WriteOnlyMapped defines puzzles as collection type with Puzzle objects within it
     puzzles: so.WriteOnlyMapped['Puzzle'] = so.relationship(
         back_populates='author')
+    
+    def unread_message_count(self):
+        # last_message_read_time will have last time user visited messages page
+        # if it's none, then it will assign last_read_time to it, otherwise if None then assign 1990-01-01 (handles missing or undefined values) 
+        last_read_time = self.last_message_read_time or datetime(1990, 1, 1)
 
+        # count the number of rows (ie messages)
+        count_query = sa.select(sa.func.count()).where(Message.recipient == self, Message.timestamp > last_read_time)
+        # execute and return the count query and get one result with scalar()
+        return db.session.scalar(count_query)
     # this built in function of objects returns printable representation of the object
     # generally used to make debugging easier
     def __repr__(self):

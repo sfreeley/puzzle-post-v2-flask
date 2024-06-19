@@ -65,5 +65,10 @@ class CreatePuzzleForm(FlaskForm):
     description = TextAreaField('Additional Notes', validators=[Length(min=0, max=140)])
     submit = SubmitField('Submit')
 
+# messages
+class MessageForm(FlaskForm):
+    puzzle_id = HiddenField('puzzle_id')
+    message = TextAreaField('Message', validators=[DataRequired(), Length(min=0, max=140)])
+    submit = SubmitField('Submit')
 
 

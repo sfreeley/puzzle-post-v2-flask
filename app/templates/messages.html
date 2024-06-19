@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>
+        Messages
+    </h1>
+    {% for message in message_list %}
+    <p>From:{{message.author.username}}</p>
+    <p>To: {{message.recipient}}</p>
+    <p>{{message.timestamp}}</p>
+    <p>Puzzle Requested: {{message.puzzle.title}}</p>
+    <p>{{message.content}}</p>
+{% endblock %}

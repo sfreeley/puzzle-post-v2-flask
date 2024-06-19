@@ -1,0 +1,15 @@
+{%extends 'base.html'%}
+
+{% block content%}
+<h1>
+    Send Message to {{recipient}}
+    {{puzzle.title}}
+
+</h1>
+<form action="{{ url_for('send_message', recipient=recipient, puzzle_id=form.puzzle_id.data ) }}" enctype="multipart/form-data" method="post">
+{{ form.message.label }}
+{{ form.message(size=32) }}
+<p>{{ form.submit() }}</p>
+
+</form>
+{%endblock%}
