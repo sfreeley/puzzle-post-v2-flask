@@ -61,7 +61,7 @@
                             {% endif %}
                             {% if current_user.id == puzzle.user_id %}
                         <button><a href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}">Edit</a></button>
-                        <button><a href="{{ url_for('confirm_delete', puzzle_id=puzzle.id) }}">Delete</a></button>
+                        <button><a href="{{ url_for('confirm_delete', delete_type='puzzle', item_id=puzzle.id) }}">Delete</a></button>
                         {% endif %}
                         </div>
                     </div>
