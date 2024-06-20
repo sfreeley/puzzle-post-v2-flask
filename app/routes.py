@@ -20,7 +20,7 @@ from config import Config
 @login_required
 def index(): 
     # only show puzzles that are not being requested
-    puzzles = db.session.query(Puzzle).filter_by(is_requested = False).all()
+    puzzles = db.session.query(Puzzle).filter_by(is_available=True).all()
 
     
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
@@ -142,7 +142,6 @@ def edit_profile():
 def get_file(filename):
     return send_from_directory(Config.UPLOADED_PHOTOS_DEST, filename)
 
-# ***try code edit/create***
 # edit
 @app.route('/save_puzzle/<int:puzzle_id>', methods=['GET','POST'])
 # create
@@ -228,7 +227,7 @@ def save_puzzle(puzzle_id=None):
      
     return render_template('create_puzzle.html', title='Save Puzzle', form=form, choices=form.condition.choices, existing_image_url = form.existing_image_url.data)
 
-# DELETE
+# DELETE PUZZLE
 @app.route('/puzzle/delete/<int:puzzle_id>', methods=['GET', 'DELETE'])
 @login_required
 def delete_puzzle(puzzle_id):
@@ -247,11 +246,34 @@ def delete_puzzle(puzzle_id):
             return redirect(url_for('user', username=current_user.username))
 
 # CONFIRM DELETE    
-@app.route('/puzzle/confirm_delete/<int:puzzle_id>', methods=['GET'])
+@app.route('/confirm_delete/<delete_type>/<int:item_id>', methods=['GET'])
+@login_required
+
 # ***confirm delete pop-up (bootstrap?)
-def confirm_delete(puzzle_id):
-    puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
-    return render_template('confirm_delete.html', puzzle=puzzle)
+def confirm_delete(delete_type, item_id):
+    if delete_type == 'puzzle':
+        item = db.session.query(Puzzle).filter_by(id=item_id).first()
+    elif delete_type == 'message':
+        item = db.session.query(Message).filter_by(id=item_id).first()
+    else:
+        flash('Not valid delete type')
+        return redirect(url_for('user', username=current_user.username))
+    return render_template('confirm_delete.html', delete_type=delete_type, item=item)
+
+# DELETE MESSAGE
+@app.route('/message/delete/<int:message_id>', methods=['GET', 'DELETE'])
+@login_required
+def delete_message(message_id):
+    try:
+        message = db.session.query(Message).filter_by(id=message_id).first()
+    except Exception as e:
+        flash("Something went wrong")
+        return redirect(url_for('user', username=current_user.username))
+    else:
+        if message and message.recipient.id == current_user.id:
+            db.session.delete(message)
+            db.session.commit()
+            return redirect(url_for('messages'))
 
 # SEND MESSAGE
 @app.route('/send_message/<recipient>/<int:puzzle_id>', methods=['GET', 'POST'])
@@ -284,7 +306,8 @@ def send_message(recipient, puzzle_id):
         return redirect(url_for('user', username=current_user.username))
     
     return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
-# work on replying to message received 
+
+# SHOW LIST OF MESSAGES
 @app.route('/messages')
 @login_required
 def messages():
@@ -295,3 +318,53 @@ def messages():
     user = db.session.query(User).filter_by(username=current_user.username).first()
     message_list = db.session.query(Message).filter_by(recipient=current_user).order_by(Message.timestamp.desc()).all()
     return render_template('messages.html', message_list=message_list, recipient=user)
+
+# ACCEPT/DECLINE Request
+@app.route('/request_action/<action>/<requester>/<int:puzzle_id>', methods=['GET', 'POST'])
+@login_required
+def request_action(action, requester, puzzle_id):
+    user = db.first_or_404(sa.select(User).where(User.username == requester))
+    puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
+    
+    if not puzzle or not user:
+        flash('Puzzle or user not found')
+        return redirect(url_for('messages'))
+    if action == 'approve':
+        # send pre-generated message to the requester of puzzle
+        message_to_requester = f'Your request for puzzle, {puzzle.title}, has been approved!'
+        puzzle.user_id = user.id
+        puzzle.in_progress = True
+        puzzle.is_available = False
+        puzzle.is_requested = False
+    elif action == 'decline':
+        message_to_requester = f'Your request for puzzle, {puzzle.title}, has been declined. If needed, reach out to the owner for more information.'
+        
+        # puzzle user_id doesn't change
+        # not in_progress
+        puzzle.in_progress = False
+        # goes back into circulation
+        puzzle.is_available = True
+        # not requested anymore
+        puzzle.is_requested = False
+    else:
+        flash('Invalid action')
+        return redirect(url_for('messages'))
+    
+    msg = Message(
+            author=current_user,
+            recipient=user,
+            content=message_to_requester,
+            puzzle_id=puzzle_id,
+            timestamp=datetime.now(timezone.utc)
+        )
+
+    db.session.add(msg)
+    db.session.commit()
+
+    if action == 'approve':
+        flash(f'You approved the puzzle request for {puzzle.title}. It now belongs to {puzzle.author.username}')
+    else:
+        flash(f'You declined the puzzle request from {puzzle.author.username} for {puzzle.title}.')
+        
+    return redirect(url_for('messages'))
+

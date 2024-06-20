@@ -95,7 +95,7 @@ class Puzzle(db.Model):
     # category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Category.id), nullable=False)
     image_url: so.Mapped[str] = so.mapped_column(nullable=False)
     pieces: so.Mapped[int]
-    condition: so.Mapped[str] = so.mapped_column(sa.String(64))
+    condition: so.Mapped[str] = so.mapped_column(sa.String(64), nullable=True)
     title: so.Mapped[str] = so.mapped_column(sa.String(64))
     manufacturer: so.Mapped[str] = so.mapped_column(sa.String(64))
     description: so.Mapped[Optional[str]] = so.mapped_column(sa.String(120))
@@ -121,7 +121,8 @@ class Puzzle(db.Model):
 # Message
 class Message(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    puzzle_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Puzzle.id), index=True)
+    # set puzzle_id on message to None when deleting a specific puzzle attached to messages 
+    puzzle_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Puzzle.id, ondelete='SET NULL'), index=True, nullable=True)
     sender_requester_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     recipient_owner_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     content: so.Mapped[str] = so.mapped_column(sa.String(140))
