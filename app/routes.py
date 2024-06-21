@@ -156,7 +156,8 @@ def save_puzzle(puzzle_id=None):
     form.categories.choices = [(category.id, category.name) for category in categories]
 
     conditions = ['Excellent', 'Good', 'Fair']
-    # first value of the condition 
+    # first condition- value of the condition 
+    # second condition- label for radio button
     form.condition.choices = [(condition, condition) for condition in conditions]
   
     
@@ -182,6 +183,9 @@ def save_puzzle(puzzle_id=None):
                 puzzle.condition = form.condition.data
                 puzzle.manufacturer = form.manufacturer.data
                 puzzle.description = form.description.data
+                if form.categories.data == None:
+                    form.categories.errors.append('Please select at leasat one category')
+                    return redirect(url_for('/save_puzzle', puzzle_id=form.puzzle_id.data))
                 # get all the categories based on id of specific input from user and loop through 
                 puzzle.categories = [Category.query.get(category_id) for category_id in form.categories.data]
                 if form.image.data:
@@ -212,6 +216,9 @@ def save_puzzle(puzzle_id=None):
             puzzle.condition = form.condition.data
             puzzle.manufacturer = form.manufacturer.data
             puzzle.description = form.description.data
+            if not form.categories.data:
+                    form.categories.errors.append('Please select at leasat one category')
+                    return render_template('create_puzzle.html', title='Save Puzzle', form=form)
             # get all the categories based on id of specific input from user and loop through 
             puzzle.categories = [Category.query.get(category_id) for category_id in form.categories.data]
 
