@@ -317,31 +317,35 @@ def send_message(recipient, puzzle_id):
     
     return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
 
-# SHOW LIST OF MESSAGES
+# SHOW LIST OF MESSAGES/LIST OF USERS who have sent current user messages
 @app.route('/messages')
+@app.route('/messages/from/<int:user_id>')
 @login_required
-def messages():
+def messages(user_id=None):
     # will update the last message read time to current time 
     # will mark everything as read 
     current_user.last_message_read_time = datetime.now(timezone.utc)
     db.session.commit()
-    # user = db.session.query(User).filter_by(username=current_user.username).first()
+    # get the current_user
+    recipient = db.session.query(User).filter_by(username=current_user.username).first()
     # get all the users that have sent current_user messages (populate the list of users on page)
     # user table join messages on message.author.id=user.id and find the messages where the recipient is the current_user (get distinct because don't want repeat of users)
-    users_to_recipient = db.session.query(User).join(Message, Message.sender_requester_id == User.id).where(Message.recipient_owner_id == current_user.id).distinct().all()
-    # message_list = db.session.query(Message).filter_by(recipient=current_user).order_by(Message.timestamp.desc()).all()
-    # return render_template('messages.html', message_list=message_list, recipient=user)
-    return render_template('messages.html', users_to_recipient=users_to_recipient )
+    message_senders = db.session.query(User).join(Message, Message.sender_requester_id == User.id).where(Message.recipient_owner_id == current_user.id).distinct().all()
 
-@app.route('/messages/from/<int:user_id>')
-@login_required
-def messages_from_user(user_id):
-    # all messages by sender to recipient using user_id passed by url through clicking username
-    messages_to_recipient_by_sender = db.session.query(Message).where(
-        (Message.recipient_owner_id == current_user.id & Message.sender_requester_id == user_id) |
-        (Message.recipient_owner_id == user_id & Message.sender_requester_id == current_user.id)
-    )
-    return render_template('messages_from_user.html', messages=messages_to_recipient_by_sender)
+    selected_user = None
+    messages_between_sender_recipient = []
+
+    if user_id:
+        # get the user that sent the message
+        selected_user = db.session.query(User).get(user_id)
+        if selected_user:
+            # all messages by sender to recipient using user_id passed by url through clicking username
+            messages_between_sender_recipient = db.session.query(Message).where(
+                ((Message.recipient_owner_id == current_user.id) & (Message.sender_requester_id == user_id)) |
+                ((Message.recipient_owner_id == user_id) & (Message.sender_requester_id == current_user.id))
+            ).order_by(Message.timestamp.desc()).all()
+    return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient )
+
 # ACCEPT/DECLINE Request
 @app.route('/request_action/<action>/<requester>/<int:puzzle_id>', methods=['GET', 'POST'])
 @login_required
