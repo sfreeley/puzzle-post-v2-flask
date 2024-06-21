@@ -4,6 +4,15 @@
     <h1>
         Your Messages, {{recipient.username}}
     </h1>
+    {% for user in users_to_recipient %}
+    <p>{{user.username}}</p>
+    {%endfor%}
+
+    {% include 'message_from_user.html' %}
+    
+    
+    
+    
     {% for message in message_list %}
     <p>From:{{message.author.username}}</p>
     <p>To: {{message.recipient.username}}</p>

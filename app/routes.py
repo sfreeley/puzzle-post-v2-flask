@@ -178,6 +178,9 @@ def save_puzzle(puzzle_id=None):
                 form.categories.data = [category.id for category in puzzle.categories]
             # POST-ing as edit
             if form.validate_on_submit():
+                if not form.categories.data:
+                    form.categories.errors.append('Please select at leasat one category')
+                    return render_template('create_puzzle.html', title='Save Puzzle', form=form)
                 puzzle.title = form.title.data
                 puzzle.pieces = form.pieces.data
                 puzzle.condition = form.condition.data
@@ -322,10 +325,23 @@ def messages():
     # will mark everything as read 
     current_user.last_message_read_time = datetime.now(timezone.utc)
     db.session.commit()
-    user = db.session.query(User).filter_by(username=current_user.username).first()
-    message_list = db.session.query(Message).filter_by(recipient=current_user).order_by(Message.timestamp.desc()).all()
-    return render_template('messages.html', message_list=message_list, recipient=user)
+    # user = db.session.query(User).filter_by(username=current_user.username).first()
+    # get all the users that have sent current_user messages (populate the list of users on page)
+    # user table join messages on message.author.id=user.id and find the messages where the recipient is the current_user (get distinct because don't want repeat of users)
+    users_to_recipient = db.session.query(User).join(Message, Message.sender_requester_id == User.id).where(Message.recipient_owner_id == current_user.id).distinct().all()
+    # message_list = db.session.query(Message).filter_by(recipient=current_user).order_by(Message.timestamp.desc()).all()
+    # return render_template('messages.html', message_list=message_list, recipient=user)
+    return render_template('messages.html', users_to_recipient=users_to_recipient )
 
+@app.route('/messages/from/<int:user_id>')
+@login_required
+def messages_from_user(user_id):
+    # all messages by sender to recipient using user_id passed by url through clicking username
+    messages_to_recipient_by_sender = db.session.query(Message).where(
+        (Message.recipient_owner_id == current_user.id & Message.sender_requester_id == user_id) |
+        (Message.recipient_owner_id == user_id & Message.sender_requester_id == current_user.id)
+    )
+    return render_template('messages_from_user.html', messages=messages_to_recipient_by_sender)
 # ACCEPT/DECLINE Request
 @app.route('/request_action/<action>/<requester>/<int:puzzle_id>', methods=['GET', 'POST'])
 @login_required
