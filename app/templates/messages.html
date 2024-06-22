@@ -4,20 +4,55 @@
     <h1>
         Your Messages, {{recipient.username}}
     </h1>
-    {% for message in message_list %}
-    <p>From:{{message.author.username}}</p>
-    <p>To: {{message.recipient.username}}</p>
-    <p>{{message.timestamp}}</p>
-    <p>Puzzle Requested: {{message.puzzle.title}}</p>
-    <img src="{{message.puzzle.image_url}}" style="max-width: 200px;">
-    <p>{{message.content}}</p>
-    {% if loop.index0 == 0  %}
-    <button><a href="{{ url_for('send_message', recipient=message.author.username, puzzle_id=message.puzzle.id) }}">Reply</a></button>
-    {%if current_user.id == recipient.id and message.puzzle.is_requested%}
-    <button><a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a></button>
-    <button><a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a></button>
-    {% endif %}
-    {% endif %}
-    <button><a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a></button>
-    {% endfor %}
+    
+    <div>
+        <div>
+            <h2>Message Senders</h2>
+            <ul>
+                {% for sender in message_senders %}
+                <img src="{{ sender.create_avatar(128) }}" style="width: 50px;">
+                <li><a href="{{ url_for('messages', user_id=sender.id) }}">{{ sender.username }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div>
+            {% if selected_user %}
+                <h2> Messages with {{selected_user.username}}</h2>
+                {% for message in messages%}
+                <div>
+                    <p>From: {{message.author.username}}</p>
+                    <p>To: {{message.recipient.username}}</p>
+                    <p>Subject: {{message.puzzle.title}}</p>
+                    {% if message.puzzle.is_requested %}
+                    <p>Request Status: Pending</p>
+                    {% endif %}
+                    <p>{{message.timestamp}}</p>
+                    <p>{{message.content}}</p>
+                </div>
+                {% if loop.index0 == 0  %}
+                {% if message and message.author and message.puzzle %}
+                <button><a href="{{ url_for('send_message', recipient=message.author.username, puzzle_id=message.puzzle.id) }}">Reply</a></button>
+                {%if current_user.id == recipient.id and message.puzzle.is_requested%}
+                <button><a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a></button>
+                <button><a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a></button>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+                <button><a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a></button>    
+            {% else %}
+                <h2>Select a user to view Messages</h2>
+                {% endfor %}
+            {% endif %}
+            
+        </div>
+           
+            
 {% endblock %}
+  
+ 
+
+    
+    
+    
+    
+    

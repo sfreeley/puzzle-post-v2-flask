@@ -7,11 +7,15 @@
     </tr>
     <p>
         <b>{{puzzle.title}}</b>
-        <p><img src="{{puzzle.image_url}}"></p>
+        <p><img src="{{puzzle.image_url}}" style="width: 200px"></p>
         <p>{{puzzle.pieces}}</p>
-        <p>{{puzzle.categories}}</p>
+        {% for category in puzzle.categories %}
+        <p>{{category.name}}{% if not loop.last%}, {% endif %}</p>
+        {% endfor %}
         <p>{{puzzle.manufacturer}}</p>
         <p>{{puzzle.description}}</p>
     </p>
+    {% if puzzle.user_id != current_user.id%}
     <button><a href="{{ url_for('send_message', recipient=puzzle.author.username, puzzle_id=puzzle.id) }}">Request</a></button>
+    {% endif %}
 </table>

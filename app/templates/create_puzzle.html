@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form action="{{ url_for('save_puzzle', puzzle_id=form.puzzle_id.data ) }}" enctype="multipart/form-data" method="post">
+<form action="{% if form.puzzle_id.data %}{{ url_for('save_puzzle', puzzle_id=form.puzzle_id.data )}}{% else %} {{url_for('save_puzzle')}} {%endif%}" enctype="multipart/form-data" method="post">
 {{ form.hidden_tag() }}
 
 {% if form.puzzle_id.data %}
@@ -44,16 +44,22 @@
         {% endfor %}
     </p>
     <p>
+        
         {{form.condition.label}}  
-        {% for (condition, _) in choices %}
+        {% for (condition, label) in form.condition.choices %}
          
             <input type="radio" name="condition" value="{{ condition }}"{% if form.condition.data == condition %}checked{% endif %}>
-            {{ condition }}
+            {{ label }}
         </input>
+        {% endfor %}
+        {% for error in form.condition.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+        
        
          </p>
        
-         {% endfor %}
+         
        
      </p>
     <p>
@@ -75,7 +81,10 @@
         {% endif %}
         {% endfor %}
         </select>
-    </p>  
+        {% for error in form.categories.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p> 
     <p>
         {{ form.description.label }} <br>
         {{ form.description(size=32) }} <br>

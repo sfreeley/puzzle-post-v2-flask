@@ -92,7 +92,6 @@ class Category(db.Model):
 
 class Puzzle(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    # category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Category.id), nullable=False)
     image_url: so.Mapped[str] = so.mapped_column(nullable=False)
     pieces: so.Mapped[int]
     condition: so.Mapped[str] = so.mapped_column(sa.String(64), nullable=True)
@@ -121,13 +120,13 @@ class Puzzle(db.Model):
 # Message
 class Message(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    # set puzzle_id on message to None when deleting a specific puzzle attached to messages 
-    puzzle_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Puzzle.id, ondelete='SET NULL'), index=True, nullable=True)
+    puzzle_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Puzzle.id), index=True)
     sender_requester_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     recipient_owner_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     content: so.Mapped[str] = so.mapped_column(sa.String(140))
     timestamp: so.Mapped[datetime] = so.mapped_column(
         index=True, default=lambda: datetime.now(timezone.utc))
+    is_deleted: so.Mapped[bool]
     
     # user relationships
     author: so.Mapped[User] = so.relationship(

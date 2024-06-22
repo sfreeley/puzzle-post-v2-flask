@@ -24,6 +24,7 @@
     <p>{{puzzles}}</p>
     <p>sharing_count</p>{{sharing_count}} 
     <p>progress_count</p>{{progress_count}}
+    <p>requested_count</p>{{requested_count}}
   
     <div class="content">
         {% if puzzles|length == 0 %}
@@ -32,7 +33,7 @@
             <p> You're not sharing any puzzles right now...</p>
         {% else %}
             
-                <h3><b>Sharing</b></h3>
+                <h3><b>Sharing ({{sharing_count}})</b></h3>
                 
                 {% for puzzle in puzzles %}
                     {% if puzzle.is_available %}
@@ -78,7 +79,7 @@
   
         
     
-    <h2>Requested Puzzles</h2>
+    <h2>Requested Puzzles ({{requested_count}})</h2>
     {% if requested_count == 0 %}
     <p> No puzzle requests at the moment...</p>
     {% else %}
@@ -96,7 +97,7 @@
     {% endif %}
 
 
-    <h2>In Progress Puzzles</h2>
+    <h2>In Progress Puzzles ({{progress_count}})</h2>
     {% if progress_count == 0 %}
     <p> You're not working on any puzzles right now...</p>
     {% else %}

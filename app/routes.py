@@ -96,7 +96,7 @@ def user(username):
     sharing_count = 0
     requested_count = 0
     progress_count = 0
-    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id).all()
+    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id, is_deleted=False).all()
     
     for puzzle in puzzles_current_user:
         if puzzle.is_available == True:
@@ -156,7 +156,8 @@ def save_puzzle(puzzle_id=None):
     form.categories.choices = [(category.id, category.name) for category in categories]
 
     conditions = ['Excellent', 'Good', 'Fair']
-    # first value of the condition 
+    # first condition- value of the condition 
+    # second condition- label for radio button
     form.condition.choices = [(condition, condition) for condition in conditions]
   
     
@@ -177,11 +178,17 @@ def save_puzzle(puzzle_id=None):
                 form.categories.data = [category.id for category in puzzle.categories]
             # POST-ing as edit
             if form.validate_on_submit():
+                if not form.categories.data:
+                    form.categories.errors.append('Please select at leasat one category')
+                    return render_template('create_puzzle.html', title='Save Puzzle', form=form)
                 puzzle.title = form.title.data
                 puzzle.pieces = form.pieces.data
                 puzzle.condition = form.condition.data
                 puzzle.manufacturer = form.manufacturer.data
                 puzzle.description = form.description.data
+                if form.categories.data == None:
+                    form.categories.errors.append('Please select at leasat one category')
+                    return redirect(url_for('/save_puzzle', puzzle_id=form.puzzle_id.data))
                 # get all the categories based on id of specific input from user and loop through 
                 puzzle.categories = [Category.query.get(category_id) for category_id in form.categories.data]
                 if form.image.data:
@@ -212,6 +219,9 @@ def save_puzzle(puzzle_id=None):
             puzzle.condition = form.condition.data
             puzzle.manufacturer = form.manufacturer.data
             puzzle.description = form.description.data
+            if not form.categories.data:
+                    form.categories.errors.append('Please select at leasat one category')
+                    return render_template('create_puzzle.html', title='Save Puzzle', form=form)
             # get all the categories based on id of specific input from user and loop through 
             puzzle.categories = [Category.query.get(category_id) for category_id in form.categories.data]
 
@@ -227,7 +237,7 @@ def save_puzzle(puzzle_id=None):
      
     return render_template('create_puzzle.html', title='Save Puzzle', form=form, choices=form.condition.choices, existing_image_url = form.existing_image_url.data)
 
-# DELETE PUZZLE
+# SOFT DELETE PUZZLE
 @app.route('/puzzle/delete/<int:puzzle_id>', methods=['GET', 'DELETE'])
 @login_required
 def delete_puzzle(puzzle_id):
@@ -240,8 +250,9 @@ def delete_puzzle(puzzle_id):
         return redirect(url_for('user', username=current_user.username))
     else:
         if puzzle_by_id and puzzle_by_id.user_id == current_user.id:
-            # delete from db
-            db.session.delete(puzzle_by_id)
+            # 'delete' - change is_deleted to True and do not show on page through filtering
+            puzzle_by_id.is_deleted == True
+            puzzle_by_id.is_available == False
             db.session.commit()
             return redirect(url_for('user', username=current_user.username))
 
@@ -271,9 +282,9 @@ def delete_message(message_id):
         return redirect(url_for('user', username=current_user.username))
     else:
         if message and message.recipient.id == current_user.id:
-            db.session.delete(message)
+            message.is_deleted = True
             db.session.commit()
-            return redirect(url_for('messages'))
+            return render_template('messages.html')
 
 # SEND MESSAGE
 @app.route('/send_message/<recipient>/<int:puzzle_id>', methods=['GET', 'POST'])
@@ -298,7 +309,8 @@ def send_message(recipient, puzzle_id):
             recipient=user, 
             content=form.message.data, 
             puzzle_id=form.puzzle_id.data,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc),
+            is_deleted=False
         )
         db.session.add(msg)
         db.session.commit()
@@ -307,17 +319,34 @@ def send_message(recipient, puzzle_id):
     
     return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
 
-# SHOW LIST OF MESSAGES
+# SHOW LIST OF MESSAGES/LIST OF USERS who have sent current user messages
 @app.route('/messages')
+@app.route('/messages/from/<int:user_id>')
 @login_required
-def messages():
+def messages(user_id=None):
     # will update the last message read time to current time 
     # will mark everything as read 
     current_user.last_message_read_time = datetime.now(timezone.utc)
     db.session.commit()
-    user = db.session.query(User).filter_by(username=current_user.username).first()
-    message_list = db.session.query(Message).filter_by(recipient=current_user).order_by(Message.timestamp.desc()).all()
-    return render_template('messages.html', message_list=message_list, recipient=user)
+    # get the current_user
+    recipient = db.session.query(User).filter_by(username=current_user.username).first()
+    # get all the users that have sent current_user messages (populate the list of users on page)
+    # user table join messages on message.author.id=user.id and find the messages where the recipient is the current_user (get distinct because don't want repeat of users)
+    message_senders = db.session.query(User).join(Message, Message.sender_requester_id == User.id).where(Message.recipient_owner_id == current_user.id).distinct().all()
+
+    selected_user = None
+    messages_between_sender_recipient = []
+
+    if user_id:
+        # get the user that sent the message
+        selected_user = db.session.query(User).get(user_id)
+        if selected_user:
+            # all messages by sender to recipient using user_id passed by url through clicking username
+            messages_between_sender_recipient = db.session.query(Message).where(
+                ((Message.recipient_owner_id == current_user.id) & (Message.sender_requester_id == user_id)) |
+                ((Message.recipient_owner_id == user_id) & (Message.sender_requester_id == current_user.id))
+            ).order_by(Message.timestamp.desc()).all()
+    return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient )
 
 # ACCEPT/DECLINE Request
 @app.route('/request_action/<action>/<requester>/<int:puzzle_id>', methods=['GET', 'POST'])

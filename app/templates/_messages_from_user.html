@@ -1,0 +1,13 @@
+{%extends 'messages.html'%}
+
+
+{% block content%}
+<div>
+    {%for message in messages%}
+    <li>
+        From:{{message.author.username}}
+        {{message.content}}
+    </li>
+    {%endfor%}
+</div>
+{% endblock %}

@@ -56,10 +56,10 @@ class CreatePuzzleForm(FlaskForm):
     puzzle_id = HiddenField('puzzle_id')
     title = StringField('Title', validators=[DataRequired()])
     pieces = StringField('Pieces', validators=[DataRequired()])
-    condition = RadioField('Condition', validators=[DataRequired()])
+    condition = RadioField('Condition', choices=[], validators=[DataRequired()])
     manufacturer = StringField('Manufacturer', validators=[DataRequired()])
     # ***add FileAllowed extensions
-    image = FileField('Image', validators=[ FileAllowed(['jpg', 'jpeg', 'png'])])
+    image = FileField('Image', validators=[ FileAllowed(['jpg', 'jpeg', 'png', 'svg'])])
     existing_image_url = HiddenField('existing_img_url')
     categories = SelectMultipleField('Categories', choices=[])
     description = TextAreaField('Additional Notes', validators=[Length(min=0, max=140)])
