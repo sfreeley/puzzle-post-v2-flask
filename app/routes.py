@@ -96,7 +96,7 @@ def user(username):
     sharing_count = 0
     requested_count = 0
     progress_count = 0
-    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id).all()
+    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id, is_deleted=False).all()
     
     for puzzle in puzzles_current_user:
         if puzzle.is_available == True:
@@ -250,8 +250,9 @@ def delete_puzzle(puzzle_id):
         return redirect(url_for('user', username=current_user.username))
     else:
         if puzzle_by_id and puzzle_by_id.user_id == current_user.id:
-            # delete from db
-            db.session.delete(puzzle_by_id)
+            # 'delete' - change is_deleted to True and do not show on page through filtering
+            puzzle_by_id.is_deleted == True
+            puzzle_by_id.is_available == False
             db.session.commit()
             return redirect(url_for('user', username=current_user.username))
 
@@ -283,7 +284,7 @@ def delete_message(message_id):
         if message and message.recipient.id == current_user.id:
             db.session.delete(message)
             db.session.commit()
-            return redirect(url_for('messages'))
+            return render_template('messages.html')
 
 # SEND MESSAGE
 @app.route('/send_message/<recipient>/<int:puzzle_id>', methods=['GET', 'POST'])
