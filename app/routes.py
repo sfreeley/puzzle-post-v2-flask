@@ -237,7 +237,7 @@ def save_puzzle(puzzle_id=None):
      
     return render_template('create_puzzle.html', title='Save Puzzle', form=form, choices=form.condition.choices, existing_image_url = form.existing_image_url.data)
 
-# DELETE PUZZLE
+# SOFT DELETE PUZZLE
 @app.route('/puzzle/delete/<int:puzzle_id>', methods=['GET', 'DELETE'])
 @login_required
 def delete_puzzle(puzzle_id):
@@ -282,7 +282,7 @@ def delete_message(message_id):
         return redirect(url_for('user', username=current_user.username))
     else:
         if message and message.recipient.id == current_user.id:
-            db.session.delete(message)
+            message.is_deleted = True
             db.session.commit()
             return render_template('messages.html')
 
@@ -309,7 +309,8 @@ def send_message(recipient, puzzle_id):
             recipient=user, 
             content=form.message.data, 
             puzzle_id=form.puzzle_id.data,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc),
+            is_deleted=False
         )
         db.session.add(msg)
         db.session.commit()

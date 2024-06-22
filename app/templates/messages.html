@@ -10,6 +10,7 @@
             <h2>Message Senders</h2>
             <ul>
                 {% for sender in message_senders %}
+                <img src="{{ sender.create_avatar(128) }}" style="width: 50px;">
                 <li><a href="{{ url_for('messages', user_id=sender.id) }}">{{ sender.username }}</a></li>
                 {% endfor %}
             </ul>
@@ -21,6 +22,10 @@
                 <div>
                     <p>From: {{message.author.username}}</p>
                     <p>To: {{message.recipient.username}}</p>
+                    <p>Subject: {{message.puzzle.title}}</p>
+                    {% if message.puzzle.is_requested %}
+                    <p>Request Status: Pending</p>
+                    {% endif %}
                     <p>{{message.timestamp}}</p>
                     <p>{{message.content}}</p>
                 </div>
