@@ -1,6 +1,6 @@
 from app import app, db
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, MessageForm, PersonalNote
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, MessageForm
 from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
@@ -238,7 +238,7 @@ def save_puzzle(puzzle_id=None):
     return render_template('create_puzzle.html', title='Save Puzzle', form=form, choices=form.condition.choices, existing_image_url = form.existing_image_url.data)
 
 # SOFT DELETE PUZZLE
-@app.route('/puzzle/delete/<int:puzzle_id>', methods=['GET', 'POST'])
+@app.route('/puzzle/delete/<int:puzzle_id>', methods=['GET', 'DELETE'])
 @login_required
 def delete_puzzle(puzzle_id):
       
@@ -250,7 +250,6 @@ def delete_puzzle(puzzle_id):
         return redirect(url_for('user', username=current_user.username))
     else:
         if puzzle_by_id and puzzle_by_id.user_id == current_user.id:
-            
             # 'delete' - change is_deleted to True and do not show on page through filtering
             puzzle_by_id.is_deleted == True
             puzzle_by_id.is_available == False
@@ -272,23 +271,20 @@ def confirm_delete(delete_type, item_id):
         return redirect(url_for('user', username=current_user.username))
     return render_template('confirm_delete.html', delete_type=delete_type, item=item)
 
-# SOFT DELETE MESSAGE
-@app.route('/message/delete/<int:message_id>', methods=['GET', 'POST'])
+# DELETE MESSAGE
+@app.route('/message/delete/<int:message_id>', methods=['GET', 'DELETE'])
 @login_required
 def delete_message(message_id):
-    if request.method == 'POST':
-        try:
-            message = db.session.query(Message).filter_by(id=message_id).first()
-        except Exception as e:
-            flash("Something went wrong")
-            return redirect(url_for('user', username=current_user.username))
-        else:
-            if message:
-                message.is_deleted = True
-                db.session.commit()
-                flash("Your delete was successful")
-                # return redirect(request.referrer or url_for('messages'))
-        return redirect(request.referrer or url_for('messages'))
+    try:
+        message = db.session.query(Message).filter_by(id=message_id).first()
+    except Exception as e:
+        flash("Something went wrong")
+        return redirect(url_for('user', username=current_user.username))
+    else:
+        if message and message.recipient.id == current_user.id:
+            message.is_deleted = True
+            db.session.commit()
+            return render_template('messages.html')
 
 # SEND MESSAGE
 @app.route('/send_message/<recipient>/<int:puzzle_id>', methods=['GET', 'POST'])
@@ -347,9 +343,8 @@ def messages(user_id=None):
         if selected_user:
             # all messages by sender to recipient using user_id passed by url through clicking username
             messages_between_sender_recipient = db.session.query(Message).where(
-                (Message.is_deleted == False) &
-                (((Message.recipient_owner_id == current_user.id) & (Message.sender_requester_id == user_id)) |
-                ((Message.recipient_owner_id == user_id) & (Message.sender_requester_id == current_user.id)))
+                ((Message.recipient_owner_id == current_user.id) & (Message.sender_requester_id == user_id)) |
+                ((Message.recipient_owner_id == user_id) & (Message.sender_requester_id == current_user.id))
             ).order_by(Message.timestamp.desc()).all()
     return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient )
 
@@ -364,17 +359,14 @@ def request_action(action, requester, puzzle_id):
         flash('Puzzle or user not found')
         return redirect(url_for('messages'))
     if action == 'approve':
-        # send pre-generated message to the requester of puzzle + personal note
-        personal_note = PersonalNote()
-        
-        message_to_requester = f'Your request for puzzle, {puzzle.title}, has been approved! /n ----- /n {personal_note.note} '
+        # send pre-generated message to the requester of puzzle
+        message_to_requester = f'Your request for puzzle, {puzzle.title}, has been approved!'
         puzzle.user_id = user.id
         puzzle.in_progress = True
         puzzle.is_available = False
         puzzle.is_requested = False
     elif action == 'decline':
-        personal_note = PersonalNote()
-        message_to_requester = f'Your request for puzzle, {puzzle.title}, has been declined. If needed, reach out to the owner for more information. /n ----- /n {personal_note.note}'
+        message_to_requester = f'Your request for puzzle, {puzzle.title}, has been declined. If needed, reach out to the owner for more information.'
         
         # puzzle user_id doesn't change
         # not in_progress
@@ -390,10 +382,9 @@ def request_action(action, requester, puzzle_id):
     msg = Message(
             author=current_user,
             recipient=user,
-            content=message_to_requester ,
+            content=message_to_requester,
             puzzle_id=puzzle_id,
-            timestamp=datetime.now(timezone.utc),
-            is_deleted = False
+            timestamp=datetime.now(timezone.utc)
         )
 
     db.session.add(msg)
