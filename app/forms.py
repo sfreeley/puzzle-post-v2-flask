@@ -72,4 +72,9 @@ class MessageForm(FlaskForm):
     message = TextAreaField('Message', validators=[DataRequired(), Length(min=0, max=140)])
     submit = SubmitField('Submit')
 
+# message peresonal note
+class PersonalNote(FlaskForm):
+    note = TextAreaField('Personal Note')
+    submit = SubmitField('Send Note')
+
 

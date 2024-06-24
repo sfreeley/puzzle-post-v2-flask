@@ -123,11 +123,13 @@ class Message(db.Model):
     puzzle_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Puzzle.id), index=True)
     sender_requester_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     recipient_owner_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+    is_deleted_by_sender: so.Mapped[bool]
+    is_deleted_by_recipient: so.Mapped[bool]
     content: so.Mapped[str] = so.mapped_column(sa.String(140))
     timestamp: so.Mapped[datetime] = so.mapped_column(
         index=True, default=lambda: datetime.now(timezone.utc))
-    is_deleted: so.Mapped[bool]
     
+
     # user relationships
     author: so.Mapped[User] = so.relationship(
         foreign_keys="Message.sender_requester_id",

@@ -271,21 +271,6 @@ def confirm_delete(delete_type, item_id):
         return redirect(url_for('user', username=current_user.username))
     return render_template('confirm_delete.html', delete_type=delete_type, item=item)
 
-# DELETE MESSAGE
-@app.route('/message/delete/<int:message_id>', methods=['GET', 'DELETE'])
-@login_required
-def delete_message(message_id):
-    try:
-        message = db.session.query(Message).filter_by(id=message_id).first()
-    except Exception as e:
-        flash("Something went wrong")
-        return redirect(url_for('user', username=current_user.username))
-    else:
-        if message and message.recipient.id == current_user.id:
-            message.is_deleted = True
-            db.session.commit()
-            return render_template('messages.html')
-
 # SEND MESSAGE
 @app.route('/send_message/<recipient>/<int:puzzle_id>', methods=['GET', 'POST'])
 @login_required
@@ -310,7 +295,8 @@ def send_message(recipient, puzzle_id):
             content=form.message.data, 
             puzzle_id=form.puzzle_id.data,
             timestamp=datetime.now(timezone.utc),
-            is_deleted=False
+            is_deleted_by_sender=False,
+            is_deleted_by_recipient=False
         )
         db.session.add(msg)
         db.session.commit()
@@ -343,10 +329,36 @@ def messages(user_id=None):
         if selected_user:
             # all messages by sender to recipient using user_id passed by url through clicking username
             messages_between_sender_recipient = db.session.query(Message).where(
-                ((Message.recipient_owner_id == current_user.id) & (Message.sender_requester_id == user_id)) |
-                ((Message.recipient_owner_id == user_id) & (Message.sender_requester_id == current_user.id))
+                (Message.is_deleted_by_recipient == False) and
+                (((Message.recipient_owner_id == current_user.id) & (Message.sender_requester_id == user_id)) |
+                ((Message.recipient_owner_id == user_id) & (Message.sender_requester_id == current_user.id)))
             ).order_by(Message.timestamp.desc()).all()
     return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient )
+
+# SOFT DELETE MESSAGE
+@app.route('/message/delete/<int:message_id>', methods=['GET', 'POST'])
+@login_required
+def delete_message(message_id):
+    if request.method == 'POST':
+        try:
+            message = db.session.query(Message).filter_by(id=message_id).first()
+        except Exception as e:
+            flash("Something went wrong")
+            return redirect(url_for('user', username=current_user.username))
+        else:
+            if message:
+                if message.sender_requester_id == current_user.id:
+                    message.is_deleted_by_sender = True
+                elif message.recipient_owner_id == current_user.id:
+                    message.is_deleted_by_recipient = True
+                    db.session.commit()
+                    flash("Your delete was successful")
+                else:
+                    flash("Something went wrong") 
+                    return redirect(url_for('user', username=current_user.username))
+                # ** not working?
+        return redirect(request.referrer or url_for('messages'))
+
 
 # ACCEPT/DECLINE Request
 @app.route('/request_action/<action>/<requester>/<int:puzzle_id>', methods=['GET', 'POST'])
@@ -384,7 +396,9 @@ def request_action(action, requester, puzzle_id):
             recipient=user,
             content=message_to_requester,
             puzzle_id=puzzle_id,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc),
+            is_deleted_by_sender = False,
+            is_deleted_by_recipient = False
         )
 
     db.session.add(msg)
