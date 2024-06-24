@@ -1,0 +1,9 @@
+{% extends 'base.html'%}
+
+{% block content %}
+
+<form action="{{ url_for('request_action', action=action, requester=requester, puzzle_id=puzzle_id)}}" method="POST">
+    {{form.note.label}}
+    <textarea name="personal_note" placeholder="Add a personal note"></textarea>
+    {{form.submit()}}
+</form>
