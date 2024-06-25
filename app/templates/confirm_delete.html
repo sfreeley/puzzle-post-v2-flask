@@ -7,18 +7,18 @@
 <body>
     <h1>Confirm Delete</h1>
     <p>Are you sure you want to delete?</p>
-    
-    {% if delete_type == 'puzzle'%}
-        <button type="submit"><a href="{{url_for('delete_puzzle', puzzle_id=item.id)}}">Confirm Delete</a></button>
-    {% elif delete_type == 'message'%}
-        <button type="submit"><a href="{{url_for('delete_message', message_id=item.id)}}">Confirm Delete</a></button>
-    {% endif %}    
-    
-    {% if delete_type == 'puzzle' %}
-        <button><a href="{{ url_for('user', username=current_user.username) }}">Cancel</a></button>
-    {% else %}
-        <button><a href="{{ url_for('messages') }}">Cancel</a></button>
-    {% endif %}   
-</body>
 
+    {% if delete_type == 'puzzle'%}
+    <form action="{{url_for('delete_puzzle', puzzle_id=item.id)}}" method="POST">
+        <button type="submit">Confirm Delete</button>
+        <button><a href="{{ url_for('user', username=current_user.username) }}">Cancel</a></button>
+    </form> 
+
+    {% elif delete_type == 'message'%}
+    <form action="{{url_for('delete_message', message_id=item.id)}}" method="POST">
+        <button type="submit">Confirm Delete</button>
+        <button><a href="{{ url_for('messages') }}">Cancel</a></button>
+    </form> 
+    {% endif %}  
+</body>
 {% endblock %}
