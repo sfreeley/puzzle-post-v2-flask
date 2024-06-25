@@ -1,6 +1,6 @@
 from app import app, db
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, MessageForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, MessageForm, PersonalNote
 from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
@@ -290,8 +290,10 @@ def send_message(recipient, puzzle_id):
     form = MessageForm(puzzle_id=puzzle_id, recipient=recipient)
     if form.validate_on_submit():
         msg = Message(
-            author=current_user, 
-            recipient=user, 
+            author=current_user,
+            recipient=user,
+            sender_requester_id=current_user.id, 
+            recipient_owner_id=user.id, 
             content=form.message.data, 
             puzzle_id=form.puzzle_id.data,
             timestamp=datetime.now(timezone.utc),
@@ -366,48 +368,56 @@ def delete_message(message_id):
 def request_action(action, requester, puzzle_id):
     user = db.first_or_404(sa.select(User).where(User.username == requester))
     puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
-    
+    form = PersonalNote()
     if not puzzle or not user:
         flash('Puzzle or user not found')
         return redirect(url_for('messages'))
-    if action == 'approve':
-        # send pre-generated message to the requester of puzzle
-        message_to_requester = f'Your request for puzzle, {puzzle.title}, has been approved!'
-        puzzle.user_id = user.id
-        puzzle.in_progress = True
-        puzzle.is_available = False
-        puzzle.is_requested = False
-    elif action == 'decline':
-        message_to_requester = f'Your request for puzzle, {puzzle.title}, has been declined. If needed, reach out to the owner for more information.'
+    if request.method == 'POST' and form.validate_on_submit():
+        personal_note = form.note.data
+        if action == 'approve':
+            
+            # send pre-generated message to the requester of puzzle
+            message_to_requester = f'Your request for puzzle, {puzzle.title}, has been approved! {personal_note}'
+            puzzle.user_id = user.id
+            puzzle.in_progress = True
+            puzzle.is_available = False
+            puzzle.is_requested = False
+        elif action == 'decline':
+            
+            message_to_requester = f'Your request for puzzle, {puzzle.title}, has been declined. {personal_note}If needed, reach out to the owner for more information.'
+            
+            # puzzle user_id doesn't change
+            # not in_progress
+            puzzle.in_progress = False
+            # goes back into circulation
+            puzzle.is_available = True
+            # not requested anymore
+            puzzle.is_requested = False
+        else:
+            flash('Invalid action')
+            return redirect(url_for('messages'))
         
-        # puzzle user_id doesn't change
-        # not in_progress
-        puzzle.in_progress = False
-        # goes back into circulation
-        puzzle.is_available = True
-        # not requested anymore
-        puzzle.is_requested = False
-    else:
-        flash('Invalid action')
-        return redirect(url_for('messages'))
-    
-    msg = Message(
-            author=current_user,
-            recipient=user,
-            content=message_to_requester,
-            puzzle_id=puzzle_id,
-            timestamp=datetime.now(timezone.utc),
-            is_deleted_by_sender = False,
-            is_deleted_by_recipient = False
-        )
+        msg = Message(
+                author=current_user,
+                recipient=user,
+                content=message_to_requester,
+                puzzle_id=puzzle_id,
+                timestamp=datetime.now(timezone.utc),
+                is_deleted_by_sender = False,
+                is_deleted_by_recipient = False
+            )
 
-    db.session.add(msg)
-    db.session.commit()
+        db.session.add(msg)
+        db.session.commit()
 
-    if action == 'approve':
-        flash(f'You approved the puzzle request for {puzzle.title}. It now belongs to {puzzle.author.username}')
-    else:
-        flash(f'You declined the puzzle request from {puzzle.author.username} for {puzzle.title}.')
-        
-    return redirect(url_for('messages'))
+        if action == 'approve':
+            flash(f'You approved the puzzle request for {puzzle.title}. It now belongs to {puzzle.author.username}')
+        else:
+            flash(f'You declined the puzzle request from {puzzle.author.username} for {puzzle.title}.')
+        redirect(url_for('user', username=current_user.username))
+    return render_template('personal_note.html', form=form)
+
+# @app.route('/personal_note')
+# @login_required
+#     return render_template('personal_note.html',  )
 
