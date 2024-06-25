@@ -124,7 +124,7 @@ class Message(db.Model):
     sender_requester_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     recipient_owner_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     is_deleted_by_sender: so.Mapped[bool]
-    is_deleted_by_recipient = so.Mapped[bool]
+    is_deleted_by_recipient: so.Mapped[bool]
     content: so.Mapped[str] = so.mapped_column(sa.String(140))
     timestamp: so.Mapped[datetime] = so.mapped_column(
         index=True, default=lambda: datetime.now(timezone.utc))

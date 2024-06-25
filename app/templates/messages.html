@@ -25,21 +25,18 @@
                     <p>Subject: {{message.puzzle.title}}</p>
                     {% if message.puzzle.is_requested %}
                     <p>Request Status: Pending</p>
-                    {% elif message.puzzle.in_progress%}
-                    <p>Request Status: Approved</p>
-                    {% else %}
-                    <p>Request Status: Declined</p>
                     {% endif %}
                     <p>{{message.timestamp}}</p>
                     <p>{{message.content}}</p>
                 </div>
                 {% if loop.index0 == 0  %}
-                {% if message and message.author and message.puzzle and message.puzzle.is_requested %}
+                {% if message.puzzle.is_requested %}
                 <button><a href="{{ url_for('send_message', recipient=message.author.username, puzzle_id=message.puzzle.id) }}">Reply</a></button>
-                {%if current_user.id == recipient.id and message.puzzle.is_requested and not message.puzzle.in_progress%}
+                {% endif %}
+                {%if current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
                 <button><a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a></button>
                 <button><a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a></button>
-                {% endif %}
+                
                 {% endif %}
                 {% endif %}
                 <button><a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a></button>    

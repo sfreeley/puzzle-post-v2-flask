@@ -2,8 +2,9 @@
 
 {% block content %}
 
-<form action="{{ url_for('request_action', action=action, requester=requester, puzzle_id=puzzle_id)}}" method="POST">
-    {{form.note.label}}
-    <textarea name="personal_note" placeholder="Add a personal note"></textarea>
-    {{form.submit()}}
-</form>
+  <form method="POST">
+    {{ form.hidden_tag() }}  {{ form.note.label }}<br>
+    {{ form.note(size=40) }}  <br>
+    <input type="submit">
+  </form>
+{% endblock %}
