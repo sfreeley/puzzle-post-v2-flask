@@ -303,7 +303,7 @@ def send_message(recipient, puzzle_id):
         db.session.add(msg)
         db.session.commit()
         flash('Your message has been sent!')
-        return redirect(url_for('user', username=current_user.username))
+        return redirect(url_for('messages'))
     
     return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
 
@@ -312,6 +312,7 @@ def send_message(recipient, puzzle_id):
 @app.route('/messages/from/<int:user_id>')
 @login_required
 def messages(user_id=None):
+
     # will update the last message read time to current time 
     # will mark everything as read 
     current_user.last_message_read_time = datetime.now(timezone.utc)
@@ -330,11 +331,15 @@ def messages(user_id=None):
         selected_user = db.session.query(User).get(user_id)
         if selected_user:
             # all messages by sender to recipient using user_id passed by url through clicking username
-            messages_between_sender_recipient = db.session.query(Message).where(
-                (Message.is_deleted_by_recipient == False) and
-                (((Message.recipient_owner_id == current_user.id) & (Message.sender_requester_id == user_id)) |
-                ((Message.recipient_owner_id == user_id) & (Message.sender_requester_id == current_user.id)))
+            messages_between_sender_recipient = db.session.query(Message).filter(
+                ((Message.is_deleted_by_sender == False) & (Message.sender_requester_id == current_user.id)) | 
+                ((Message.recipient_owner_id == current_user.id) & (Message.is_deleted_by_recipient == False)),
+
+                ((Message.recipient_owner_id == current_user.id)) & ((Message.sender_requester_id == selected_user.id)) |
+                ((Message.recipient_owner_id == selected_user.id)) & ((Message.sender_requester_id == current_user.id))
             ).order_by(Message.timestamp.desc()).all()
+
+    
     return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient )
 
 # SOFT DELETE MESSAGE
@@ -346,20 +351,22 @@ def delete_message(message_id):
             message = db.session.query(Message).filter_by(id=message_id).first()
         except Exception as e:
             flash("Something went wrong")
-            return redirect(url_for('user', username=current_user.username))
+            return redirect(url_for('messages'))
         else:
             if message:
+                # if the sender is the current_user...
                 if message.sender_requester_id == current_user.id:
+                    # change specific boolean to True so will only delete that current user's message, but not recipient
                     message.is_deleted_by_sender = True
+                    db.session.commit()
                 elif message.recipient_owner_id == current_user.id:
                     message.is_deleted_by_recipient = True
-                    db.session.commit()
-                    flash("Your delete was successful")
+                    db.session.commit()    
                 else:
                     flash("Something went wrong") 
-                    return redirect(url_for('user', username=current_user.username))
-                # ** not working?
-        return redirect(request.referrer or url_for('messages'))
+                    return redirect(url_for('messages')) 
+                flash("Your delete was successful")              
+    return redirect(url_for('messages'))
 
 
 # ACCEPT/DECLINE Request
@@ -413,11 +420,8 @@ def request_action(action, requester, puzzle_id):
         if action == 'approve':
             flash(f'You approved the puzzle request for {puzzle.title}. It now belongs to {puzzle.author.username}')
         else:
-            flash(f'You declined the puzzle request from {puzzle.author.username} for {puzzle.title}.')
-        redirect(url_for('user', username=current_user.username))
+            flash(f'You declined the puzzle request from {user.username} for {puzzle.title}.')
+        return redirect(url_for('messages'))
     return render_template('personal_note.html', form=form)
 
-# @app.route('/personal_note')
-# @login_required
-#     return render_template('personal_note.html',  )
 
