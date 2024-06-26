@@ -326,6 +326,7 @@ def messages(user_id=None):
     selected_user = None
     messages_between_sender_recipient = []
 
+    # if there is a user_id of user who sent message to current_user 
     if user_id:
         # get the user that sent the message
         selected_user = db.session.query(User).get(user_id)
@@ -338,6 +339,11 @@ def messages(user_id=None):
                 ((Message.recipient_owner_id == current_user.id)) & ((Message.sender_requester_id == selected_user.id)) |
                 ((Message.recipient_owner_id == selected_user.id)) & ((Message.sender_requester_id == current_user.id))
             ).order_by(Message.timestamp.desc()).all()
+
+            for message in messages_between_sender_recipient:
+                if message.recipient_owner_id == current_user.id:
+                    message.is_read = True
+            db.session.commit()
 
     
     return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient )

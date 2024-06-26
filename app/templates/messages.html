@@ -25,9 +25,14 @@
                     <p>Subject: {{message.puzzle.title}}</p>
                     {% if message.puzzle.is_requested %}
                     <p>Request Status: Pending</p>
+                    {% elif message.puzzle.in_progress%}
+                    <p>Request Status: Approved</p>
                     {% endif %}
                     <p>{{message.timestamp}}</p>
                     <p>{{message.content}}</p>
+                    {% if not message.is_read and message.recipient_owner_id == current_user.id%}
+                        <span class="unread-indicator">Unread</span>
+                    {% endif %}
                 </div>
                 {% if loop.index0 == 0  %}
                 {% if message.puzzle.is_requested %}
