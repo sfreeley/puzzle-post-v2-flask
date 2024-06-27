@@ -333,6 +333,7 @@ def messages(user_id=None):
         selected_user = db.session.query(User).get(user_id)
         if selected_user:
             # all messages by sender to recipient using user_id passed by url through clicking username
+
             messages_between_sender_recipient = db.session.query(Message).filter(
                 ((Message.is_deleted_by_sender == False) & (Message.sender_requester_id == current_user.id)) | 
                 ((Message.recipient_owner_id == current_user.id) & (Message.is_deleted_by_recipient == False)),
@@ -341,7 +342,6 @@ def messages(user_id=None):
                 ((Message.recipient_owner_id == selected_user.id)) & ((Message.sender_requester_id == current_user.id))
             ).order_by(Message.timestamp.desc()).all()
 
-             
     return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient )
 
 # mark individual messages as read
@@ -373,6 +373,7 @@ def delete_message(message_id):
             message = db.session.query(Message).filter_by(id=message_id).first()
         except Exception as e:
             flash("Something went wrong")
+
             return redirect(url_for('messages'))
         else:
             if message:
@@ -389,7 +390,6 @@ def delete_message(message_id):
                     return redirect(url_for('messages')) 
                 flash("Your delete was successful")              
     return redirect(url_for('messages'))
-
 
 # ACCEPT/DECLINE Request
 @app.route('/request_action/<action>/<requester>/<int:puzzle_id>', methods=['GET', 'POST'])
