@@ -1,5 +1,5 @@
 from app import app, db
-from flask import render_template, flash, redirect, url_for, request, send_from_directory
+from flask import render_template, flash, redirect, url_for, request, send_from_directory, jsonify
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, MessageForm, PersonalNote
 from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
@@ -293,7 +293,8 @@ def send_message(recipient, puzzle_id):
             author=current_user,
             recipient=user,
             sender_requester_id=current_user.id, 
-            recipient_owner_id=user.id, 
+            recipient_owner_id=user.id,
+            is_read = False,
             content=form.message.data, 
             puzzle_id=form.puzzle_id.data,
             timestamp=datetime.now(timezone.utc),
@@ -340,13 +341,23 @@ def messages(user_id=None):
                 ((Message.recipient_owner_id == selected_user.id)) & ((Message.sender_requester_id == current_user.id))
             ).order_by(Message.timestamp.desc()).all()
 
-            for message in messages_between_sender_recipient:
-                if message.recipient_owner_id == current_user.id:
-                    message.is_read = True
-            db.session.commit()
-
-    
+             
     return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient )
+
+# mark individual messages as read
+@app.route('/message/read/<int:message_id>', methods=['POST'])
+@login_required
+def mark_message_as_read(message_id):
+    # get individual message by message_id
+    message = db.session.query(Message).filter_by(id=message_id, recipient_owner_id=current_user.id).first()
+    if message and not message.is_read:
+        message.is_read = True
+        db.session.commit()
+        # will return JSON response (jsonify is function by Flask that converts Python dictionary to JSON response)
+        # then stored as the response body
+        # will be processed by the JS code in the messages.html page 
+        return jsonify({'status': 'success'})
+    return jsonify({'status': 'failure'})
 
 # SOFT DELETE MESSAGE
 @app.route('/message/delete/<int:message_id>', methods=['GET', 'POST'])

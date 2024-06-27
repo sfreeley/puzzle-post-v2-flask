@@ -1,56 +1,91 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>
-        Your Messages, {{recipient.username}}
-    </h1>
-    
+<h1>
+    Your Messages, {{recipient.username}}
+</h1>
+
+<div>
     <div>
-        <div>
-            <h2>Message Senders</h2>
-            <ul>
-                {% for sender in message_senders %}
-                <img src="{{ sender.create_avatar(128) }}" style="width: 50px;">
-                <li><a href="{{ url_for('messages', user_id=sender.id) }}">{{ sender.username }}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div>
-            {% if selected_user %}
-                <h2> Messages with {{selected_user.username}}</h2>
-                {% for message in messages%}
-                <div>
-                    <p>From: {{message.author.username}}</p>
-                    <p>To: {{message.recipient.username}}</p>
-                    <p>Subject: {{message.puzzle.title}}</p>
-                    {% if message.puzzle.is_requested %}
-                    <p>Request Status: Pending</p>
-                    {% elif message.puzzle.in_progress%}
-                    <p>Request Status: Approved</p>
-                    {% endif %}
-                    <p>{{message.timestamp}}</p>
-                    <p>{{message.content}}</p>
-                    {% if not message.is_read and message.recipient_owner_id == current_user.id%}
-                        <span class="unread-indicator">Unread</span>
-                    {% endif %}
-                </div>
-                {% if loop.index0 == 0  %}
+        <h2>Message Senders</h2>
+        <ul>
+            {% for sender in message_senders %}
+            <img src="{{ sender.create_avatar(128) }}" style="width: 50px;">
+            <li><a href="{{ url_for('messages', user_id=sender.id) }}">{{ sender.username }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div>
+        {% if selected_user %}
+            <h2> Messages with {{selected_user.username}}</h2>
+            {% for message in messages%}
+            <div  class="{% if not message.is_read and message.recipient_owner_id == current_user.id%}Unread{%endif%}" data-message-id="{{message.id}}">
+                <p>From: {{message.author.username}}</p>
+                <p>To: {{message.recipient.username}}</p>
+                <p>Subject: {{message.puzzle.title}}</p>
                 {% if message.puzzle.is_requested %}
-                <button><a href="{{ url_for('send_message', recipient=message.author.username, puzzle_id=message.puzzle.id) }}">Reply</a></button>
+                <p>Request Status: Pending</p>
+                {% elif message.puzzle.in_progress%}
+                <p>Request Status: Approved</p>
                 {% endif %}
-                {%if current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
-                <button><a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a></button>
-                <button><a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a></button>
-                
+                <p>{{message.timestamp}}</p>
+                <p >{{message.content}}</p>
+                <button class="{% if not message.is_read and message.recipient_owner_id == current_user.id%}Unread{%endif%}" data-message-id="{{message.id}}">
+                </button>
+                {% if not message.is_read and message.recipient_owner_id == current_user.id%}
+                    <span class="unread-indicator">Unread</span>
                 {% endif %}
-                {% endif %}
-                <button><a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a></button>    
-            {% else %}
-                <h2>Select a user to view Messages</h2>
-                {% endfor %}
+               
+            </div>
+            {% if loop.index0 == 0  %}
+            {% if message.puzzle.is_requested %}
+            <button><a href="{{ url_for('send_message', recipient=message.author.username, puzzle_id=message.puzzle.id) }}">Reply</a></button>
             {% endif %}
+            {%if current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
+            <button><a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a></button>
+            <button><a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a></button>
             
-        </div>
+            {% endif %}
+            {% endif %}
+            <button><a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a></button>    
+        {% else %}
+            <h2>Select a user to view Messages</h2>
+        {% endfor %}
+        {% endif %}
+</div>
+
+<script>
+    // wait for page to load, get all the elements that have 'data-message-id' attribute
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('div[data-message-id]').forEach(function(messageElement) {
+            messageElement.addEventListener('click', function() {
+                var messageId = this.getAttribute('data-message-id');
+                console.log('Event Listener:', messageId)
+                fetch('/message/read/' + messageId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                }).then(function(response) {
+                    return response.json();
+                }).then(function(data){
+                    if (data.status === 'success') {
+                        messageElement.classList.remove('unread');
+                        var unreadIndicator = messageElement.querySelector('.unread-indicator');
+                        // need to check if unread indicator element is present otherwise will cause runtime error (cannot read property 'style' of null)
+                        if (unreadIndicator) {
+                            unreadIndicator.style.display = 'none'
+                        }
+                    }
+                }).catch(function(error) {
+                    console.error('Error:', error);
+                })
+            });
+        });
+    });
+</script>
+    
            
             
 {% endblock %}
