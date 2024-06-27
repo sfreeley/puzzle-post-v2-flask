@@ -46,12 +46,15 @@ class User(UserMixin, db.Model):
     def unread_message_count(self):
         # last_message_read_time will have last time user visited messages page
         # if it's none, then it will assign last_read_time to it, otherwise if None then assign 1990-01-01 (handles missing or undefined values) 
-        last_read_time = self.last_message_read_time or datetime(1990, 1, 1)
+        # last_read_time = self.last_message_read_time or datetime(1990, 1, 1)
 
-        # count the number of rows (ie messages)
-        count_query = sa.select(sa.func.count()).where(Message.recipient == self, Message.timestamp > last_read_time)
+        # query all the messages received and filter by unread messages and count rows 
+        count_query = sa.select(sa.func.count()).where(Message.recipient == self, Message.is_read == False)
         # execute and return the count query and get one result with scalar()
         return db.session.scalar(count_query)
+
+        
+        
     # this built in function of objects returns printable representation of the object
     # generally used to make debugging easier
     def __repr__(self):
@@ -125,9 +128,12 @@ class Message(db.Model):
     recipient_owner_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     is_deleted_by_sender: so.Mapped[bool]
     is_deleted_by_recipient: so.Mapped[bool]
+    # will allow tracking of each message's read status instead of clicking messages tab and marking everything read
+    is_read: so.Mapped[bool]
     content: so.Mapped[str] = so.mapped_column(sa.String(140))
     timestamp: so.Mapped[datetime] = so.mapped_column(
         index=True, default=lambda: datetime.now(timezone.utc))
+    
     
 
     # user relationships
