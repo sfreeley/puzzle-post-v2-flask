@@ -60,61 +60,64 @@
         const messageElements = document.querySelectorAll('div[data-message-id]');
         messageElements.forEach(function(messageElement) {
        // how to prevent user from sending fetch request every time they click the the message issue
-            // if the message already contains the class 'unread' from the boolean logic in the messages.html
-            // const messageElement = indicator.closest('div[data-message-id]')
+       // if the message already contains the class 'unread' from the boolean logic in the messages.html
+       //    add event listener to each message that has 'unread' class
+            
         if (messageElement.classList.contains('unread')) {
             messageElement.addEventListener('click', handleRead);
         }
     });
         
-       
-             function handleRead(event) {
-                const messageElement = event.currentTarget;
-                const messageId = this.getAttribute('data-message-id');
-                fetch('/message/read/' + messageId, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    // empty body for POST request
-                    body: JSON.stringify({})
-             
-            }).then(function(response) {
-                    // returns promise that will be result of response as JSON
-                    // response is built-in object that represents HTTP response from server as JS object
-                    // allows you to access the response data, headers, status...
-                    return response.json();
-            }).then(function(data){
-                // this function will use the JSON object from the response...
-                // from the view function in routes file, if the server has marked the message as read if will be status success
-                // otherwise, status will be failure 
-                if (data.status === 'success') {
-                    console.log('data status come back success')
-                    // remove unread from the div class
-                    messageElement.classList.remove('unread');
-                    var unreadIndicator = messageElement.querySelector('.unread-indicator');
-                    // need to check if unread indicator element is present first
-                    // otherwise if it's already been read will cause runtime error (cannot read property 'style' of null because there will be no unread indicator)
-                    if (unreadIndicator) {
-                        unreadIndicator.style.display = 'none'
-                    }
-                    // from base.html JS that handles the visibility of the unread count next to messages in nav bar
-                    // will handle the unread message count - pass in the updated count from the data in the response
-                    set_message_count(data.unread_count);
-                    messageElement.removeEventListener('click', handleRead);
-                
-                    } 
-
-                }).catch(function(error) {
-                    console.error('Error:', error);
-                })
-          
-            }     
+        // function to hide unread indicator upon user clicking message 
+        function handleRead(event) {
+            // target is the messageElement
+        const messageElement = event.currentTarget;
+        const messageId = this.getAttribute('data-message-id');
+        fetch('/message/read/' + messageId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            // empty body for POST request
+            body: JSON.stringify({})
+        
+    }).then(function(response) {
+            // returns promise that will be result of response as JSON
+            // response is built-in object that represents HTTP response from server as JS object
+            // allows you to access the response data, headers, status...
+            return response.json();
+    }).then(function(data){
+        // this function will use the JSON object from the response...
+        // from the view function in routes file, if the server has marked the message as read if will be status success
+        // otherwise, status will be failure 
+        if (data.status === 'success') {
+            console.log('data status come back success')
+            // remove unread from the div class
+            messageElement.classList.remove('unread');
+            var unreadIndicator = messageElement.querySelector('.unread-indicator');
+            // need to check if unread indicator element is present first
+            // otherwise if it's already been read will cause runtime error (cannot read property 'style' of null because there will be no unread indicator)
+            if (unreadIndicator) {
+                unreadIndicator.style.display = 'none'
+            }
+            // from base.html JS that handles the visibility of the unread count next to messages in nav bar
+            // will handle the unread message count - pass in the updated count from the data in the response
+            set_message_count(data.unread_count);
             
-        
-        
-    });
+            } 
+            // prevent user from clicking message again and sending fetch requests each time
+            messageElement.removeEventListener('click', handleRead);
+
+        }).catch(function(error) {
+            console.error('Error:', error);
+        })
+    
+    }     
+    
+
+
+});
 </script>
     
            
