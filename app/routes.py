@@ -356,8 +356,13 @@ def mark_message_as_read(message_id):
         # will return JSON response (jsonify is function by Flask that converts Python dictionary to JSON response)
         # then stored as the response body
         # will be processed by the JS code in the messages.html page 
-        return jsonify({'status': 'success'})
+    # also need to somehow update user's unread message count...
+    # use function from models? 
+        unread_count = current_user.unread_message_count()
+        return jsonify({'status': 'success', 'unread_count':unread_count})
     return jsonify({'status': 'failure'})
+
+
 
 # SOFT DELETE MESSAGE
 @app.route('/message/delete/<int:message_id>', methods=['GET', 'POST'])
