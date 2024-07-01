@@ -91,6 +91,12 @@ class Category(db.Model):
     
     def __repr__(self):
         return '<Category {}>'.format(self.name)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
 
 
 class Puzzle(db.Model):
@@ -116,9 +122,27 @@ class Puzzle(db.Model):
     # back_populates-links puzzles in Category with categories relationship in Puzzle (bidirectional)
     categories = so.relationship(Category, secondary=puzzle_category, back_populates='puzzles')
 
-    # messages = so.Mapped['Message'] = so.relationship(back_populates='puzzle') 
     def __repr__(self):
         return '<Puzzle {}>'.format(self.description)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'image_url': self.image_url,
+            'pieces': self.pieces,
+            'condition': self.condition,
+            'title': self.title,
+            'manufacturer': self.manufacturer,
+            'description': self.description,
+            'timestamp': self.timestamp.isoformat(),
+            'is_available': self.is_available,
+            'is_requested': self.is_requested,
+            'in_progress': self.in_progress,
+            'is_deleted': self.is_deleted,
+            'user_id': self.user_id,
+            'categories': [category.to_dict() for category in self.categories]
+        }
+    
 
 # Message
 class Message(db.Model):

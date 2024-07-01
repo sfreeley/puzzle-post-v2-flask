@@ -58,7 +58,14 @@
                 let query = document.getElementById('searchInput').value
                 
                 console.log(`Query: ${query}`)
-                const response = await fetch(`/search?q=${query}`)
+                const response = await fetch(`/search?query=${query}`)
+                if (!response.ok) {
+                    // Handle HTTP errors
+                    console.error(`HTTP error: ${response.status}`);
+                    const text = await response.text();
+                    console.error(`Response text: ${text}`);
+                    return;
+                }
                 const data = await response.json()
                 console.log(`Data received: `, data)
                 // const url = window.location.pathname.includes('messages') ? '/search' : '/search_puzzles';
