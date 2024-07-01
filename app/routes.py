@@ -5,6 +5,7 @@ from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
+from sqlalchemy import or_
 from datetime import datetime, timezone
 from flask_wtf.file import FileRequired
 from werkzeug.utils import secure_filename
@@ -445,5 +446,39 @@ def request_action(action, requester, puzzle_id):
             flash(f'You declined the puzzle request from {user.username} for {puzzle.title}.')
         return redirect(url_for('messages'))
     return render_template('personal_note.html', form=form)
+
+# SEARCH
+@app.route('/search', methods=['GET'])
+def search():
+    try:
+    # retrieve query parameter
+    # request.args object that contains all query parameters sent with request
+    # get('query', '') gets the value associated with the key named 'query'
+    # if the value of query is not there, default to empty string
+        query = request.args.get('query', '')
+        if query:
+            results = Puzzle.query.join(Puzzle.categories).filter( 
+                or_(
+                Puzzle.title.ilike(f'%{query}%'),
+                Puzzle.pieces.ilike(f'%{query}%'),
+                Puzzle.manufacturer.ilike(f'%{query}%'),
+                Puzzle.condition.ilike(f'%{query}%'),
+                Category.name.ilike(f'%{query}%')
+            )
+            ).all()
+        else:
+            results = Puzzle.query.all()
+        
+        results_data = [puzzle.to_dict() for puzzle in results]
+        # results_data = [{'title': puzzle.title, 'pieces': puzzle.pieces, 'manufacturer': puzzle.manufacturer, 'condition': puzzle.condition, 'categories': puzzle.categories} for puzzle in results]
+        return jsonify(results_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    # iterate through results list and creates dictionary 
+    
+    # converts list of dictionaries, results_data, into JSON format for sending back as response to client
+    # return jsonify(results_data)
+
+
 
 

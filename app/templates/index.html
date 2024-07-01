@@ -15,8 +15,11 @@
         
         <div>
             {% for puzzle in puzzles %}
+            <div class="puzzle-item" id="puzzle-{{puzzle.id}}">
             {% include '_puzzle.html' %}
+            </div>
         {% endfor %}
+        </div>
         
         {% endblock %}
     </body>

@@ -46,10 +46,60 @@
         }
         </style>
         <script>
+            // show number of unread messages/requests
             function set_message_count(n) {
                 const count = document.getElementById('message_count');
                 count.innerText = n;
                 count.style.visibility = n ? 'visible' : 'hidden';
+            }
+            // search functionality 
+            async function search_a() {
+                // get the value of whatever user is typing into search bar
+                const query = document.getElementById('searchInput').value
+                
+                console.log(`Query: ${query}`)
+                const response = await fetch(`/search?query=${query}`)
+                if (!response.ok) {
+                    // Handle HTTP errors
+                    console.error(`HTTP error: ${response.status}`);
+                    const text = await response.text();
+                    console.error(`Response: ${text}`);
+                    return;
+                }
+                const data = await response.json()
+                console.log(`Data received: `, data)
+                // const url = window.location.pathname.includes('messages') ? '/search' : '/search_puzzles';
+
+                // fetch(`/search?q=${query}`)
+                //     .then(function(response) {
+                //         return response.json()
+                //     } )
+                //     .then(function(data) {
+                // const resultsDiv = document.getElementById('results')
+                // resultsDiv.textContent = ''
+                
+                // select div with class="puzzle-item"
+                const puzzles = document.querySelectorAll('.puzzle-item')
+                // hide all the current puzzles showing on page
+                puzzles.forEach(function(puzzle){
+                    puzzle.style.display = 'none'
+                })
+                // if whatever backend response that's sent to frontend has results...
+                if (data.length > 0) {
+                    data.forEach(function(puzzle_searched) {
+                        // get same div as above that has id=puzzle-item.id(this will be updated view of results of user's search)
+                        const puzzle = document.querySelector(`#puzzle-${puzzle_searched.id}`)
+                        if (puzzle) {
+                            puzzle.style.display = 'block';
+                        }
+                    })
+                }
+                else {
+                    alert('No results found')
+                }
+                        
+                        
+            // })
             }
         </script>
     </head>
@@ -68,6 +118,8 @@
                 {{unread_message_count}}
             </span>
             <a href="{{ url_for('logout') }}">Logout</a>
+            <!-- search bar -->
+            <input type="text" id="searchInput" placeholder="Search" oninput="search_a()">
             {% endif %}
 
         </nav>
@@ -84,7 +136,7 @@
         {% endif %}
         
         {% endwith %}
-        <div class="content"></div>
+        <div class="content" id="results"></div>
         {% block content %}{% endblock %}
         </div>
     </body>
