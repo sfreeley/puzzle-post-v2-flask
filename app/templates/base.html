@@ -86,9 +86,9 @@
                 })
                 // if whatever backend response that's sent to frontend has results...
                 if (data.length > 0) {
-                    data.forEach(function(puzzle_searched) {
+                    data.forEach(function(puzzle_result) {
                         // get same div as above that has id=puzzle-item.id(this will be updated view of results of user's search)
-                        const puzzle = document.querySelector(`#puzzle-${puzzle_searched.id}`)
+                        const puzzle = document.querySelector(`#puzzle-${puzzle_result.id}`)
                         if (puzzle) {
                             puzzle.style.display = 'block';
                         }

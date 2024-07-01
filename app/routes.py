@@ -463,6 +463,7 @@ def search():
                 Puzzle.pieces.ilike(f'%{query}%'),
                 Puzzle.manufacturer.ilike(f'%{query}%'),
                 Puzzle.condition.ilike(f'%{query}%'),
+                Puzzle.description.ilike(f'%{query}%'),
                 Category.name.ilike(f'%{query}%')
             )
             ).all()
