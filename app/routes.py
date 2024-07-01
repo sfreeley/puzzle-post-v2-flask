@@ -446,4 +446,32 @@ def request_action(action, requester, puzzle_id):
         return redirect(url_for('messages'))
     return render_template('personal_note.html', form=form)
 
+# SEARCH
+@app.route('/search', methods=['GET'])
+def search():
+    # retrieve query parameter
+    # request.args object that contains all query parameters sent with request
+    # get('query', '') gets the value associated with the key named 'query'
+    # if the value of query is not there, default to empty string
+    query = request.args.get('query', '')
+    if query:
+        results = Puzzle.query.filter( 
+            
+            Puzzle.title.ilike(f'%{query}%') |
+            Puzzle.pieces.ilike(f"%{query}%") |
+            Puzzle.manufacturer.ilike(f"%{query}%") |
+            Puzzle.condition.ilike(f"%{query}%") |
+            Puzzle.categories.ilike(f"%{query}%")
+        ).all()
+        print(results)
+    else:
+        results = []
+    
+    # iterate through results list and creates dictionary 
+    results_data = [{'title': puzzle.title, 'pieces': puzzle.pieces, 'manufacturer': puzzle.manufacturer, 'condition': puzzle.condition, 'categories': puzzle.categories} for puzzle in results]
+    # converts list of dictionaries, results_data, into JSON format for sending back as response to client
+    return jsonify(results_data)
+
+
+
 

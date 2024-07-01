@@ -46,10 +46,49 @@
         }
         </style>
         <script>
+            // show number of unread messages/requests
             function set_message_count(n) {
                 const count = document.getElementById('message_count');
                 count.innerText = n;
                 count.style.visibility = n ? 'visible' : 'hidden';
+            }
+
+            async function search_a() {
+                // get the value of whatever user is typing into search bar
+                let query = document.getElementById('searchInput').value
+                
+                console.log(`Query: ${query}`)
+                const response = await fetch(`/search?q=${query}`)
+                const data = await response.json()
+                console.log(`Data received: `, data)
+                // const url = window.location.pathname.includes('messages') ? '/search' : '/search_puzzles';
+
+                // fetch(`/search?q=${query}`)
+                //     .then(function(response) {
+                //         return response.json()
+                //     } )
+                //     .then(function(data) {
+                        const resultsDiv = document.getElementById('results')
+                        // resultsDiv.textContent = ''
+                       
+
+                        if (data.length > 0) {
+                            
+                            data.forEach(function(item) {
+                                const itemDiv = document.createElement('div')
+                                itemDiv.innerHTML = ` 
+                                <p> ${item.title} </p>`
+                                resultsDiv.appendChild(itemDiv)
+                            })
+                            
+                        }
+                        else{
+                            resultsDiv.innerHTML = '<p>No results found</p>'; 
+                            console.log('help!')
+                        }
+                        
+                        
+            // })
             }
         </script>
     </head>
@@ -68,6 +107,8 @@
                 {{unread_message_count}}
             </span>
             <a href="{{ url_for('logout') }}">Logout</a>
+            <!-- search bar -->
+            <input type="text" id="searchInput" placeholder="Search" onchange="search_a()">
             {% endif %}
 
         </nav>
@@ -84,7 +125,7 @@
         {% endif %}
         
         {% endwith %}
-        <div class="content"></div>
+        <div class="content" id="results"></div>
         {% block content %}{% endblock %}
         </div>
     </body>
