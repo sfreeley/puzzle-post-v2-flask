@@ -52,10 +52,10 @@
                 count.innerText = n;
                 count.style.visibility = n ? 'visible' : 'hidden';
             }
-
+            // search functionality 
             async function search_a() {
                 // get the value of whatever user is typing into search bar
-                let query = document.getElementById('searchInput').value
+                const query = document.getElementById('searchInput').value
                 
                 console.log(`Query: ${query}`)
                 const response = await fetch(`/search?query=${query}`)
@@ -63,7 +63,7 @@
                     // Handle HTTP errors
                     console.error(`HTTP error: ${response.status}`);
                     const text = await response.text();
-                    console.error(`Response text: ${text}`);
+                    console.error(`Response: ${text}`);
                     return;
                 }
                 const data = await response.json()
@@ -75,24 +75,28 @@
                 //         return response.json()
                 //     } )
                 //     .then(function(data) {
-                        const resultsDiv = document.getElementById('results')
-                        // resultsDiv.textContent = ''
-                       
-
-                        if (data.length > 0) {
-                            
-                            data.forEach(function(item) {
-                                const itemDiv = document.createElement('div')
-                                itemDiv.innerHTML = ` 
-                                <p> ${item.title} </p>`
-                                resultsDiv.appendChild(itemDiv)
-                            })
-                            
+                // const resultsDiv = document.getElementById('results')
+                // resultsDiv.textContent = ''
+                
+                // select div with class="puzzle-item"
+                const puzzles = document.querySelectorAll('.puzzle-item')
+                // hide all the current puzzles showing on page
+                puzzles.forEach(function(puzzle){
+                    puzzle.style.display = 'none'
+                })
+                // if whatever backend response that's sent to frontend has results...
+                if (data.length > 0) {
+                    data.forEach(function(puzzle_searched) {
+                        // get same div as above that has id=puzzle-item.id(this will be updated view of results of user's search)
+                        const puzzle = document.querySelector(`#puzzle-${puzzle_searched.id}`)
+                        if (puzzle) {
+                            puzzle.style.display = 'block';
                         }
-                        else{
-                            resultsDiv.innerHTML = '<p>No results found</p>'; 
-                            console.log('help!')
-                        }
+                    })
+                }
+                else {
+                    alert('No results found')
+                }
                         
                         
             // })
@@ -115,7 +119,7 @@
             </span>
             <a href="{{ url_for('logout') }}">Logout</a>
             <!-- search bar -->
-            <input type="text" id="searchInput" placeholder="Search" onchange="search_a()">
+            <input type="text" id="searchInput" placeholder="Search" oninput="search_a()">
             {% endif %}
 
         </nav>
