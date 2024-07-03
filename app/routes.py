@@ -1,6 +1,6 @@
 from app import app, db
 from flask import render_template, flash, redirect, url_for, request, send_from_directory, jsonify
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, MessageForm, PersonalNote
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, PersonalNote
 from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
@@ -283,21 +283,26 @@ def send_message(recipient, puzzle_id):
         flash('Puzzle not found.')
         return redirect(url_for('user', username=current_user.username))
     
-    # edit these fields to signify puzzle is being requested- should no longer show up on homepage
-    puzzle.is_available = False
-    puzzle.is_requested = True
-    db.session.commit()
+    if request.method == 'POST':
+        content = request.form.get('content')
+        if not content:
+            flash('Message content cannot be empty.')
+            return redirect(url_for('messages', user_id=user.id))
+        # edit these fields to signify puzzle is being requested- should no longer show up on homepage
+        puzzle.is_available = False
+        puzzle.is_requested = True
+        db.session.commit()
 
-    form = MessageForm(puzzle_id=puzzle_id, recipient=recipient)
-    if form.validate_on_submit():
+    # form = MessageForm(puzzle_id=puzzle_id, recipient=recipient)
+    # if form.validate_on_submit():
         msg = Message(
             author=current_user,
             recipient=user,
             sender_requester_id=current_user.id, 
             recipient_owner_id=user.id,
             is_read = False,
-            content=form.message.data, 
-            puzzle_id=form.puzzle_id.data,
+            content=content, 
+            puzzle_id=puzzle_id,
             timestamp=datetime.now(timezone.utc),
             is_deleted_by_sender=False,
             is_deleted_by_recipient=False
@@ -306,8 +311,9 @@ def send_message(recipient, puzzle_id):
         db.session.commit()
         flash('Your message has been sent!')
         return redirect(url_for('messages'))
+    return redirect(url_for('messages'))
     
-    return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
+    # return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
 
 # SHOW LIST OF MESSAGES/LIST OF USERS who have sent current user messages
 @app.route('/messages')
@@ -325,6 +331,8 @@ def messages(user_id=None):
     # user table join messages on message.author.id=user.id and find the messages where the recipient is the current_user (get distinct because don't want repeat of users)
     message_senders = db.session.query(User).join(Message, Message.sender_requester_id == User.id).where(Message.recipient_owner_id == current_user.id).distinct().all()
 
+    puzzle = db.session.query(Puzzle).join(User, Puzzle.user_id == User.id).where(Puzzle.user_id == current_user.id).first()
+
     selected_user = None
     messages_between_sender_recipient = []
 
@@ -340,10 +348,10 @@ def messages(user_id=None):
 
                 ((Message.recipient_owner_id == current_user.id)) & ((Message.sender_requester_id == selected_user.id)) |
                 ((Message.recipient_owner_id == selected_user.id)) & ((Message.sender_requester_id == current_user.id))
-            ).order_by(Message.timestamp.desc()).all()
+            ).order_by(Message.timestamp.asc()).all()
 
              
-    return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient )
+    return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient, puzzle=puzzle )
 
 # mark individual messages as read
 @app.route('/message/read/<int:message_id>', methods=['POST'])

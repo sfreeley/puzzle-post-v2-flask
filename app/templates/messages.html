@@ -152,8 +152,6 @@
                     <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
                     {% endif %}
                     {% endif %}
-                   
-                    
                     <a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a>
                   </div>
                 </div>
@@ -161,13 +159,20 @@
               
               {% endif %}
               {% endfor %} 
+
+              
               <li class="bg-white mb-3">
                 <div data-mdb-input-init class="form-outline">
-                  <textarea class="form-control bg-body-tertiary" id="textAreaExample2" rows="4"></textarea>
-                  <label class="form-label" for="textAreaExample2">Message</label>
+                    <form action="{{ url_for('send_message', recipient=selected_user.username, puzzle_id=puzzle.id ) }}" enctype="multipart/form-data" method="POST">
+                        <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{selected_user.username}}"></textarea>
+                        <input type="hidden" name="puzzle_id" value="{{ puzzle.id }}">
+                        <label class="form-label" for="content">Message</label>
+                        <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end">Send</button>
+                    </form>
+                        
                 </div>
-              </li>
-              <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end">Send</button>
+             </li>
+                    
             </ul>
             {% endif %}
     
