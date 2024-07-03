@@ -310,8 +310,8 @@ def send_message(recipient, puzzle_id):
         db.session.add(msg)
         db.session.commit()
         flash('Your message has been sent!')
-        return redirect(url_for('messages'))
-    return redirect(url_for('messages'))
+        return redirect(url_for('messages', user_id=user.id ))
+    return redirect(url_for('messages', user_id=user.id))
     
     # return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
 
