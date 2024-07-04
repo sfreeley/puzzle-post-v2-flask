@@ -1,3 +1,10 @@
+<script>
+    function requestPuzzle(userId, puzzleId) {
+        console.log(userId, puzzleId)
+        window.location.href= `/messages?recipient_id=${userId}&puzzle_id=${puzzleId}`
+    }
+</script>
+
 <div class="col">
     <div class="card h-100 {% if puzzle.author.username == current_user.username %} border-warning mb-3 {% else %} border-info mb-3 {% endif %}" style="max-width: 35rem;">
         <img src="{{puzzle.image_url}}" class="card-img-top" style="width: 200px" alt="puzzle-picture">
@@ -24,10 +31,12 @@
         {% if puzzle.user_id != current_user.id %}
         <div class="card-footer">
             
-            <a href="{{ url_for('messages', user_id=puzzle.author.id, puzzle_id=puzzle.id) }}" class="card-link">Request</a>
+            <a class="btn btn-info" href="/messages?recipient_id={{puzzle.author.id}}&puzzle_id={{puzzle.id}}">Request</a>
             
         </div>
         {% endif %}
         
     </div>
 </div>
+
+

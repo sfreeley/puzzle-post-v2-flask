@@ -2,9 +2,9 @@
 
  {% block content %}
 <h1>
-    Your Messages, {{recipient.username}}
+    Your Messages, {{current_user.username}}
 </h1>
-{% if message_senders %}
+
 <section >
    
     
@@ -21,10 +21,11 @@
             <div class="card-body">
                 
               <ul class="list-unstyled mb-0">
+                {% if message_senders %}
                 {% for sender in message_senders %}
                 <li class="p-2 border-bottom bg-body-tertiary">
                 
-                  <a href="{{ url_for('messages', user_id=sender.id) }}" class="d-flex justify-content-between">
+                  <a href="/messages?recipient_id={{sender.id}}&puzzle_id={{puzzle.id}}" class="d-flex justify-content-between">
                     
                     <div class="d-flex flex-row">
                        
@@ -34,7 +35,7 @@
                         <p class="fw-bold mb-0">{{ sender.username }}</p>
                         
                       </div>
-                      {% endfor %}
+                     
                     </div>
                     
                     
@@ -42,7 +43,10 @@
                   </a>
                   
                 </li>
-                
+                {% endfor %}
+            {% else %}
+                <p>You have no messages yet.</p>
+            {% endif %}
                 
 
               </ul>
@@ -51,14 +55,15 @@
           </div>
   
         </div>
+    
        
         <div class="col-md-6 col-lg-7 col-xl-8">
 
             <ul class="list-unstyled">
               
-              {% if selected_user%}
-              {% for message in messages%}
-              {% if message.author.username != current_user.username%}
+              {% if recipient and conversation %}
+                    {% for message in conversation%}
+                        {% if message.author.username != current_user.username%}
               <li class="d-flex justify-content-between mb-4">
                 <div class="card w-100 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
                   <div class="card-header d-flex justify-content-between p-3">
@@ -85,9 +90,7 @@
                     <a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a>
                     <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
                     {% endif %}
-                    
-                   
-                    
+    
                     <a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a>
                     
                   </div>
@@ -126,28 +129,46 @@
                   </div>
                 </div>
               </li>
-              
               {% endif %}
-            {% endfor %} 
-        {% endif %}  
-        
-        
-              <!-- show form regardless of if there is a sender and conversation between current user and other user -->
-              <li class="bg-white mb-3">
+            {% endfor %}
+            <li class="bg-white mb-3">
+                
                 <div data-mdb-input-init class="form-outline">
-                    <form action="{{ url_for('send_message', recipient=recipient.username, puzzle_id=puzzle.id ) }}" enctype="multipart/form-data" method="POST">
-                        <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{puzzle.author.username}}"></textarea>
-                        <input type="hidden" name="puzzle_id" value="{{ puzzle.id }}">
-                        <!-- <input type="hidden" name="recipient" value="{{ recipient.username }}"> -->
+                    <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
+                        <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
+                        <input type="hidden" name="puzzle_id" value="{{ puzzle_id }}">
+                        <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
                         <label class="form-label" for="content">Message</label>
                         <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end">Send</button>
                     </form>
                         
                 </div>
-             </li>
+             </li>    
+        {%else%}
+              {% if recipient %}
+            <p>No conversations between you and {{recipient.username}}. Let's start one.</p> 
+            <div data-mdb-input-init class="form-outline">
+                <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
+                    <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
+                    <input type="hidden" name="puzzle_id" value="{{ puzzle_id }}">
+                    <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
+                    <label class="form-label" for="content">Message</label>
+                    <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end">Send</button>
+                </form>
+                    
+            </div>
+              
+            {% endif %}
+    {%endif%}
+         
+         
+        
+              
+              
              
-                
+              
             </ul>
+         
             
            
           </div>
@@ -156,13 +177,11 @@
         </div>
     
       </div>
-      {% else %}
-      <p> You have no messages yet.</p>
-      {% endif %}
-        
     
+        
+     
   </section>
- 
+
   
   
 
