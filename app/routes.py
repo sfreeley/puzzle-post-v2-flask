@@ -287,14 +287,12 @@ def send_message(recipient, puzzle_id):
         content = request.form.get('content')
         if not content:
             flash('Message content cannot be empty.')
-            return redirect(url_for('messages', user_id=user.id))
+            return redirect(url_for('messages', user_id=user.id, puzzle_id=puzzle.id))
         # edit these fields to signify puzzle is being requested- should no longer show up on homepage
         puzzle.is_available = False
         puzzle.is_requested = True
         db.session.commit()
 
-    # form = MessageForm(puzzle_id=puzzle_id, recipient=recipient)
-    # if form.validate_on_submit():
         msg = Message(
             author=current_user,
             recipient=user,
@@ -312,29 +310,30 @@ def send_message(recipient, puzzle_id):
         flash('Your message has been sent!')
         return redirect(url_for('messages', user_id=user.id ))
     return redirect(url_for('messages', user_id=user.id))
-    
-    # return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
 
 # SHOW LIST OF MESSAGES/LIST OF USERS who have sent current user messages
 @app.route('/messages')
-@app.route('/messages/from/<int:user_id>')
+@app.route('/messages/from/<int:user_id>/<int:puzzle_id>')
 @login_required
-def messages(user_id=None):
+def messages(user_id=None, puzzle_id=None):
 
     # will update the last message read time to current time 
     # will mark everything as read 
-    current_user.last_message_read_time = datetime.now(timezone.utc)
-    db.session.commit()
+    # current_user.last_message_read_time = datetime.now(timezone.utc)
+    # db.session.commit()
     # get the current_user
     recipient = db.session.query(User).filter_by(username=current_user.username).first()
     # get all the users that have sent current_user messages (populate the list of users on page)
-    # user table join messages on message.author.id=user.id and find the messages where the recipient is the current_user (get distinct because don't want repeat of users)
+    # user table join messages on message.author.id=user.id and find the messages where the recipient is the current_user 
+    # (get distinct because don't want repeat of users by how many messages they sent)
     message_senders = db.session.query(User).join(Message, Message.sender_requester_id == User.id).where(Message.recipient_owner_id == current_user.id).distinct().all()
 
-    puzzle = db.session.query(Puzzle).join(User, Puzzle.user_id == User.id).where(Puzzle.user_id == current_user.id).first()
+    
 
     selected_user = None
     messages_between_sender_recipient = []
+    puzzle = None
+    
 
     # if there is a user_id of user who sent message to current_user 
     if user_id:
@@ -349,7 +348,8 @@ def messages(user_id=None):
                 ((Message.recipient_owner_id == current_user.id)) & ((Message.sender_requester_id == selected_user.id)) |
                 ((Message.recipient_owner_id == selected_user.id)) & ((Message.sender_requester_id == current_user.id))
             ).order_by(Message.timestamp.asc()).all()
-
+    if puzzle_id:   
+        puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
              
     return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient, puzzle=puzzle )
 

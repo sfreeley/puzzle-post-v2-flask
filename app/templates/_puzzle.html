@@ -24,7 +24,7 @@
         {% if puzzle.user_id != current_user.id %}
         <div class="card-footer">
             
-            <a href="{{ url_for('send_message', recipient=puzzle.author.username, puzzle_id=puzzle.id) }}" class="card-link">Request</a>
+            <a href="{{ url_for('messages', user_id=puzzle.author.id, puzzle_id=puzzle.id) }}" class="card-link">Request</a>
             
         </div>
         {% endif %}

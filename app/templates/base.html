@@ -32,7 +32,7 @@
                     return;
                 }
                 const data = await response.json()
-                console.log(`Data received: `, data)
+                console.log("Data received:" , data)
                 
                 // select div with class="puzzle-item"
                 const puzzles = document.querySelectorAll('.puzzle-item')
@@ -56,53 +56,9 @@
             }
         </script>
     </head>   
-
-        <!-- <style>
-            .title {
-                margin: 5px;
-            }
-    
-            .content {
-                margin-top: 10px;
-                width: 100%;
-                display: flex;
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-    
-            .puzzle {
-                flex: 20%;
-                padding: 10px;
-                margin: 30px;
-                background-color: #f3f3f3;
-                inline-size: 100%;
-            }
-
-            .puzzle-desc {
-            padding: 10px;
-            margin: 5px;
-            background-color: #ffffff;
-            color: #004835;
-        }
-
-        .name {
-            color: #00a36f;
-            text-decoration: none;
-        }
-
-        .hidden{
-            visibility: hidden;
-        } -->
-        <!-- </style> -->
-        
-        <body>
-           
-           
+    <body>   
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
-            <div class="container-md">
-                
-            
-            
+            <div class="container-md"> 
             <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -126,9 +82,6 @@
                         <!-- User Profile Page -->
                         <a class="nav-link" href="{{ url_for('user', username=current_user.username) }}">Profile</a>
                     </li>
-                    
-                    
-                    
                     {% endif %}
                     <li class="nav-item">
                     <!-- search bar -->
@@ -137,12 +90,17 @@
                     <li class="nav-item">
                         <div class="d-flex align-items-center">
                      <!-- Messages -->
-                     <a class="nav-link" href="{{ url_for('messages', user_id=None) }}">Messages</a>
-                     {% set unread_message_count = current_user.unread_message_count() %}
-                     <span id="message_count" 
-                     class="position-relative translate-middle badge rounded-pill bg-danger {% if unread_message_count == 0 %}hidden{% endif %}">
-                         {{unread_message_count}}
-                     </span>
+                     <a class="nav-link" href="{{ url_for('messages', user_id=None, puzzle_id=None) }}">Messages</a>
+                     {% if current_user.is_authenticated %}
+                        {% set unread_message_count = current_user.unread_message_count() %}
+                        <span id="message_count" 
+                        class="{% if unread_message_count == 0 %}hidden{% endif %} position-relative translate-middle badge rounded-pill bg-danger ">
+                            {{unread_message_count}}
+                        </span>
+                    <!-- {% else %}
+                        {% set unread_message_count = 0%} -->
+                    {% endif %}
+                    
                         </div>
                     </li>
                     
