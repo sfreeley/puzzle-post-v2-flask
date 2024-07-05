@@ -3,6 +3,9 @@
  {% block content %}
 <h1>
     Your Messages, {{current_user.username}}
+    puzzle_id:{{puzzle_id}}
+    
+    
 </h1>
 
 <section >
@@ -22,10 +25,18 @@
                 
               <ul class="list-unstyled mb-0">
                 {% if message_senders %}
-                {% for sender in message_senders %}
+                    {% for message_sender in message_senders %}
+                   
+                        {% set sender = message_sender.sender %}
+                        {% set most_recent_puzzle_id = message_sender.most_recent_puzzle_id%}
+                        
+                        
+                        {% if not sender.id == current_user.id%}
+                        
                 <li class="p-2 border-bottom bg-body-tertiary">
                 
-                  <a href="/messages?recipient_id={{sender.id}}&puzzle_id={{puzzle.id}}" class="d-flex justify-content-between">
+                  <a href="/messages?recipient_id={{sender.id}}&puzzle_id={%if not puzzle_id %}{{most_recent_puzzle_id}}{%else%}{{puzzle_id}}{% endif %}" class="d-flex justify-content-between">
+                    {{most_recent_puzzle_id}}
                     
                     <div class="d-flex flex-row">
                        
@@ -43,6 +54,7 @@
                   </a>
                   
                 </li>
+                        {% endif %}
                 {% endfor %}
             {% else %}
                 <p>You have no messages yet.</p>
@@ -61,7 +73,8 @@
 
             <ul class="list-unstyled">
               
-              {% if recipient and conversation %}
+              {% if recipient %}
+                {% if conversation %}
                     {% for message in conversation%}
                         {% if message.author.username != current_user.username%}
               <li class="d-flex justify-content-between mb-4">
@@ -83,9 +96,7 @@
                       {{message.content}}
                     </p>
                     
-                    <!-- {% if message.puzzle.is_requested %}
-                    <a href="{{ url_for('send_message', recipient=message.author.username, puzzle_id=message.puzzle.id) }}">Reply</a>
-                    {% endif %} -->
+                   
                     {%if loop.last and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
                     <a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a>
                     <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
@@ -131,18 +142,23 @@
               </li>
               {% endif %}
             {% endfor %}
+            {% endif %}
+
+            {% if current_user.username != recipient.username%}
+            
             <li class="bg-white mb-3">
                 
                 <div data-mdb-input-init class="form-outline">
                     <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
                         <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
-                        <input type="hidden" name="puzzle_id" value="{{ puzzle_id }}">
+                        <input type="hidden" name="puzzle_id" value="{% if not puzzle_id%} {{most_recent_puzzle_id}}{%else%} {{puzzle_id}} {%endif%}">
                         <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
                         <label class="form-label" for="content">Message</label>
                         <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end">Send</button>
                     </form>
                         
                 </div>
+            {% endif %}
              </li>    
         {%else%}
               {% if recipient %}
@@ -160,6 +176,7 @@
               
             {% endif %}
     {%endif%}
+   
          
          
         
