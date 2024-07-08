@@ -1,15 +1,16 @@
 from app import app, db
-from flask import render_template, flash, redirect, url_for, request, send_from_directory, jsonify
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, MessageForm, PersonalNote
+from flask import render_template, flash, redirect, url_for, request, send_from_directory, jsonify, session
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, PersonalNote
 from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
-from sqlalchemy import or_
+from sqlalchemy import or_, and_, func
 from datetime import datetime, timezone
 from flask_wtf.file import FileRequired
 from werkzeug.utils import secure_filename
 from config import Config
+
 
 
 # controls what viewer will see (view functions!)
@@ -273,31 +274,35 @@ def confirm_delete(delete_type, item_id):
     return render_template('confirm_delete.html', delete_type=delete_type, item=item)
 
 # SEND MESSAGE
-@app.route('/send_message/<recipient>/<int:puzzle_id>', methods=['GET', 'POST'])
+@app.route('/send_message', methods=['GET', 'POST'])
 @login_required
-def send_message(recipient, puzzle_id):
-    user = db.first_or_404(sa.select(User).where(User.username == recipient))
-    puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
-    # would need to edit the puzzle's is_requested value - change to true and change all other boolean values to false
-    if not puzzle:
-        flash('Puzzle not found.')
-        return redirect(url_for('user', username=current_user.username))
-    
-    # edit these fields to signify puzzle is being requested- should no longer show up on homepage
-    puzzle.is_available = False
-    puzzle.is_requested = True
-    db.session.commit()
+def send_message():
+    recipient_id = request.form['recipient_id']
+    puzzle_id = request.form['puzzle_id']
+    content = request.form['content']
+    # get user that is the recipient of the message
+    user = db.first_or_404(sa.select(User).where(User.id == recipient_id))
+    if request.method == 'POST':
+        # content = request.form.get('content')
+        # if not content:
+        #     flash('Message content cannot be empty.')
+        #     return redirect(url_for('messages', user_id=user.id, puzzle_id=puzzle.id))
+        # edit these fields to signify puzzle is being requested- should no longer show up on homepage
+        # would need to edit the puzzle's is_requested value - change to true and change all other boolean values to false
+        
+        puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
+        puzzle.is_available = False
+        puzzle.is_requested = True
+        db.session.commit()
 
-    form = MessageForm(puzzle_id=puzzle_id, recipient=recipient)
-    if form.validate_on_submit():
         msg = Message(
             author=current_user,
             recipient=user,
             sender_requester_id=current_user.id, 
             recipient_owner_id=user.id,
             is_read = False,
-            content=form.message.data, 
-            puzzle_id=form.puzzle_id.data,
+            content=content, 
+            puzzle_id=puzzle_id,
             timestamp=datetime.now(timezone.utc),
             is_deleted_by_sender=False,
             is_deleted_by_recipient=False
@@ -305,45 +310,88 @@ def send_message(recipient, puzzle_id):
         db.session.add(msg)
         db.session.commit()
         flash('Your message has been sent!')
-        return redirect(url_for('messages'))
-    
-    return render_template('send_message.html', title='Send Message', form=form, recipient=recipient, puzzle=puzzle)
+        return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=puzzle_id ))
+    return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=puzzle_id))
 
 # SHOW LIST OF MESSAGES/LIST OF USERS who have sent current user messages
 @app.route('/messages')
-@app.route('/messages/from/<int:user_id>')
-@login_required
-def messages(user_id=None):
+@login_required 
+def messages():
 
-    # will update the last message read time to current time 
-    # will mark everything as read 
-    current_user.last_message_read_time = datetime.now(timezone.utc)
-    db.session.commit()
-    # get the current_user
-    recipient = db.session.query(User).filter_by(username=current_user.username).first()
+    # whoever is getting the request for the puzzle 
+    recipient_id = request.args.get('recipient_id')
+    # id of puzzle requested
+    puzzle_id = request.args.get('puzzle_id')
+ 
     # get all the users that have sent current_user messages (populate the list of users on page)
-    # user table join messages on message.author.id=user.id and find the messages where the recipient is the current_user (get distinct because don't want repeat of users)
-    message_senders = db.session.query(User).join(Message, Message.sender_requester_id == User.id).where(Message.recipient_owner_id == current_user.id).distinct().all()
+   
+    # also want to show users that the current user has sent messages to but they have not replied back yet... 
+    # need to get the count of unread messages sent from other users to the recipient (current_user)
+    message_senders = db.session.query(
+        User,
+        User.id,
+        # get count of messages where the current user has not read it and make sure the recipient is the current_user
+        func.count(
+        
+                Message.id
+        ).filter(
+            and_(
 
-    selected_user = None
+                Message.is_read == False,
+                Message.recipient_owner_id == current_user.id
+            )
+          
+        ).label('unread_count')    
+        # join the Message and User table to get all the users who sent or received messages
+    ).join(
+        Message,
+        or_(
+            Message.sender_requester_id == User.id,
+            Message.recipient_owner_id == User.id
+        )
+    ).filter(
+        # filter through the messages to get messages where the current user either sent or received messages 
+        or_(
+            Message.recipient_owner_id == current_user.id,
+            Message.sender_requester_id == current_user.id
+        )
+    ).group_by(User.id).all()
+    
+    def get_most_recent_puzzle_id(sender_id, recipient_id):    
+            most_recent_puzzle = db.session.query(Message).filter(
+                # get all correspondence between the users, whether they are senders or recipients 
+                or_(
+                    and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
+                    and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
+                )
+            ).order_by(Message.timestamp.desc()).first()
+
+            return most_recent_puzzle.puzzle_id if most_recent_puzzle else None
+    
+    senders_with_puzzle = []
+    # sender = tuple
+    for sender in message_senders:
+        most_recent_puzzle_id = get_most_recent_puzzle_id(sender.id, current_user.id)
+        # get actual sender object so can have access to all the functions in specific user object
+        sender_object = User.query.get(sender.id)
+        senders_with_puzzle.append({'sender': sender_object, 'most_recent_puzzle_id': most_recent_puzzle_id, 'unread_count': sender.unread_count})
+    
+
+    recipient = None
     messages_between_sender_recipient = []
-
-    # if there is a user_id of user who sent message to current_user 
-    if user_id:
-        # get the user that sent the message
-        selected_user = db.session.query(User).get(user_id)
-        if selected_user:
-            # all messages by sender to recipient using user_id passed by url through clicking username
-
-            messages_between_sender_recipient = db.session.query(Message).filter(
+    # check to see if there is a conversation between the two users 
+    if recipient_id:
+        recipient = User.query.get(recipient_id)
+        messages_between_sender_recipient = db.session.query(Message).filter(
                 ((Message.is_deleted_by_sender == False) & (Message.sender_requester_id == current_user.id)) | 
                 ((Message.recipient_owner_id == current_user.id) & (Message.is_deleted_by_recipient == False)),
 
-                ((Message.recipient_owner_id == current_user.id)) & ((Message.sender_requester_id == selected_user.id)) |
-                ((Message.recipient_owner_id == selected_user.id)) & ((Message.sender_requester_id == current_user.id))
-            ).order_by(Message.timestamp.desc()).all()
+                ((Message.recipient_owner_id == current_user.id)) & ((Message.sender_requester_id == recipient.id)) |
+                ((Message.recipient_owner_id == recipient.id)) & ((Message.sender_requester_id == current_user.id))
+            ).order_by(Message.timestamp.asc()).all()
+        
+    return render_template('messages.html', recipient=recipient, message_senders=senders_with_puzzle, conversation=messages_between_sender_recipient, puzzle_id=puzzle_id)
 
-    return render_template('messages.html', message_senders=message_senders, selected_user=selected_user, recipient=recipient, messages=messages_between_sender_recipient )
 
 # mark individual messages as read
 @app.route('/message/read/<int:message_id>', methods=['POST'])
@@ -362,7 +410,6 @@ def mark_message_as_read(message_id):
         unread_count = current_user.unread_message_count()
         return jsonify({'status': 'success', 'unread_count':unread_count})
     return jsonify({'status': 'failure'})
-
 
 
 # SOFT DELETE MESSAGE
@@ -463,6 +510,7 @@ def search():
                 Puzzle.pieces.ilike(f'%{query}%'),
                 Puzzle.manufacturer.ilike(f'%{query}%'),
                 Puzzle.condition.ilike(f'%{query}%'),
+                Puzzle.description.ilike(f'%{query}%'),
                 Category.name.ilike(f'%{query}%')
             )
             ).all()

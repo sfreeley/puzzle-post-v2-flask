@@ -1,58 +1,211 @@
 {% extends 'base.html' %}
 
-{% block content %}
+ {% block content %}
 <h1>
-    Your Messages, {{recipient.username}}
+    Your Messages, {{current_user.username}}
+    puzzle_id:{{puzzle_id}}
+    
+    
 </h1>
 
-<div>
-    <div>
-        <h2>Message Senders</h2>
-        <ul>
-            {% for sender in message_senders %}
-            <img src="{{ sender.create_avatar(128) }}" style="width: 50px;">
-            <li><a href="{{ url_for('messages', user_id=sender.id) }}">{{ sender.username }}</a></li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div>
-        {% if selected_user %}
-            <h2> Messages with {{selected_user.username}}</h2>
-            {% for message in messages%}
-            <div class="{% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}"  >
-                <p>From: {{message.author.username}}</p>
-                <p>To: {{message.recipient.username}}</p>
-                <p>Subject: {{message.puzzle.title}}</p>
-                {% if message.puzzle.is_requested %}
-                <p>Request Status: Pending</p>
-                {% elif message.puzzle.in_progress%}
-                <p>Request Status: Approved</p>
-                {% endif %}
-                <p>{{message.timestamp}}</p>
-                <p >{{message.content}}</p>
-                <!-- <button class="{% if not message.is_read and message.recipient_owner_id == current_user.id%}Unread{%endif%}" data-message-id="{{message.id}}">
-                </button> -->
-                {% if not message.is_read and message.recipient_owner_id == current_user.id%}
-                    <span class="unread-indicator">Unread</span>
-                {% endif %}
-               
-            </div>
-            {% if loop.index0 == 0  %}
-            {% if message.puzzle.is_requested %}
-            <button><a href="{{ url_for('send_message', recipient=message.author.username, puzzle_id=message.puzzle.id) }}">Reply</a></button>
-            {% endif %}
-            {%if current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
-            <button><a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a></button>
-            <button><a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a></button>
+<section >
+   
+    
+    <div class="container py-5 ">
+  
+      <div class="row">
+  
+        <div class="col-md-6 col-lg-5 col-xl-4 mb-4 mb-md-0">
+  
+          <h5 class="font-weight-bold mb-3 text-center text-lg-start">Member</h5>
+          
+          <div class="card ">
             
+            <div class="card-body">
+                
+              <ul class="list-unstyled mb-0">
+                {% if message_senders %}
+                    {% for message_sender in message_senders %}
+                   
+                        {% set sender = message_sender.sender %}
+                        {% set unread_count = message_sender.unread_count %}
+                        {% set most_recent_puzzle_id = message_sender.most_recent_puzzle_id%}
+                        
+                        
+                        {% if not sender.id == current_user.id%}
+                        
+                <li class="p-2 border-bottom bg-body-tertiary">
+                
+                  <a href="/messages?recipient_id={{sender.id}}&puzzle_id={%if not puzzle_id %}{{most_recent_puzzle_id}}{%else%}{{puzzle_id}}{% endif %}" class="d-flex justify-content-between">
+                    {{most_recent_puzzle_id}}
+                    
+                    <div class="d-flex flex-row">
+                       
+                      <img src="{{ sender.create_avatar(128) }}" alt="avatar"
+                        class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
+                      <div class="pt-1">
+                        <p class="fw-bold mb-0">{{ sender.username }}</p>
+                        <p class="fw-bold mb-0">{{ message_sender.username }}</p>
+                        {% if unread_count > 0 %}
+                            <span class="badge bg-danger">{{ unread_count }}</span>
+                        {% endif %}
+                        
+                      </div>
+                     
+                    </div>
+                    
+                    
+                    
+                  </a>
+                  
+                </li>
+                        {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>You have no messages yet.</p>
             {% endif %}
+                
+
+              </ul>
+  
+            </div>
+          </div>
+  
+        </div>
+    
+       
+        <div class="col-md-6 col-lg-7 col-xl-8">
+
+            <ul class="list-unstyled">
+              
+              {% if recipient %}
+                {% if conversation %}
+                    {% for message in conversation%}
+                        {% if message.author.username != current_user.username%}
+              <li class="d-flex justify-content-between mb-4">
+                <div class="card w-100 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
+                  <div class="card-header d-flex justify-content-between p-3">
+                    <p class="fw-bold mb-0">{{message.author.username}}</p>
+                    <p class="small text-muted">{{message.puzzle.title}}</p>
+                    <p class="text-muted small mb-0"><i class="far fa-clock"></i> {{message.timestamp}}</p>
+                    
+                    <div class="pt-1">
+                        <!-- <p class="small text-muted mb-1">Just now</p> -->
+                      {% if not message.is_read and message.recipient_owner_id == current_user.id%}
+                      <span class="unread-indicator badge bg-danger float-end">unread</span>
+                      {%endif%}
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <p class="mb-0">
+                      {{message.content}}
+                    </p>
+                    
+                   
+                    {%if loop.last and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
+                    <a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a>
+                    <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
+                    {% endif %}
+    
+                    <a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a>
+                    
+                  </div>
+                </div>
+                <img src="{{ message.author.create_avatar(128) }}" alt="avatar"
+                  class="rounded-circle d-flex align-self-start ms-3 shadow-1-strong" width="60">
+              </li>
+              
+              
+              {% else %}
+              <li class="d-flex justify-content-between mb-4">
+                <img src="{{ message.author.create_avatar(128) }}" alt="avatar"
+                  class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
+                <div class="card {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
+                  <div class="card-header d-flex justify-content-between p-3">
+                    <p class="fw-bold mb-0">{{message.author.username}}</p>
+                    <p class="small text-muted">{{message.puzzle.title}}</p>
+                    <p class="text-muted small mb-0"><i class="far fa-clock"></i> {{message.timestamp}}</p>
+                    
+                    <div class="pt-1">
+                      <!-- <p class="small text-muted mb-1">Just now</p> -->
+                      {% if not message.is_read and message.recipient_owner_id == current_user.id%}
+                      <span class="unread-indicator badge bg-danger float-end" >umread</span>
+                      {%endif%}
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <p class="mb-0">
+                      {{message.content}}
+                    </p>
+                    {%if loop.last and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
+                    <a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a>
+                    <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
+                    {% endif %}
+                    <a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a>
+                  </div>
+                </div>
+              </li>
+              {% endif %}
+            {% endfor %}
             {% endif %}
-            <button><a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a></button>    
-        {% else %}
-            <h2>Select a user to view Messages</h2>
-        {% endfor %}
-        {% endif %}
-</div>
+
+            {% if current_user.username != recipient.username%}
+            
+            <li class="bg-white mb-3">
+                
+                <div data-mdb-input-init class="form-outline">
+                    <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
+                        <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
+                        <input type="hidden" name="puzzle_id" value="{% if not puzzle_id%} {{most_recent_puzzle_id}}{%else%} {{puzzle_id}} {%endif%}">
+                        <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
+                        <label class="form-label" for="content">Message</label>
+                        <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end">Send</button>
+                    </form>
+                        
+                </div>
+            {% endif %}
+             </li>    
+        {%else%}
+              {% if recipient %}
+            <p>No conversations between you and {{recipient.username}}. Let's start one.</p> 
+            <div data-mdb-input-init class="form-outline">
+                <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
+                    <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
+                    <input type="hidden" name="puzzle_id" value="{{ puzzle_id }}">
+                    <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
+                    <label class="form-label" for="content">Message</label>
+                    <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end">Send</button>
+                </form>
+                    
+            </div>
+              
+            {% endif %}
+    {%endif%}
+   
+         
+         
+        
+              
+              
+             
+              
+            </ul>
+         
+            
+           
+          </div>
+          
+    
+        </div>
+    
+      </div>
+    
+        
+     
+  </section>
+
+  
+  
 
 <script>
     // wait for page to load, get all the elements that have 'data-message-id' attribute
@@ -93,14 +246,18 @@
         // otherwise, status will be failure 
         if (data.status === 'success') {
             console.log('data status come back success')
-            // remove unread from the div class
-            messageElement.classList.remove('unread');
             var unreadIndicator = messageElement.querySelector('.unread-indicator');
             // need to check if unread indicator element is present first
             // otherwise if it's already been read will cause runtime error (cannot read property 'style' of null because there will be no unread indicator)
             if (unreadIndicator) {
                 unreadIndicator.style.display = 'none'
+            } else {
+
+                console.log("error- did not remove unread indicator")
             }
+          
+            // remove unread from the div class
+            messageElement.classList.remove('unread');
             // from base.html JS that handles the visibility of the unread count next to messages in nav bar
             // will handle the unread message count - pass in the updated count from the data in the response
             set_message_count(data.unread_count);
@@ -121,8 +278,8 @@
 </script>
     
            
-            
-{% endblock %}
+{% endblock %}         
+
   
  
 

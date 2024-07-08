@@ -66,11 +66,11 @@ class CreatePuzzleForm(FlaskForm):
     submit = SubmitField('Submit')
 
 # messages
-class MessageForm(FlaskForm):
-    puzzle_id = HiddenField('puzzle_id')
-    recipient = HiddenField('Recipient')
-    message = TextAreaField('Message', validators=[DataRequired(), Length(min=0, max=140)])
-    submit = SubmitField('Submit')
+# class MessageForm(FlaskForm):
+#     puzzle_id = HiddenField('puzzle_id')
+#     recipient = HiddenField('Recipient')
+#     message = TextAreaField('Message', validators=[DataRequired(), Length(min=0, max=140)])
+#     submit = SubmitField('Submit')
 
 # message peresonal note
 class PersonalNote(FlaskForm):

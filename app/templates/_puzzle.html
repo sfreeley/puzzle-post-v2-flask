@@ -1,21 +1,42 @@
-<table>
-    <tr valign="top">
-        <td>{{ puzzle.author.username }}</td>
-        <td><img src="{{ puzzle.author.create_avatar(80)}}"></td>
+<script>
+    function requestPuzzle(userId, puzzleId) {
+        console.log(userId, puzzleId)
+        window.location.href= `/messages?recipient_id=${userId}&puzzle_id=${puzzleId}`
+    }
+</script>
+
+<div class="col">
+    <div class="card h-100 {% if puzzle.author.username == current_user.username %} border-warning mb-3 {% else %} border-info mb-3 {% endif %}" style="max-width: 35rem;">
+        <img src="{{puzzle.image_url}}" class="card-img-top" style="width: 200px" alt="puzzle-picture">
+        <div class="card-body">
+            <h5 class="card-title">{{puzzle.title}}</h5>
+            <p class="card-text"><b>Manufacturer:</b> {{puzzle.manufacturer}} </p>
+        </div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><b>Pieces:</b> {{puzzle.pieces}}</li>
+            
+            
+            <li class="list-group-item"><b>Category:</b> {% for category in puzzle.categories %}{{category.name}} {% if not loop.last %},{% endif %} {% endfor %}</li>
+            
+            <li class="list-group-item"><b>Details:</b> {% if puzzle.description %} {{puzzle.description}} {% else %} Nothing yet...</li>
+            {% endif %}
+            
+        </ul>
         
+        <div class="card-body">
+            
+            <img src="{{ puzzle.author.create_avatar(128)}}" class=card-img style="max-width:40px" alt="user-avatar">
+            <p class="card-text-center mb-3">{{ puzzle.author.username }}</p>
+        </div>
+        {% if puzzle.user_id != current_user.id %}
+        <div class="card-footer">
+            
+            <a class="btn btn-info" href="/messages?recipient_id={{puzzle.author.id}}&puzzle_id={{puzzle.id}}">Request</a>
+            
+        </div>
+        {% endif %}
         
-    </tr>
-    <p>
-        <b>{{puzzle.title}}</b>
-        <p><img src="{{puzzle.image_url}}" style="width: 200px"></p>
-        <p>{{puzzle.pieces}}</p>
-        {% for category in puzzle.categories %}
-        <p>{{category.name}}{% if not loop.last%}, {% endif %}</p>
-        {% endfor %}
-        <p>{{puzzle.manufacturer}}</p>
-        <p>{{puzzle.description}}</p>
-    </p>
-    {% if puzzle.user_id != current_user.id%}
-    <button><a href="{{ url_for('send_message', recipient=puzzle.author.username, puzzle_id=puzzle.id) }}">Request</a></button>
-    {% endif %}
-</table>
+    </div>
+</div>
+
+
