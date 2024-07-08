@@ -313,7 +313,9 @@ def send_message():
         return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=puzzle_id ))
     return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=puzzle_id))
 
-# SHOW LIST OF MESSAGES/LIST OF USERS who have sent current user messages
+# show list of user conversations
+# show conversations
+# send messages using form
 @app.route('/messages')
 @login_required 
 def messages():
@@ -323,6 +325,7 @@ def messages():
     # id of puzzle requested
     puzzle_id = request.args.get('puzzle_id')
  
+
     # get all the users that have sent current_user messages (populate the list of users on page)
    
     # also want to show users that the current user has sent messages to but they have not replied back yet... 
@@ -330,7 +333,8 @@ def messages():
     message_senders = db.session.query(
         User,
         User.id,
-        # get count of messages where the current user has not read it and make sure the recipient is the current_user
+        # get count of messages where...
+        # the current user has not read it and make sure the recipient is the current_user
         func.count(
         
                 Message.id
@@ -356,6 +360,8 @@ def messages():
             Message.sender_requester_id == current_user.id
         )
     ).group_by(User.id).all()
+
+    
     
     def get_most_recent_puzzle_id(sender_id, recipient_id):    
             most_recent_puzzle = db.session.query(Message).filter(
@@ -376,7 +382,6 @@ def messages():
         sender_object = User.query.get(sender.id)
         senders_with_puzzle.append({'sender': sender_object, 'most_recent_puzzle_id': most_recent_puzzle_id, 'unread_count': sender.unread_count})
     
-
     recipient = None
     messages_between_sender_recipient = []
     # check to see if there is a conversation between the two users 
@@ -389,7 +394,8 @@ def messages():
                 ((Message.recipient_owner_id == current_user.id)) & ((Message.sender_requester_id == recipient.id)) |
                 ((Message.recipient_owner_id == recipient.id)) & ((Message.sender_requester_id == current_user.id))
             ).order_by(Message.timestamp.asc()).all()
-        
+    
+    
     return render_template('messages.html', recipient=recipient, message_senders=senders_with_puzzle, conversation=messages_between_sender_recipient, puzzle_id=puzzle_id)
 
 # mark individual messages as read

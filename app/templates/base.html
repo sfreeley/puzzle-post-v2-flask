@@ -9,14 +9,21 @@
         {% else %}
         <title>Welcome to PuzzlePost v2!</title>
         {% endif %}
+        <style>
+            .hidden {
+                display: none;
+            }
+        </style>
         
         <script>
             // show number of unread messages/requests
-            function set_message_count(n) {
-                const count = document.getElementById('message_count');
-                count.innerText = n;
-                count.style.visibility = n ? 'visible' : 'hidden';
-            }
+            // function set_message_count(n) {
+            //     const count = document.getElementById('message_count');
+            //     count.innerText = n;
+            //     count.style.visibility = n ? 'visible' : 'hidden';
+            // }
+
+            
             // search functionality 
             async function search_a() {
                 // get the value of whatever user is typing into search bar
@@ -97,8 +104,7 @@
                         class="{% if unread_message_count == 0 %}hidden{% endif %} position-relative translate-middle badge rounded-pill bg-danger ">
                             {{unread_message_count}}
                         </span>
-                    <!-- {% else %}
-                        {% set unread_message_count = 0%} -->
+                    
                     {% endif %}
                     
                         </div>
