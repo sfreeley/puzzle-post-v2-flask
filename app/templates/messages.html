@@ -28,6 +28,7 @@
                     {% for message_sender in message_senders %}
                    
                         {% set sender = message_sender.sender %}
+                        {% set unread_count = message_sender.unread_count %}
                         {% set most_recent_puzzle_id = message_sender.most_recent_puzzle_id%}
                         
                         
@@ -44,6 +45,10 @@
                         class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
                       <div class="pt-1">
                         <p class="fw-bold mb-0">{{ sender.username }}</p>
+                        <p class="fw-bold mb-0">{{ message_sender.username }}</p>
+                        {% if unread_count > 0 %}
+                            <span class="badge bg-danger">{{ unread_count }}</span>
+                        {% endif %}
                         
                       </div>
                      

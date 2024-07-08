@@ -5,7 +5,7 @@ from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from datetime import datetime, timezone
 from flask_wtf.file import FileRequired
 from werkzeug.utils import secure_filename
@@ -322,38 +322,59 @@ def messages():
     recipient_id = request.args.get('recipient_id')
     # id of puzzle requested
     puzzle_id = request.args.get('puzzle_id')
-
-    
-
-    #     if most_recent_message:
-    #         puzzle_id = most_recent_message.puzzle_id
-            # session['puzzle_id'] = puzzle_id
-    
+ 
     # get all the users that have sent current_user messages (populate the list of users on page)
-    # user table join messages on message.author.id=user.id and find the messages where the recipient is the current_user 
+   
     # also want to show users that the current user has sent messages to but they have not replied back yet... 
-    # (get distinct because don't want repeat of users by how many messages they sent)
-    message_senders = db.session.query(User).join(
-        Message, 
-        or_(Message.sender_requester_id == User.id, Message.recipient_owner_id == User.id)
+    # need to get the count of unread messages sent from other users to the recipient (current_user)
+    message_senders = db.session.query(
+        User,
+        User.id,
+        # get count of messages where the current user has not read it and make sure the recipient is the current_user
+        func.count(
+        
+                Message.id
         ).filter(
-        or_(Message.recipient_owner_id == current_user.id, Message.sender_requester_id == current_user.id)
-        ).distinct().all()
+            and_(
+
+                Message.is_read == False,
+                Message.recipient_owner_id == current_user.id
+            )
+
+        ).label('unread_count')    
+        # join the Message and User table to get all the users who sent or received messages
+    ).join(
+        Message,
+        or_(
+            Message.sender_requester_id == User.id,
+            Message.recipient_owner_id == User.id
+        )
+    ).filter(
+        # filter through the messages to get messages where the current user either sent or received messages 
+        or_(
+            Message.recipient_owner_id == current_user.id,
+            Message.sender_requester_id == current_user.id
+        )
+    ).group_by(User.id).all()
     
     def get_most_recent_puzzle_id(sender_id, recipient_id):    
             most_recent_puzzle = db.session.query(Message).filter(
+                # get all correspondence between the users, whether they are senders or recipients 
                 or_(
                     and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
-            and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
+                    and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
                 )
             ).order_by(Message.timestamp.desc()).first()
 
             return most_recent_puzzle.puzzle_id if most_recent_puzzle else None
     
     senders_with_puzzle = []
+    # sender = tuple
     for sender in message_senders:
         most_recent_puzzle_id = get_most_recent_puzzle_id(sender.id, current_user.id)
-        senders_with_puzzle.append({'sender': sender, 'most_recent_puzzle_id': most_recent_puzzle_id})
+        # get actual sender object so can have access to all the functions in specific user object
+        sender_object = User.query.get(sender.id)
+        senders_with_puzzle.append({'sender': sender_object, 'most_recent_puzzle_id': most_recent_puzzle_id, 'unread_count': sender.unread_count})
     
 
     recipient = None
@@ -369,40 +390,7 @@ def messages():
                 ((Message.recipient_owner_id == recipient.id)) & ((Message.sender_requester_id == current_user.id))
             ).order_by(Message.timestamp.asc()).all()
         
-        
-
-        
     return render_template('messages.html', recipient=recipient, message_senders=senders_with_puzzle, conversation=messages_between_sender_recipient, puzzle_id=puzzle_id)
-
-# @app.route('/messages/from/<int:user_id>/<int:puzzle_id>')
-# @login_required
-# def message_list(user_id, puzzle_id):
-    
-#     selected_user = None
-#     messages_between_sender_recipient = []
-#     puzzle = None
-    
-
-#     # if there is a user_id of user who sent message to current_user 
-#     if user_id:
-#         # get the user that sent the message
-#         selected_user = db.session.query(User).get(user_id)
-#         if selected_user:
-#             # all messages by sender to recipient using user_id passed by url through clicking username
-#             messages_between_sender_recipient = db.session.query(Message).filter(
-#                 ((Message.is_deleted_by_sender == False) & (Message.sender_requester_id == current_user.id)) | 
-#                 ((Message.recipient_owner_id == current_user.id) & (Message.is_deleted_by_recipient == False)),
-
-#                 ((Message.recipient_owner_id == current_user.id)) & ((Message.sender_requester_id == selected_user.id)) |
-#                 ((Message.recipient_owner_id == selected_user.id)) & ((Message.sender_requester_id == current_user.id))
-#             ).order_by(Message.timestamp.asc()).all()
-        
-
-      
-#     puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
-    
-             
-#     return render_template('messages.html', selected_user=selected_user,  messages=messages_between_sender_recipient, puzzle=puzzle )
 
 # mark individual messages as read
 @app.route('/message/read/<int:message_id>', methods=['POST'])
@@ -421,7 +409,6 @@ def mark_message_as_read(message_id):
         unread_count = current_user.unread_message_count()
         return jsonify({'status': 'success', 'unread_count':unread_count})
     return jsonify({'status': 'failure'})
-
 
 
 # SOFT DELETE MESSAGE
