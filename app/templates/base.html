@@ -25,42 +25,42 @@
 
             
             // search functionality 
-            async function search_a() {
-                // get the value of whatever user is typing into search bar
-                const query = document.getElementById('searchInput').value
+            // async function search_a() {
+            //     // get the value of whatever user is typing into search bar
+            //     const query = document.getElementById('searchInput').value
                 
-                console.log(`Query: ${query}`)
-                const response = await fetch(`/search?query=${query}`)
-                if (!response.ok) {
-                    // Handle HTTP errors
-                    console.error(`HTTP error: ${response.status}`);
-                    const text = await response.text();
-                    console.error(`Response: ${text}`);
-                    return;
-                }
-                const data = await response.json()
-                console.log("Data received:" , data)
+            //     console.log(`Query: ${query}`)
+            //     const response = await fetch(`/search?query=${query}`)
+            //     if (!response.ok) {
+            //         // Handle HTTP errors
+            //         console.error(`HTTP error: ${response.status}`);
+            //         const text = await response.text();
+            //         console.error(`Response: ${text}`);
+            //         return;
+            //     }
+            //     const data = await response.json()
+            //     console.log("Data received:" , data)
                 
-                // select div with class="puzzle-item"
-                const puzzles = document.querySelectorAll('.puzzle-item')
-                // hide all the current puzzles showing on page
-                puzzles.forEach(function(puzzle){
-                    puzzle.style.display = 'none'
-                })
-                // if whatever backend response that's sent to frontend has results...
-                if (data.length > 0) {
-                    data.forEach(function(puzzle_result) {
-                        // get same div as above that has id=puzzle-item.id(this will be updated view of results of user's search)
-                        const puzzle = document.querySelector(`#puzzle-${puzzle_result.id}`)
-                        if (puzzle) {
-                            puzzle.style.display = 'block';
-                        }
-                    })
-                }
-                else {
-                    alert('No results found')
-                }
-            }
+            //     // select div with class="puzzle-item"
+            //     const puzzles = document.querySelectorAll('.puzzle-item')
+            //     // hide all the current puzzles showing on page
+            //     puzzles.forEach(function(puzzle){
+            //         puzzle.style.display = 'none'
+            //     })
+            //     // if whatever backend response that's sent to frontend has results...
+            //     if (data.length > 0) {
+            //         data.forEach(function(puzzle_result) {
+            //             // get same div as above that has id=puzzle-item.id(this will be updated view of results of user's search)
+            //             const puzzle = document.querySelector(`#puzzle-${puzzle_result.id}`)
+            //             if (puzzle) {
+            //                 puzzle.style.display = 'block';
+            //             }
+            //         })
+            //     }
+            //     else {
+            //         console.log('no results')
+            //     }
+            // }
         </script>
     </head>   
     <body>   
@@ -90,9 +90,15 @@
                         <a class="nav-link" href="{{ url_for('user', username=current_user.username) }}">Profile</a>
                     </li>
                     {% endif %}
+                    <!-- <li class="nav-item">
+                    search bar -->
+                    <!-- <input type="text" id="searchInput" placeholder="Search" aria-label="Search" oninput="search_a()">
+                    </li>  -->
                     <li class="nav-item">
-                    <!-- search bar -->
-                    <input type="text" id="searchInput" placeholder="Search" aria-label="Search" oninput="search_a()">
+                        <form class="d-flex" action="{{ url_for('search') }}" method="GET">
+                            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query">
+                            <button class="btn btn-outline-success" type="submit">Search</button>
+                        </form>
                     </li>
                     <li class="nav-item">
                         <div class="d-flex align-items-center">

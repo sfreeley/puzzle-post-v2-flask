@@ -102,7 +102,7 @@
                     </p>
                     
                    
-                    {%if loop.last and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
+                    {%if message.id == last_message_ids[message.puzzle_id] and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
                     <a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a>
                     <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
                     {% endif %}
@@ -137,7 +137,8 @@
                     <p class="mb-0">
                       {{message.content}}
                     </p>
-                    {%if loop.last and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
+                    
+                    {%if message.id == last_message_ids[message.puzzle_id] and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
                     <a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a>
                     <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
                     {% endif %}
@@ -148,6 +149,7 @@
               {% endif %}
             {% endfor %}
             {% endif %}
+            
 
             {% if current_user.username != recipient.username%}
             
