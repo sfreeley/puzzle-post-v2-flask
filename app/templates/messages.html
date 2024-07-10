@@ -7,10 +7,42 @@
     
     
 </h1>
+<!-- personal note modal -->
+<div class="modal fade" id="personalNoteModal" tabindex="-1" aria-labelledby="personalNoteLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="personalNoteLabel">Personal Note</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{{ url_for('request_action') }}" method="POST">
+          <div class="mb-3">
+            <label for="recipient-name" class="col-form-label">Recipient:</label>
+            <input type="text" class="form-control" id="recipientName" name="recipient_name" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="personalNote" class="col-form-label">Message:</label>
+            <textarea class="form-control" id="personalNote" name="personal_note"></textarea>
+          </div>
+          <input type="hidden" id="actionType" name="action">
+          <input type="hidden" id="requester" name="requester">
+          <input type="hidden" id="puzzleId" name="puzzle_id">
+          
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" >Send Message</button>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <section >
-   
-    
+      
     <div class="container py-5 ">
   
       <div class="row">
@@ -103,8 +135,8 @@
                     
                    
                     {%if message.id == last_message_ids[message.puzzle_id] and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
-                    <a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a>
-                    <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="approve" data-requester="{{ message.author.username }}" data-puzzle-id="{{ message.puzzle.id }}" data-recipient-name="{{message.author.username}}">Approve</button>
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="decline" data-requester="{{ message.author.username }}" data-puzzle-id="{{ message.puzzle.id }}" data-recipient-name="{{message.author.username}}">Decline</button> 
                     {% endif %}
     
                     <a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a>
@@ -139,8 +171,8 @@
                     </p>
                     
                     {%if message.id == last_message_ids[message.puzzle_id] and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
-                    <a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a>
-                    <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="approve" data-requester="{{ message.author.username }}" data-puzzle-id="{{ message.puzzle.id }}" data-recipient-name="{{message.author.username}}">Approve</button>
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="decline" data-requester="{{ message.author.username }}" data-puzzle-id="{{ message.puzzle.id }}" data-recipient-name="{{message.author.username}}">Decline</button> 
                     {% endif %}
                     <a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a>
                   </div>
@@ -213,6 +245,9 @@
     // wait for page to load, get all the elements that have 'data-message-id' attribute
     document.addEventListener('DOMContentLoaded', function() {
         const messageElements = document.querySelectorAll('div[data-message-id]');
+        const personalNoteModal = document.getElementById('personalNoteModal')
+        const dataAttributes = document.querySelectorAll('.action-button')
+
         messageElements.forEach(function(messageElement) {
        // how to prevent user from sending fetch request every time they click the the message issue
        // if the message already contains the class 'unread' from the boolean logic in the messages.html
@@ -280,8 +315,37 @@
     
     }     
     
+// data attributes for personal note modal
+// get the attributes by listening to when user clicks the approve or decline button
+    if (personalNoteModal) {
+      personalNoteModal.addEventListener('show.bs.modal', function(event) {
+        // button that triggers modal
+        const button = event.relatedTarget
+        // get the data attributes
+        const action = button.getAttribute('data-action')
+        const requester = button.getAttribute('data-requester')
+        const puzzleId = button.getAttribute('data-puzzle-id')
+        const recipientName = button.getAttribute('data-recipient-name')
 
+        const modalRecipient = personalNoteModal.querySelector('#recipientName')
+       modalRecipient.value = modalRecipient
+         
+            
 
+      // assign the value to the hidden inputs in the modal whatever the values are from the attributes above
+      document.getElementById('actionType').value = action
+      document.getElementById('requester').value = requester
+      document.getElementById('puzzleId').value = puzzleId
+      document.getElementById('recipientName').value = recipientName
+      })
+    
+       
+
+          
+
+        
+      
+    }  
 });
 </script>
     

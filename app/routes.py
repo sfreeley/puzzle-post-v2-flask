@@ -460,9 +460,16 @@ def delete_message(message_id):
 
 
 # ACCEPT/DECLINE Request
-@app.route('/request_action/<action>/<requester>/<int:puzzle_id>', methods=['GET', 'POST'])
+@app.route('/request_action', methods=['GET', 'POST'])
 @login_required
-def request_action(action, requester, puzzle_id):
+def request_action():
+    action = request.form.get('action')
+    requester = request.form.get('requester')
+    puzzle_id = request.form.get('puzzle_id')
+    personal_note = request.form.get('personal_note')
+    
+    
+
     user = db.first_or_404(sa.select(User).where(User.username == requester))
     puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
     form = PersonalNote()
@@ -512,7 +519,7 @@ def request_action(action, requester, puzzle_id):
         else:
             flash(f'You declined the puzzle request from {user.username} for {puzzle.title}.')
         return redirect(url_for('messages'))
-    return render_template('personal_note.html', form=form)
+    return render_template('messages.html', form=form)
 
 # SEARCH
 @app.route('/search', methods=['GET'])
