@@ -21,13 +21,18 @@ from config import Config
 @app.route('/index')
 @login_required
 def index(): 
+    # try pagination
+    page = request.args.get('page', 1, type=int)
+    
     # only show puzzles that are not being requested
-    puzzles = db.session.query(Puzzle).filter_by(is_available=True).all()
+    # puzzles = db.session.query(Puzzle).filter_by(is_available=True).all()
 
+    per_page = 2
+    puzzles_pagination = db.session.query(Puzzle).filter_by(is_available=True).paginate(page=page, per_page=per_page, error_out=False)
     
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
-    return render_template('index.html', title='Home', puzzles=puzzles)
+    return render_template('index.html', title='Home', puzzles_pagination=puzzles_pagination)
 
 # LOGIN
 # will now accept get and post requests to server
@@ -313,7 +318,9 @@ def send_message():
         return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=puzzle_id ))
     return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=puzzle_id))
 
-# SHOW LIST OF MESSAGES/LIST OF USERS who have sent current user messages
+# show list of user conversations
+# show conversations
+# send messages using form
 @app.route('/messages')
 @login_required 
 def messages():
@@ -323,6 +330,7 @@ def messages():
     # id of puzzle requested
     puzzle_id = request.args.get('puzzle_id')
  
+
     # get all the users that have sent current_user messages (populate the list of users on page)
    
     # also want to show users that the current user has sent messages to but they have not replied back yet... 
@@ -330,9 +338,10 @@ def messages():
     message_senders = db.session.query(
         User,
         User.id,
-        # get count of messages where the current user has not read it and make sure the recipient is the current_user
-        func.count(
         
+        # get count of messages where...
+        # the current user has not read it and make sure the recipient is the current_user
+        func.count(
                 Message.id
         ).filter(
             and_(
@@ -340,7 +349,7 @@ def messages():
                 Message.is_read == False,
                 Message.recipient_owner_id == current_user.id
             )
-          
+
         ).label('unread_count')    
         # join the Message and User table to get all the users who sent or received messages
     ).join(
@@ -356,9 +365,11 @@ def messages():
             Message.sender_requester_id == current_user.id
         )
     ).group_by(User.id).all()
+
+    
     
     def get_most_recent_puzzle_id(sender_id, recipient_id):    
-            most_recent_puzzle = db.session.query(Message).filter(
+            most_recent_message = db.session.query(Message).filter(
                 # get all correspondence between the users, whether they are senders or recipients 
                 or_(
                     and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
@@ -366,7 +377,7 @@ def messages():
                 )
             ).order_by(Message.timestamp.desc()).first()
 
-            return most_recent_puzzle.puzzle_id if most_recent_puzzle else None
+            return most_recent_message.puzzle_id if most_recent_message else None
     
     senders_with_puzzle = []
     # sender = tuple
@@ -374,9 +385,12 @@ def messages():
         most_recent_puzzle_id = get_most_recent_puzzle_id(sender.id, current_user.id)
         # get actual sender object so can have access to all the functions in specific user object
         sender_object = User.query.get(sender.id)
-        senders_with_puzzle.append({'sender': sender_object, 'most_recent_puzzle_id': most_recent_puzzle_id, 'unread_count': sender.unread_count})
+        senders_with_puzzle.append({
+            'sender': sender_object, 
+            'most_recent_puzzle_id': most_recent_puzzle_id, 
+            'unread_count': sender.unread_count
+        })
     
-
     recipient = None
     messages_between_sender_recipient = []
     # check to see if there is a conversation between the two users 
@@ -390,7 +404,15 @@ def messages():
                 ((Message.recipient_owner_id == recipient.id)) & ((Message.sender_requester_id == current_user.id))
             ).order_by(Message.timestamp.asc()).all()
         
-    return render_template('messages.html', recipient=recipient, message_senders=senders_with_puzzle, conversation=messages_between_sender_recipient, puzzle_id=puzzle_id)
+    # somehow need to find a way to get approve/decline to appear on last message of the related puzzle 
+    # dictionary store last message Id 
+    last_message_ids = {}
+
+    for message in messages_between_sender_recipient:
+        last_message_ids[message.puzzle_id] = message.id
+    
+    
+    return render_template('messages.html', recipient=recipient, message_senders=senders_with_puzzle, conversation=messages_between_sender_recipient, puzzle_id=puzzle_id, last_message_ids=last_message_ids)
 
 
 # mark individual messages as read
@@ -497,12 +519,14 @@ def request_action(action, requester, puzzle_id):
 # SEARCH
 @app.route('/search', methods=['GET'])
 def search():
-    try:
+    # try:
     # retrieve query parameter
     # request.args object that contains all query parameters sent with request
     # get('query', '') gets the value associated with the key named 'query'
     # if the value of query is not there, default to empty string
         query = request.args.get('query', '')
+        page = request.args.get('page', 1, type=int)
+        per_page = 2
         if query:
             results = Puzzle.query.join(Puzzle.categories).filter( 
                 or_(
@@ -513,19 +537,21 @@ def search():
                 Puzzle.description.ilike(f'%{query}%'),
                 Category.name.ilike(f'%{query}%')
             )
-            ).all()
+            ).paginate(page=page, per_page=per_page, error_out=False)
         else:
-            results = Puzzle.query.all()
-        
-        results_data = [puzzle.to_dict() for puzzle in results]
-        # results_data = [{'title': puzzle.title, 'pieces': puzzle.pieces, 'manufacturer': puzzle.manufacturer, 'condition': puzzle.condition, 'categories': puzzle.categories} for puzzle in results]
-        return jsonify(results_data)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+            results = Puzzle.query.paginate(page=page, per_page=per_page, error_out=False)
+        return render_template('index.html', puzzles_pagination=results, query=query)
+    #     results_data = [puzzle.to_dict() for puzzle in results]
+    #     # results_data = [{'title': puzzle.title, 'pieces': puzzle.pieces, 'manufacturer': puzzle.manufacturer, 'condition': puzzle.condition, 'categories': puzzle.categories} for puzzle in results]
+    #     return jsonify(results_data)
+    # except Exception as e:
+    #     return jsonify({'error': str(e)}), 500
     # iterate through results list and creates dictionary 
     
     # converts list of dictionaries, results_data, into JSON format for sending back as response to client
     # return jsonify(results_data)
+      
+
 
 
 

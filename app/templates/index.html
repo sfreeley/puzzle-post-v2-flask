@@ -14,12 +14,55 @@
         <h1>Hello, {{ current_user.username }}!!</h1>
         
         <div class="row row-cols-1 row-cols-md-3 g-4">
-            {% for puzzle in puzzles %}
+            {% for puzzle in puzzles_pagination.items %}
             <div class="puzzle-item" id="puzzle-{{puzzle.id}}">
             {% include '_puzzle.html' %}
             </div>
         {% endfor %}
         </div>
+
+        <nav aria-label="page-navigation">
+            <ul class="pagination">
+                {% if puzzles_pagination.has_prev%}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('index', page=puzzles_pagination.prev_num) }}">Previous</a>
+                </li>
+                {%else%}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+                {%endif%}
+
+                {% for page_num in puzzles_pagination.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num == puzzles_pagination.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if puzzles_pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('index', page=puzzles_pagination.next_num) }}">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Next</span>
+            </li>
+            {% endif %}
+
+            </ul>
+        </nav>
         
         {% endblock %}
     </body>

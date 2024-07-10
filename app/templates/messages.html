@@ -47,7 +47,7 @@
                         <p class="fw-bold mb-0">{{ sender.username }}</p>
                         <p class="fw-bold mb-0">{{ message_sender.username }}</p>
                         {% if unread_count > 0 %}
-                            <span class="badge bg-danger">{{ unread_count }}</span>
+                            <span class="badge bg-danger" id="unread-count-badge">{{ unread_count }}</span>
                         {% endif %}
                         
                       </div>
@@ -102,7 +102,7 @@
                     </p>
                     
                    
-                    {%if loop.last and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
+                    {%if message.id == last_message_ids[message.puzzle_id] and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
                     <a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a>
                     <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
                     {% endif %}
@@ -137,7 +137,8 @@
                     <p class="mb-0">
                       {{message.content}}
                     </p>
-                    {%if loop.last and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
+                    
+                    {%if message.id == last_message_ids[message.puzzle_id] and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
                     <a href="{{ url_for('request_action', action='approve', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Approve</a>
                     <a href="{{ url_for('request_action', action='decline', requester=message.author.username, puzzle_id=message.puzzle.id) }}">Decline</a>
                     {% endif %}
@@ -148,6 +149,7 @@
               {% endif %}
             {% endfor %}
             {% endif %}
+            
 
             {% if current_user.username != recipient.username%}
             
@@ -246,14 +248,20 @@
         // otherwise, status will be failure 
         if (data.status === 'success') {
             console.log('data status come back success')
-            var unreadIndicator = messageElement.querySelector('.unread-indicator');
+            // unread indicator on individual message 
+            const unreadIndicator = messageElement.querySelector('.unread-indicator');
+            // badge by username of number of unread message(s)
+            const unreadCountBadge = document.getElementById('unread-count-badge');
             // need to check if unread indicator element is present first
             // otherwise if it's already been read will cause runtime error (cannot read property 'style' of null because there will be no unread indicator)
-            if (unreadIndicator) {
+            if (unreadIndicator && unreadCountBadge) {
                 unreadIndicator.style.display = 'none'
+                unreadCountBadge.textContent = data.unread_count
+                if (data.unread_count == 0) {
+                    unreadCountBadge.style.display = 'none'
+                }
             } else {
-
-                console.log("error- did not remove unread indicator")
+                console.log("error!!!!!")
             }
           
             // remove unread from the div class
