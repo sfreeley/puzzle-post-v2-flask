@@ -349,6 +349,7 @@ def messages():
                 Message.is_read == False,
                 Message.recipient_owner_id == current_user.id
             )
+
         ).label('unread_count')    
         # join the Message and User table to get all the users who sent or received messages
     ).join(
@@ -413,6 +414,7 @@ def messages():
     
     return render_template('messages.html', recipient=recipient, message_senders=senders_with_puzzle, conversation=messages_between_sender_recipient, puzzle_id=puzzle_id, last_message_ids=last_message_ids)
 
+
 # mark individual messages as read
 @app.route('/message/read/<int:message_id>', methods=['POST'])
 @login_required
@@ -441,6 +443,7 @@ def delete_message(message_id):
             message = db.session.query(Message).filter_by(id=message_id).first()
         except Exception as e:
             flash("Something went wrong")
+
             return redirect(url_for('messages'))
         else:
             if message:
@@ -457,7 +460,6 @@ def delete_message(message_id):
                     return redirect(url_for('messages')) 
                 flash("Your delete was successful")              
     return redirect(url_for('messages'))
-
 
 # ACCEPT/DECLINE Request
 @app.route('/request_action/<action>/<requester>/<int:puzzle_id>', methods=['GET', 'POST'])
