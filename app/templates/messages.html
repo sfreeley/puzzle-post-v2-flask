@@ -28,12 +28,12 @@
           <input type="hidden" id="actionType" name="action">
           <input type="hidden" id="requester" name="requester">
           <input type="hidden" id="puzzleId" name="puzzle_id">
-          
+          <button type="submit" class="btn btn-primary" >Send Message</button>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary" >Send Message</button>
+        
         
       </div>
     </div>
@@ -135,8 +135,8 @@
                     
                    
                     {%if message.id == last_message_ids[message.puzzle_id] and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="approve" data-requester="{{ message.author.username }}" data-puzzle-id="{{ message.puzzle.id }}" data-recipient-name="{{message.author.username}}">Approve</button>
-                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="decline" data-requester="{{ message.author.username }}" data-puzzle-id="{{ message.puzzle.id }}" data-recipient-name="{{message.author.username}}">Decline</button> 
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="approve" data-requester="{% if message.author.username == current_user.username %}{{message.recipient.username}}{% else %}{{message.author.username}}{%endif%}" data-puzzle-id="{{ message.puzzle.id }}" data-recipient-name="{{message.author.username}}">Approve</button>
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="decline" data-requester="{% if message.author.username == current_user.username %}{{message.recipient.username}}{% else %}{{message.author.username}}{%endif%}" data-puzzle-id="{{ message.puzzle.id }}" data-recipient-name="{{message.author.username}}">Decline</button> 
                     {% endif %}
     
                     <a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a>
@@ -171,8 +171,8 @@
                     </p>
                     
                     {%if message.id == last_message_ids[message.puzzle_id] and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="approve" data-requester="{{ message.author.username }}" data-puzzle-id="{{ message.puzzle.id }}" data-recipient-name="{{message.author.username}}">Approve</button>
-                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="decline" data-requester="{{ message.author.username }}" data-puzzle-id="{{ message.puzzle.id }}" data-recipient-name="{{message.author.username}}">Decline</button> 
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="approve" data-requester="{% if message.author.username == current_user.username %}{{message.recipient.username}}{% else %}{{message.author.username}}{%endif%}" data-puzzle-id="{{ message.puzzle.id }}" >Approve</button>
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="decline" data-requester="{% if message.author.username == current_user.username %}{{message.recipient.username}}{% else %}{{message.author.username}}{%endif%}" data-puzzle-id="{{ message.puzzle.id }}" >Decline</button> 
                     {% endif %}
                     <a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a>
                   </div>
@@ -323,20 +323,18 @@
         const button = event.relatedTarget
         // get the data attributes
         const action = button.getAttribute('data-action')
+        console.log(action)
         const requester = button.getAttribute('data-requester')
+        console.log(requester)
         const puzzleId = button.getAttribute('data-puzzle-id')
+        console.log(puzzleId)
         const recipientName = button.getAttribute('data-recipient-name')
-
-        const modalRecipient = personalNoteModal.querySelector('#recipientName')
-       modalRecipient.value = modalRecipient
-         
-            
 
       // assign the value to the hidden inputs in the modal whatever the values are from the attributes above
       document.getElementById('actionType').value = action
       document.getElementById('requester').value = requester
       document.getElementById('puzzleId').value = puzzleId
-      document.getElementById('recipientName').value = recipientName
+      document.getElementById('recipientName').value = requester
       })
     
        

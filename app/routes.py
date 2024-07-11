@@ -310,7 +310,8 @@ def send_message():
             puzzle_id=puzzle_id,
             timestamp=datetime.now(timezone.utc),
             is_deleted_by_sender=False,
-            is_deleted_by_recipient=False
+            is_deleted_by_recipient=False,
+            is_automated=False
         )
         db.session.add(msg)
         db.session.commit()
@@ -373,7 +374,8 @@ def messages():
                 or_(
                     and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
                     and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
-                )
+                ),
+                Message.is_automated == False
             ).order_by(Message.timestamp.desc()).first()
 
             return most_recent_message.puzzle_id if most_recent_message else None
@@ -462,33 +464,34 @@ def delete_message(message_id):
 # ACCEPT/DECLINE Request
 @app.route('/request_action', methods=['GET', 'POST'])
 @login_required
-def request_action():
+def request_action():  
     action = request.form.get('action')
     requester = request.form.get('requester')
     puzzle_id = request.form.get('puzzle_id')
     personal_note = request.form.get('personal_note')
-    
-    
 
     user = db.first_or_404(sa.select(User).where(User.username == requester))
     puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
+
     form = PersonalNote()
     if not puzzle or not user:
         flash('Puzzle or user not found')
         return redirect(url_for('messages'))
-    if request.method == 'POST' and form.validate_on_submit():
-        personal_note = form.note.data
+    if request.method == 'POST':
+        
+        # personal_note = form.note.data
         if action == 'approve':
             
             # send pre-generated message to the requester of puzzle
-            message_to_requester = f'Your request for puzzle, {puzzle.title}, has been approved! {personal_note}'
+            message_to_requester = f'Your request for puzzle, {puzzle.title}, has been approved! \n {personal_note}'
             puzzle.user_id = user.id
             puzzle.in_progress = True
             puzzle.is_available = False
             puzzle.is_requested = False
+            db.session.commit()
         elif action == 'decline':
             
-            message_to_requester = f'Your request for puzzle, {puzzle.title}, has been declined. {personal_note}If needed, reach out to the owner for more information.'
+            message_to_requester = f'Your request for puzzle, {puzzle.title}, has been declined. \n {personal_note}'
             
             # puzzle user_id doesn't change
             # not in_progress
@@ -497,6 +500,7 @@ def request_action():
             puzzle.is_available = True
             # not requested anymore
             puzzle.is_requested = False
+            db.session.commit()
         else:
             flash('Invalid action')
             return redirect(url_for('messages'))
@@ -506,9 +510,11 @@ def request_action():
                 recipient=user,
                 content=message_to_requester,
                 puzzle_id=puzzle_id,
+                is_read=False,
                 timestamp=datetime.now(timezone.utc),
                 is_deleted_by_sender = False,
-                is_deleted_by_recipient = False
+                is_deleted_by_recipient = False,
+                is_automated=True
             )
 
         db.session.add(msg)
@@ -518,8 +524,9 @@ def request_action():
             flash(f'You approved the puzzle request for {puzzle.title}. It now belongs to {puzzle.author.username}')
         else:
             flash(f'You declined the puzzle request from {user.username} for {puzzle.title}.')
-        return redirect(url_for('messages'))
-    return render_template('messages.html', form=form)
+        
+    return redirect(url_for('messages'))
+    # return render_template('messages.html', form=form)
 
 # SEARCH
 @app.route('/search', methods=['GET'])
