@@ -296,9 +296,10 @@ def send_message():
         # would need to edit the puzzle's is_requested value - change to true and change all other boolean values to false
         
         puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
-        puzzle.is_available = False
-        puzzle.is_requested = True
-        db.session.commit()
+        if current_user.id != puzzle.user_id:
+            puzzle.is_available = False
+            puzzle.is_requested = True
+            db.session.commit()
 
         msg = Message(
             author=current_user,
@@ -366,29 +367,44 @@ def messages():
         )
     ).group_by(User.id).all()
 
-    
-    
-    def get_most_recent_puzzle_id(sender_id, recipient_id):    
-            most_recent_message = db.session.query(Message).filter(
-                # get all correspondence between the users, whether they are senders or recipients 
-                or_(
-                    and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
-                    and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
-                ),
-                Message.is_automated == False
-            ).order_by(Message.timestamp.desc()).first()
+    def get_puzzles(sender_id, recipient_id):
+        puzzles = db.session.query(Puzzle).join(
+            Message,
+            Puzzle.id == Message.puzzle_id
+        ).filter(
+            or_(
+                and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
+                and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
+            )
+            
+        ).group_by(Puzzle.id).all()
+        return puzzles
 
-            return most_recent_message.puzzle_id if most_recent_message else None
+    
+    
+    # def get_most_recent_puzzle_id(sender_id, recipient_id):    
+    #         most_recent_message = db.session.query(Message).filter(
+    #             # get all correspondence between the users, whether they are senders or recipients 
+    #             or_(
+    #                 and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
+    #                 and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
+    #             ),
+    #             Message.is_automated == False
+    #         ).order_by(Message.timestamp.desc()).first()
+
+    #         return most_recent_message.puzzle_id if most_recent_message else None
     
     senders_with_puzzle = []
     # sender = tuple
     for sender in message_senders:
-        most_recent_puzzle_id = get_most_recent_puzzle_id(sender.id, current_user.id)
+        puzzles = get_puzzles(sender.id, current_user.id)
+        # most_recent_puzzle_id = get_most_recent_puzzle_id(sender.id, current_user.id)
         # get actual sender object so can have access to all the functions in specific user object
         sender_object = User.query.get(sender.id)
         senders_with_puzzle.append({
             'sender': sender_object, 
-            'most_recent_puzzle_id': most_recent_puzzle_id, 
+            'puzzles': puzzles,
+            # 'most_recent_puzzle_id': most_recent_puzzle_id, 
             'unread_count': sender.unread_count
         })
     
@@ -398,11 +414,16 @@ def messages():
     if recipient_id:
         recipient = User.query.get(recipient_id)
         messages_between_sender_recipient = db.session.query(Message).filter(
-                ((Message.is_deleted_by_sender == False) & (Message.sender_requester_id == current_user.id)) | 
+
+                and_(
+                ((Message.is_deleted_by_sender == False) & (Message.sender_requester_id == current_user.id)) |
                 ((Message.recipient_owner_id == current_user.id) & (Message.is_deleted_by_recipient == False)),
 
                 ((Message.recipient_owner_id == current_user.id)) & ((Message.sender_requester_id == recipient.id)) |
-                ((Message.recipient_owner_id == recipient.id)) & ((Message.sender_requester_id == current_user.id))
+                ((Message.recipient_owner_id == recipient.id)) & ((Message.sender_requester_id == current_user.id)),
+                
+                (Message.puzzle_id == puzzle_id)
+            )
             ).order_by(Message.timestamp.asc()).all()
         
     # somehow need to find a way to get approve/decline to appear on last message of the related puzzle 
@@ -489,6 +510,7 @@ def request_action():
             puzzle.is_available = False
             puzzle.is_requested = False
             db.session.commit()
+            print(f"Puzzle {puzzle_id} approved, is_requested: {puzzle.is_requested}")  # Debugging statement
         elif action == 'decline':
             
             message_to_requester = f'Your request for puzzle, {puzzle.title}, has been declined. \n {personal_note}'

@@ -54,22 +54,21 @@
           <div class="card ">
             
             <div class="card-body">
-                
+              
               <ul class="list-unstyled mb-0">
                 {% if message_senders %}
                     {% for message_sender in message_senders %}
                    
                         {% set sender = message_sender.sender %}
                         {% set unread_count = message_sender.unread_count %}
-                        {% set most_recent_puzzle_id = message_sender.most_recent_puzzle_id%}
-                        
-                        
+                        {% set puzzles = message_sender.puzzles %}
+                      
                         {% if not sender.id == current_user.id%}
                         
                 <li class="p-2 border-bottom bg-body-tertiary">
                 
-                  <a href="/messages?recipient_id={{sender.id}}&puzzle_id={%if not puzzle_id %}{{most_recent_puzzle_id}}{%else%}{{puzzle_id}}{% endif %}" class="d-flex justify-content-between">
-                    {{most_recent_puzzle_id}}
+                  
+                   
                     
                     <div class="d-flex flex-row">
                        
@@ -85,10 +84,18 @@
                       </div>
                      
                     </div>
+                    <ul class="list-unstyled">
+                      {% for puzzle in puzzles %}
+                        <li>
                     
-                    
-                    
-                  </a>
+                    <a href="/messages?recipient_id={{sender.id}}&puzzle_id={{puzzle.id}}" class="d-flex justify-content-between">
+                    <div class="d-flex flex-row">
+                      <p class="fw-bold mb-0">{{ puzzle.title }}</p>
+                  </div>
+                </a>
+              
+              </li>
+              {% endfor %}
                   
                 </li>
                         {% endif %}
@@ -107,15 +114,16 @@
     
        
         <div class="col-md-6 col-lg-7 col-xl-8">
-
+          <div data-mdb-perfect-scrollbar-init style="position: relative; height: 400px; overflow: auto;">
             <ul class="list-unstyled">
               
-              {% if recipient %}
+              {% if recipient and puzzle_id%}
                 {% if conversation %}
                     {% for message in conversation%}
                         {% if message.author.username != current_user.username%}
               <li class="d-flex justify-content-between mb-4">
                 <div class="card w-100 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
+                  Message ID: {{message.id}}
                   <div class="card-header d-flex justify-content-between p-3">
                     <p class="fw-bold mb-0">{{message.author.username}}</p>
                     <p class="small text-muted">{{message.puzzle.title}}</p>
@@ -154,6 +162,7 @@
                   class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
                 <div class="card {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
                   <div class="card-header d-flex justify-content-between p-3">
+                   Message ID: {{message.id}}
                     <p class="fw-bold mb-0">{{message.author.username}}</p>
                     <p class="small text-muted">{{message.puzzle.title}}</p>
                     <p class="text-muted small mb-0"><i class="far fa-clock"></i> {{message.timestamp}}</p>
@@ -161,7 +170,7 @@
                     <div class="pt-1">
                       <!-- <p class="small text-muted mb-1">Just now</p> -->
                       {% if not message.is_read and message.recipient_owner_id == current_user.id%}
-                      <span class="unread-indicator badge bg-danger float-end" >umread</span>
+                      <span class="unread-indicator badge bg-danger float-end" >unread</span>
                       {%endif%}
                     </div>
                   </div>
@@ -183,37 +192,24 @@
             {% endif %}
             
 
-            {% if current_user.username != recipient.username%}
+            <!-- {% if current_user.username != recipient.username%} -->
             
             <li class="bg-white mb-3">
-                
+            </div>  
                 <div data-mdb-input-init class="form-outline">
                     <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
                         <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
-                        <input type="hidden" name="puzzle_id" value="{% if not puzzle_id%} {{most_recent_puzzle_id}}{%else%} {{puzzle_id}} {%endif%}">
+                        <input type="hidden" name="puzzle_id" value="{{puzzle_id}}">
                         <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
                         <label class="form-label" for="content">Message</label>
                         <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end">Send</button>
                     </form>
                         
                 </div>
+             
             {% endif %}
              </li>    
-        {%else%}
-              {% if recipient %}
-            <p>No conversations between you and {{recipient.username}}. Let's start one.</p> 
-            <div data-mdb-input-init class="form-outline">
-                <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
-                    <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
-                    <input type="hidden" name="puzzle_id" value="{{ puzzle_id }}">
-                    <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
-                    <label class="form-label" for="content">Message</label>
-                    <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end">Send</button>
-                </form>
-                    
-            </div>
-              
-            {% endif %}
+     
     {%endif%}
    
          
@@ -246,7 +242,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         const messageElements = document.querySelectorAll('div[data-message-id]');
         const personalNoteModal = document.getElementById('personalNoteModal')
-        const dataAttributes = document.querySelectorAll('.action-button')
+        
+        console.log('help')
 
         messageElements.forEach(function(messageElement) {
        // how to prevent user from sending fetch request every time they click the the message issue
@@ -256,13 +253,15 @@
         if (messageElement.classList.contains('unread')) {
             messageElement.addEventListener('click', handleRead);
         }
+        
     });
         
         // function to hide unread indicator upon user clicking message 
         function handleRead(event) {
+          console.log('success clicked')
             // target is the messageElement
         const messageElement = event.currentTarget;
-        const messageId = this.getAttribute('data-message-id');
+        const messageId = messageElement.getAttribute('data-message-id');
         fetch('/message/read/' + messageId, {
             method: 'POST',
             headers: {
@@ -337,12 +336,7 @@
       document.getElementById('recipientName').value = requester
       })
     
-       
-
-          
-
-        
-      
+   
     }  
 });
 </script>
