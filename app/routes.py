@@ -5,7 +5,7 @@ from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
-from sqlalchemy import or_, and_, func
+from sqlalchemy import or_, and_, func, case
 from datetime import datetime, timezone
 from flask_wtf.file import FileRequired
 from werkzeug.utils import secure_filename
@@ -103,7 +103,7 @@ def user(username):
     sharing_count = 0
     requested_count = 0
     progress_count = 0
-    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id, is_deleted=False).all()
+    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id, is_deleted=False, is_available=True).all()
     
     for puzzle in puzzles_current_user:
         if puzzle.is_available == True:
@@ -245,30 +245,35 @@ def save_puzzle(puzzle_id=None):
     return render_template('create_puzzle.html', title='Save Puzzle', form=form, choices=form.condition.choices, existing_image_url = form.existing_image_url.data)
 
 # SOFT DELETE PUZZLE
-@app.route('/puzzle/delete/<int:puzzle_id>', methods=['GET', 'DELETE'])
+@app.route('/puzzle/delete', methods=['GET', 'POST'])
 @login_required
-def delete_puzzle(puzzle_id):
-      
+def delete_puzzle():
+    # delete_type = request.form.get('delete-type')
+    item_id = request.form.get('item_id') 
     # get the entry from db
     try:
-        puzzle_by_id = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
+        puzzle_by_id = db.session.query(Puzzle).filter_by(id=item_id).first()
     except Exception as e:
         flash("Something went wrong")
         return redirect(url_for('user', username=current_user.username))
     else:
         if puzzle_by_id and puzzle_by_id.user_id == current_user.id:
             # 'delete' - change is_deleted to True and do not show on page through filtering
-            puzzle_by_id.is_deleted == True
-            puzzle_by_id.is_available == False
+            puzzle_by_id.is_deleted = True
+            puzzle_by_id.is_available = False
             db.session.commit()
-            return redirect(url_for('user', username=current_user.username))
+            flash("Your delete was successful. The puzzle is no longer in circulation.")
+    return redirect(url_for('user', username=current_user.username))
 
 # CONFIRM DELETE    
-@app.route('/confirm_delete/<delete_type>/<int:item_id>', methods=['GET'])
+@app.route('/confirm_delete', methods=['GET'])
 @login_required
 
-# ***confirm delete pop-up (bootstrap?)
-def confirm_delete(delete_type, item_id):
+
+def confirm_delete():
+    delete_type = request.form.get('delete-type')
+    item_id = request.form.get('item-id')
+
     if delete_type == 'puzzle':
         item = db.session.query(Puzzle).filter_by(id=item_id).first()
     elif delete_type == 'message':
@@ -276,7 +281,7 @@ def confirm_delete(delete_type, item_id):
     else:
         flash('Not valid delete type')
         return redirect(url_for('user', username=current_user.username))
-    return render_template('confirm_delete.html', delete_type=delete_type, item=item)
+    # return render_template('confirm_delete.html', delete_type=delete_type, item=item)
 
 # SEND MESSAGE
 @app.route('/send_message', methods=['GET', 'POST'])
@@ -351,6 +356,7 @@ def messages():
                 Message.is_read == False,
                 Message.recipient_owner_id == current_user.id
             )
+
         ).label('unread_count')    
         # join the Message and User table to get all the users who sent or received messages
     ).join(
@@ -397,9 +403,10 @@ def messages():
     senders_with_puzzle = []
     # sender = tuple
     for sender in message_senders:
+        # returns list of puzzle objects 
         puzzles = get_puzzles(sender.id, current_user.id)
         # most_recent_puzzle_id = get_most_recent_puzzle_id(sender.id, current_user.id)
-        # get actual sender object so can have access to all the functions in specific user object
+        # get actual sender(user) object so can have access to all the functions in specific user object
         sender_object = User.query.get(sender.id)
         senders_with_puzzle.append({
             'sender': sender_object, 
@@ -455,13 +462,14 @@ def mark_message_as_read(message_id):
     return jsonify({'status': 'failure'})
 
 
-# SOFT DELETE MESSAGE
-@app.route('/message/delete/<int:message_id>', methods=['GET', 'POST'])
+# ----> SOFT DELETE MESSAGE
+@app.route('/message/delete', methods=['GET', 'POST'])
 @login_required
-def delete_message(message_id):
+def delete_message():
+    item_id = request.form.get('item_id')
     if request.method == 'POST':
         try:
-            message = db.session.query(Message).filter_by(id=message_id).first()
+            message = db.session.query(Message).filter_by(id=item_id).first()
         except Exception as e:
             flash("Something went wrong")
             return redirect(url_for('messages'))

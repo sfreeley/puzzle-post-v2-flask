@@ -29,12 +29,36 @@
           <input type="hidden" id="requester" name="requester">
           <input type="hidden" id="puzzleId" name="puzzle_id">
           <button type="submit" class="btn btn-primary" >Send Message</button>
-        </form>
+        
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         
         
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="confirmDeleteModalLabel">Confirm</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this message?
+      </div>
+      <form action="{{ url_for('delete_message')}}" method="POST">
+          
+          <input type="hidden" id="itemId" name="item_id">
+          <button type="submit" class="btn btn-danger">Confirm Delete</button>
+      </form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+       
       </div>
     </div>
   </div>
@@ -66,10 +90,7 @@
                         {% if not sender.id == current_user.id%}
                         
                 <li class="p-2 border-bottom bg-body-tertiary">
-                
-                  
-                   
-                    
+         
                     <div class="d-flex flex-row">
                        
                       <img src="{{ sender.create_avatar(128) }}" alt="avatar"
@@ -78,7 +99,7 @@
                         <p class="fw-bold mb-0">{{ sender.username }}</p>
                         <p class="fw-bold mb-0">{{ message_sender.username }}</p>
                         {% if unread_count > 0 %}
-                            <span class="badge bg-danger" id="unread-count-badge">{{ unread_count }}</span>
+                        <span class="badge bg-danger" id="unread-count-badge">{{ unread_count }}</span>
                         {% endif %}
                         
                       </div>
@@ -89,6 +110,8 @@
                         <li>
                     
                     <a href="/messages?recipient_id={{sender.id}}&puzzle_id={{puzzle.id}}" class="d-flex justify-content-between">
+                      
+                     
                     <div class="d-flex flex-row">
                       <p class="fw-bold mb-0">{{ puzzle.title }}</p>
                   </div>
@@ -183,6 +206,7 @@
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="approve" data-requester="{% if message.author.username == current_user.username %}{{message.recipient.username}}{% else %}{{message.author.username}}{%endif%}" data-puzzle-id="{{ message.puzzle.id }}" >Approve</button>
                     <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="decline" data-requester="{% if message.author.username == current_user.username %}{{message.recipient.username}}{% else %}{{message.author.username}}{%endif%}" data-puzzle-id="{{ message.puzzle.id }}" >Decline</button> 
                     {% endif %}
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-type="message" data-item-id={{message.id}}></button>
                     <a href="{{ url_for('confirm_delete', delete_type='message', item_id=message.id) }}">Delete</a>
                   </div>
                 </div>
