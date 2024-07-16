@@ -126,12 +126,22 @@ def before_request():
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    form = EditProfileForm()
+    # form = EditProfileForm()
     # if POST-ing, save the new info into database
-    if form.validate_on_submit():
-        if not form.check_username_available(form.username.data):
-            current_user.username = form.username.data
-            current_user.about_me = form.about_me.data
+
+    username = request.form.get('username') 
+    about_me = request.form.get('about_me')
+
+    # make sure to check that user is not changing their current username to another already in db
+    def check_username_available(username):
+        if username != current_user.username:
+            user = User.query.filter_by(username=username).first()
+            # return True or False
+            return user 
+    if request.method == 'POST':
+        if not check_username_available(username):
+            current_user.username = username
+            current_user.about_me = about_me
             db.session.commit()
             return redirect(url_for('user', username=current_user.username))
         else:
@@ -139,10 +149,10 @@ def edit_profile():
             return redirect(url_for('edit_profile'))
     # if GET-ing and user wants to edit the profile, show the current info first 
     # (what's already in the db)
-    elif request.method == 'GET':
-        form.username.data = current_user.username
-        form.about_me.data = current_user.about_me
-    return render_template('edit_profile.html', title='Edit Profile', form=form, user=user)
+    # elif request.method == 'GET':
+    #     form.username.data = current_user.username
+    #     form.about_me.data = current_user.about_me
+    # return render_template('edit_profile.html', title='Edit Profile', user=user)
 
 # get image url 
 @app.route('/uploads/<filename>')

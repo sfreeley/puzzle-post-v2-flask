@@ -2,6 +2,31 @@
 
 {% block content%}
 <h1>Register</h1>
+<form action="{{ url_for('register')}}" enctype="multipart/form-data" method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+        <label for="username" class="form-label">{{ form.username.label }}</label>
+        {{ form.username(class="form-control", size=32) }}
+        
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">{{ form.email.label }}</label>
+        {{ form.email(class="form-control", size=32) }}
+        
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">{{ form.password.label }}</label>
+        {{ form.password(class="form-control", size=32) }}
+        
+    </div>
+    <div class="mb-3">
+        <label for="confirm_password" class="form-label">{{ form.confirm_password.label }}</label>
+        {{ form.confirm_password(class="form-control", size=32) }}
+        
+    </div>
+    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+</form>
 <form action="" method="post">
     {{ form.hidden_tag() }}
     <p>
