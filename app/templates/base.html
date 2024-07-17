@@ -80,17 +80,26 @@
         </script>
     </head> 
     <body>
-        <!-- Navbar -->
+ 
+
+
+
+        <!-- Navbar OG -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <!-- Container wrapper -->
             <div class="container-fluid">
                 <!-- Navbar brand -->
-               
+                <a class="navbar-brand" href="{{ url_for('index') }}">PuzzlePost v2</a>
                 
+                <form class="d-flex input-group w-auto ms-lg-3 my-3 my-lg-0" action="{{ url_for('search') }}" method="GET">
+                  <input type="search" class="form-control" placeholder="Search" aria-label="Search" name="query" />
+                  <button class="btn btn-outline-success" type="submit" data-mdb-ripple-color="dark">
+                    Search
+                  </button>
+                </form>
                 
-                <!-- Left links -->
-                 <ul class="navbar-nav me-auto d-flex flex-row mt-3 mt-lg-0">
-                    {% if current_user.is_anonymous %}
+                <ul class="navbar-nav ms-auto d-flex flex-row mt-3 mt-lg-0">
+                  {% if current_user.is_anonymous %}
                     <li class="nav-item text-center mx-2 mx-lg-1">
                         <a class="nav-link active" aria-current="page" href="{{ url_for('login') }}">
             <div>
@@ -101,10 +110,11 @@
                         </a>
                     </li>
                     {% else %}
+                    <!-- Search form -->
+              
                     <li class="nav-item text-center mx-2 mx-lg-1">
                         <a class="nav-link active" aria-current="page" href="{{ url_for('index') }}">
             <div>
-                 <!-- <i class="fas fa-home fa-lg mb-1"></i> -->
                  <i class="fa-solid fa-house-chimney-window fa-lg mb-1"></i>
             </div>
                         Home
@@ -120,11 +130,11 @@
                         </a>
                     </li>
           
-                  </ul>
-        <!-- Left links -->
-        <a class="navbar-brand" href="{{ url_for('index') }}">PuzzlePost v2</a>
-        <!-- Right links -->
-        <ul class="navbar-nav ms-auto d-flex flex-row mt-3 mt-lg-0">
+                  
+        
+        
+       
+        
           <!-- Messages -->
           <li class="nav-item text-center mx-2 mx-lg-1">
             <a class="nav-link" href="{{url_for('messages')}}">
@@ -143,24 +153,38 @@
         Messages
             </a>
         </li>
-          <li class="nav-item text-center mx-2 mx-lg-1">
-            <a class="nav-link" href="{{ url_for('logout') }}">
-              <div>
-                <i class="fa-solid fa-arrow-right-from-bracket fa-lg mb-1"></i>
-              </div>
-              Logout
+          
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle d-flex align-items-center"
+              href="#"
+              id="navbarDropdownMenuLink"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+            <img
+            src="{{current_user.create_avatar(128)}}"
+            class="rounded-circle"
+            height="30"
+            alt=""
+            loading="lazy"
+          />
             </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <li>
+                <a class="dropdown-item" href="{{ url_for('user', username=current_user.username) }}">My profile</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ url_for('logout')}}">Logout <i class="fa-solid fa-arrow-right-from-bracket fa-lg mb-1"></i></a>    
+              </li>
+            </ul>
           </li>
+          
         </ul>
-        <!-- Right links -->
+       
   
-        <!-- Search form -->
-        <form class="d-flex input-group w-auto ms-lg-3 my-3 my-lg-0" action="{{ url_for('search') }}" method="GET">
-          <input type="search" class="form-control" placeholder="Search" aria-label="Search" name="query" />
-          <button class="btn btn-outline-success" type="submit" data-mdb-ripple-color="dark">
-            Search
-          </button>
-        </form>
+        
         {% endif %}
       </div>
    
@@ -179,6 +203,7 @@
     {% block content %}{% endblock %}
 </div>
   <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js" integrity="sha256-7NQm0bhvDJKosL8d+6ZgSi2LxZCIcA/TD087GLEBO9M=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   <script src="https://kit.fontawesome.com/69804b7d16.js" crossorigin="anonymous"></script>
     </body>  

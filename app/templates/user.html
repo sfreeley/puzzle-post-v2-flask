@@ -62,7 +62,7 @@
  <!-- profile card -->
   <!-- <section class="w-100 px-4 py-5" style="background-color: #9de2ff; border-radius: .5rem .5rem 0 0;"> -->
     <div class="row d-flex justify-content-center">
-      <div class="col col-md-9 col-lg-7 col-xl-6">
+      <div class="col-12 col-md-9 col-lg-7 col-xl-6">
         <div class="card bg-dark text-light" style="border-radius: 15px;">
           <div class="card-body p-4">
             <div class="d-flex">
@@ -73,7 +73,7 @@
               <div class="flex-grow-1 ms-3">
                 <h5 class="mb-1">{{ user.username }}</h5>
                 <p class="mb-2 pb-1">{% if user.about_me %}<p>{{ user.about_me}}</p>{% endif %}
-                {% if user.last_seen %}<p> Last seen on: {{ user.last_seen }}</p>{% endif %}
+                {% if user.last_seen %}<p class="last_seen" data-utc-date="{{ user.last_seen.isoformat() }}"> {{ user.last_seen }}</p>{% endif %}
                 <div class="d-flex justify-content-start rounded-3 p-2 mb-2 bg-body-tertiary">
                 
                   <div>
@@ -177,6 +177,22 @@
     </div>
     
 <script>
+
+    // date-time
+    document.addEventListener('DOMContentLoaded', function() {
+      const last_seen = document.querySelector('.last_seen')
+      if (last_seen) {
+        const utcDate = last_seen.getAttribute('data-utc-date')
+        console.log(utcDate)
+        // converts utc date string to luxon DateTime object 
+        const luxonDate = luxon.DateTime.fromISO(utcDate, {zone: 'utc'})
+        // converts luxon DateTime object to user's local time zone
+        const localDate = luxonDate.setZone(luxon.DateTime.local().zoneName)
+        console.log(luxonDate)
+        last_seen.innerText = `Last seen on : ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
+      }
+      
+    })
      if (confirmDeleteModal) {
       confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
         // button that triggers modal

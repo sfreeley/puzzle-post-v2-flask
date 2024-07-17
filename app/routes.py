@@ -20,7 +20,8 @@ from config import Config
 @app.route('/')
 @app.route('/index')
 @login_required
-def index(): 
+def index():
+    
     # try pagination
     page = request.args.get('page', 1, type=int)
     
@@ -32,7 +33,7 @@ def index():
     
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
-    return render_template('index.html', title='Home', puzzles_pagination=puzzles_pagination)
+    return render_template('index.html', title='Home', puzzles_pagination=puzzles_pagination, user=user)
 
 # LOGIN
 # will now accept get and post requests to server

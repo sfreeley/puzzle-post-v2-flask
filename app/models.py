@@ -154,7 +154,7 @@ class Message(db.Model):
     is_deleted_by_recipient: so.Mapped[bool]
     # will allow tracking of each message's read status instead of clicking messages tab and marking everything read
     is_read: so.Mapped[bool]
-    # to flag an approval/decline puzzle request message - to use to get most_recent_puzzle_id correctly
+    # to flag an approval/decline puzzle request message - to use to get most_recent_puzzle_id
     is_automated: so.Mapped[bool]
     content: so.Mapped[str] = so.mapped_column(sa.String(140))
     timestamp: so.Mapped[datetime] = so.mapped_column(
