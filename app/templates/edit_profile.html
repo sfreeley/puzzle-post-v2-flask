@@ -1,6 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
+<h1>Edit Profile</h1>
+<form action="{{ url_for('edit_profile')}}" enctype="multipart/form-data" method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+        <label for="username" class="form-label">{{ form.username.label }}</label>
+        {{ form.username(class="form-control", size=32) }}
+        
+    </div>
+    <div class="mb-3">
+        <label for="about_me" class="form-label">{{ form.about_me.label }}</label>
+        {{ form.about_me(class="form-control", size=32) }}
+        
+    </div>
+    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+</form>
+
+
     <h1>Edit Profile</h1>
     <form action="" method="post">
     {{ form.hidden_tag() }}

@@ -1,120 +1,230 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <table>
-        <tr valign="top">
-            <td><img src="{{ user.create_avatar(128) }}"></td>
-            <td>
-                <h1> User: {{ user.username }}</h1>
-                {% if user.about_me %}<p>{{ user.about_me}}</p>{% endif %}
-                {% if user.last_seen %}<p> Last seen on: {{ user.last_seen }}</p>
-                {% endif %}
-            </td>
-           
+<!-- Confirm Delete Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="confirmDeleteModalLabel">Confirm</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete this puzzle?
+        </div>
+        <form action="{{ url_for('delete_puzzle')}}" method="POST">
+            <input type="hidden" id="deleteType" name="delete_type">
+            <input type="hidden" id="itemId" name="item_id">
+            <button type="submit" class="btn btn-danger">Confirm Delete</button>
+        </form>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+         
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal  -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="editProfileModalLabel">Edit Profile</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="{{ url_for('edit_profile')}}" enctype="multipart/form-data" method="POST">
             
-        </tr>
-        {% if user == current_user %}
-        <p><button><a href="{{ url_for('edit_profile') }}">Edit Profile</a></button></p>
-        <p><button><a href="{{ url_for('save_puzzle') }}">Add Puzzle</a></button></p>
-        {% endif %}
-    </table>
+        
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                
+                <input type="text" class="form-control" id="username" name="username">
+                
+            </div>
+            <div class="mb-3">
+                <label for="aboutMe" class="form-label">About me</label>
+                
+                <input type="text" class="form-control" id="aboutMe" name="about_me">
+                
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ <!-- profile card -->
+  <!-- <section class="w-100 px-4 py-5" style="background-color: #9de2ff; border-radius: .5rem .5rem 0 0;"> -->
+    <div class="row d-flex justify-content-center">
+      <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+        <div class="card bg-dark text-light" style="border-radius: 15px;">
+          <div class="card-body p-4">
+            <div class="d-flex">
+              <div class="flex-shrink-0">
+                <img src="{{ user.create_avatar(128) }}"
+                  alt="user profile avatar" class="img-fluid" style="width: 180px; border-radius: 10px;">
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h5 class="mb-1">{{ user.username }}</h5>
+                <p class="mb-2 pb-1">{% if user.about_me %}<p>{{ user.about_me}}</p>{% endif %}
+                {% if user.last_seen %}<p class="last_seen" data-utc-date="{{ user.last_seen.isoformat() }}"> {{ user.last_seen }}</p>{% endif %}
+                <div class="d-flex justify-content-start rounded-3 p-2 mb-2 bg-body-tertiary">
+                
+                  <div>
+                    <p class="small text-muted mb-1">Puzzles Shared</p>
+                    <p class="mb-0 text-dark">{{sharing_count}} </p>
+                  </div>
+                  <div class="px-3">
+                    <p class="small text-muted mb-1">In Progress</p>
+                    <p class="mb-0 text-dark">{{progress_count}}</p>
+                  </div>
+                  <div>
+                    <p class="small text-muted mb-1">Requested</p>
+                    <p class="mb-0 text-dark">{{requested_count}}</p>
+                  </div>
+                </div>
+                <div class="d-flex pt-1">
+                  {% if user == current_user %}
+                  <button type="button" class="btn btn-outline-primary me-1 flex-grow-1" data-bs-toggle="modal" data-bs-target="#editProfileModal" data-username="{{user.username}}" data-about_me="{%if user.about_me%}{{user.about_me}}{% endif %}">Edit Profile</button>
+                  <a class="btn btn-primary flex-grow-1" href="{{ url_for('save_puzzle') }}">Add Puzzle</a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <!-- </section> -->
     
     <hr>
   
-    <p>{{puzzles}}</p>
-    <p>sharing_count</p>{{sharing_count}} 
-    <p>progress_count</p>{{progress_count}}
-    <p>requested_count</p>{{requested_count}}
-  
-    <div class="content">
+    <h3><b>Sharing</b></h3>
         {% if puzzles|length == 0 %}
             <p> No puzzles just yet... </p>
         {% elif sharing_count == 0 %}
             <p> You're not sharing any puzzles right now...</p>
         {% else %}
             
-                <h3><b>Sharing ({{sharing_count}})</b></h3>
                 
+                <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
                 {% for puzzle in puzzles %}
                     {% if puzzle.is_available %}
-                    <div class="puzzle">
-                        <p>
-                            <img src="{{ puzzle.image_url }}" style="width: 200px">
-                            
-                            
-                            <p><b>{{puzzle.title}}</b></p>
-                            <p>Pieces: {{puzzle.pieces}}</p>
-                            <p>Manufacturer: {{puzzle.manufacturer}}</p>
-                            <p>Condition: {{puzzle.condition}}</p>
-                           
-                            <p>Categories: {%for category in puzzle.categories %}
-                                {{category.name}}{% if not loop.last%}, {% endif %}
-                                {%endfor%}
-                            </p>
-                           
-                            
-                        </p>
-                        <div class="puzzle-desc">
-                            {% if puzzle.description != "" %}
-                        
-                            <h4>Notes</h4>
-                            <p>{{ puzzle.description }}</p>
-                            {% endif %}
-                            {% if current_user.id == puzzle.user_id %}
-                        <button><a href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}">Edit</a></button>
-                        <button><a href="{{ url_for('confirm_delete', delete_type='puzzle', item_id=puzzle.id) }}">Delete</a></button>
-                        {% endif %}
-                        </div>
-                    </div>
+                    
+                        <div class="card" style="min-width: 18rem;" >
+                        {%include '_puzzle.html'%}
+                       
+                      
+                       
+                      
+                   
+                      {% if current_user.id == puzzle.user_id %}
+                      <div class=" card-footer">
+                        <a class="btn btn-secondary" href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}">Edit</a>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-type="puzzle" data-item-id={{puzzle.id}}>
+                            Delete
+                        </button>
+                  
+                      </div>
+                      </div>
+                
+                    
+                    {% endif %}
                         
                     {% endif %}
                 {% endfor %}
             {% endif %}
-                
-                
-                
-            </div>
-     
-    </div>
-  
-        
-    
-    <h2>Requested Puzzles ({{requested_count}})</h2>
+          </div>  
+
+          <h3><b>Requested</b></h3>
     {% if requested_count == 0 %}
     <p> No puzzle requests at the moment...</p>
     {% else %}
-    <h3> Requested: </h3>
-        {%for puzzle in puzzles%}
-            {% if puzzle.is_requested %}
-    <p>
-        <b>{{puzzle.title}}</b>
-        <p>{{puzzle.pieces}}</p>
-        <p>{{puzzle.manufacturer}}</p>
-        <p>{{puzzle.description}}</p>
-    </p>
-            {% endif %}
-        {% endfor %}
+    <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
+    {% for puzzle in puzzles %}
+    {% if puzzle.is_available %}
+    
+        <div class="card" style="min-width: 18rem;" >
+        {%include '_puzzle.html'%}
+        </div>
+      
     {% endif %}
+    {% endfor %}
+    {% endif %}
+    </div>
 
 
-    <h2>In Progress Puzzles ({{progress_count}})</h2>
+    <h3><b>In Progress</b></h3>
     {% if progress_count == 0 %}
     <p> You're not working on any puzzles right now...</p>
     {% else %}
-    <h3> In Progress: </h3>
-        {%for puzzle in puzzles%}
-            {% if puzzle.in_progress %}
-    <p>
-        <b>{{puzzle.title}}</b>
-        <p>{{puzzle.pieces}}</p>
-        <p>{{puzzle.manufacturer}}</p>
-        <p>{{puzzle.description}}</p>
-    </p>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+    <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
+    {% for puzzle in puzzles %}
+    {% if puzzle.is_available %}
     
+        <div class="card" style="min-width: 18rem;" >
+        {%include '_puzzle.html'%}
+        </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    </div>
+    
+<script>
 
+    // date-time
+    document.addEventListener('DOMContentLoaded', function() {
+      const last_seen = document.querySelector('.last_seen')
+      if (last_seen) {
+        const utcDate = last_seen.getAttribute('data-utc-date')
+        console.log(utcDate)
+        // converts utc date string to luxon DateTime object 
+        const luxonDate = luxon.DateTime.fromISO(utcDate, {zone: 'utc'})
+        // converts luxon DateTime object to user's local time zone
+        const localDate = luxonDate.setZone(luxon.DateTime.local().zoneName)
+        console.log(luxonDate)
+        last_seen.innerText = `Last seen on : ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
+      }
+      
+    })
+     if (confirmDeleteModal) {
+      confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
+        // button that triggers modal
+        const button = event.relatedTarget
+        const delete_type = button.getAttribute('data-delete-type')
+        console.log(delete_type)
+        const item_id = button.getAttribute('data-item-id')
+        console.log(item_id)
+
+
+      // assign the value to the hidden inputs in the modal whatever the values are from the attributes above
+      document.getElementById('deleteType').value = delete_type
+      document.getElementById('itemId').value = item_id
+
+      })
+    
+   
+    }  
+
+    if (editProfileModal) {
+      editProfileModal.addEventListener('show.bs.modal', function(even) {
+        const button = event.relatedTarget
+        const username = button.getAttribute('data-username')
+        console.log(username)
+        const about_me = button.getAttribute('data-about_me')
+        console.log(about_me)
+
+      document.getElementById('username').value = username
+      document.getElementById('aboutMe').value = about_me
+      })
+    }
+</script>
     
     
 {%endblock%}

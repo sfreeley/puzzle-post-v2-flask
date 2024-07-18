@@ -1,20 +1,80 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form action="{% if form.puzzle_id.data %}{{ url_for('save_puzzle', puzzle_id=form.puzzle_id.data )}}{% else %} {{url_for('save_puzzle')}} {%endif%}" enctype="multipart/form-data" method="post">
-{{ form.hidden_tag() }}
+<form action="{% if form.puzzle_id.data %}{{ url_for('save_puzzle', puzzle_id=form.puzzle_id.data )}}{% else %} {{url_for('save_puzzle')}} {%endif%}" enctype="multipart/form-data" method="POST">
+    {{ form.hidden_tag() }}
 
-{% if form.puzzle_id.data %}
+    {% if form.puzzle_id.data %}
     <h1>Edit Puzzle</h1>
-{%else%}
+    {%else%}
     <h1>Add Puzzle</h1>
-{% endif %}   
+    {% endif %}
+
+    <div class="mb-3">
+        <label for="title" class="form-label">{{ form.title.label }}</label>
+        {{ form.title(class="form-control", size=32) }}
+        
+    </div>
+    <div class="mb-3">
+        <label for="manufacturer" class="form-label">{{ form.manufacturer.label }}</label>
+        {{ form.manufacturer(class="form-control", size=32) }}
+        
+    </div>
+    <div class="mb-3">
+        <label for="image" class="form-label">{{ form.image.label }}</label>
+        {{ form.image(class="form-control-file", size=32, type="file") }}
+        
+    </div>
+    {% if form.existing_image_url.data  %}
+        
+        <img src="{{ existing_image_url }}" style="max-width:200px;"> <br>
+        <input type="hidden" name="existing_image_url" value="{{existing_image_url}}">
+        {% else %}
+        <p></p>
+        {% endif %}
+    <div class="mb-3">
+        <label for="pieces" class="form-label">{{ form.pieces.label }}</label>
+        {{ form.pieces(class="form-control", size=32) }}
+        
+    </div>
+    
     <p>
-        {{ form.title.label }} <br>
-        {{ form.title(size=32) }} <br>
-        {% for error in form.title.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
+    
+    {{form.condition.label}}  
+    {% for (condition, label) in form.condition.choices %}
+        
+        <input type="radio" name="condition" value="{{ condition }}"{% if form.condition.data == condition %}checked{% endif %}>
+        {{ label }}
+    
+    {% endfor %}
+    {% for error in form.condition.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+    
+    
+    </p>
+    <div class="form-group">
+        <label for="categories"> Categories </label>
+        <select multiple class="form-select" id="categories" name="categories">
+            {% for option in form.categories.choices %}
+                {% if not form.categories.data %}
+                <option value="{{ option[0] }}">{{ option[1] }}</option>
+                {%else%}
+                <option value="{{ option[0] }}" {% if option[0] in form.categories.data %}selected{% endif %}>{{ option[1] }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="description" class="form-label">{{ form.description.label }}</label>
+        {{ form.description(class="form-control", size=32) }}
+        
+    </div>
+      
+   
+    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+</form>  
+
     </p>
     <p>
         {{ form.image.label }} <br>

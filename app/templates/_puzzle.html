@@ -7,7 +7,7 @@
 
 <div class="col">
     <div class="card h-100 {% if puzzle.author.username == current_user.username %} border-warning mb-3 {% else %} border-info mb-3 {% endif %}" style="max-width: 35rem;">
-        <img src="{{puzzle.image_url}}" class="card-img-top" style="width: 200px" alt="puzzle-picture">
+        <img src="{{puzzle.image_url}}" class="card-img-top img-thumbnail" style="width: 200px" alt="puzzle-picture">
         <div class="card-body">
             <h5 class="card-title">{{puzzle.title}}</h5>
             <p class="card-text"><b>Manufacturer:</b> {{puzzle.manufacturer}} </p>
