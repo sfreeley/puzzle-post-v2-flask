@@ -477,7 +477,7 @@ def mark_message_as_read(message_id):
 @app.route('/message/delete', methods=['GET', 'POST'])
 @login_required
 def delete_message():
-    item_id = request.form.get('item_id')
+    item_id = request.form.get('message_id')
     if request.method == 'POST':
         try:
             message = db.session.query(Message).filter_by(id=item_id).first()
