@@ -148,7 +148,7 @@
     {% else %}
     <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
     {% for puzzle in puzzles %}
-    {% if puzzle.is_available %}
+    {% if puzzle.is_requested %}
     
         <div class="card" style="min-width: 18rem;" >
         {%include '_puzzle.html'%}
@@ -166,7 +166,7 @@
     {% else %}
     <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
     {% for puzzle in puzzles %}
-    {% if puzzle.is_available %}
+    {% if puzzle.in_progress %}
     
         <div class="card" style="min-width: 18rem;" >
         {%include '_puzzle.html'%}

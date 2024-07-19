@@ -104,7 +104,8 @@ def user(username):
     sharing_count = 0
     requested_count = 0
     progress_count = 0
-    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id, is_deleted=False, is_available=True).all()
+    
+    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id, is_deleted=False).all()
     
     for puzzle in puzzles_current_user:
         if puzzle.is_available == True:
@@ -392,7 +393,11 @@ def messages():
             or_(
                 and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
                 and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
-            )
+            ),
+             or_(
+            and_(Message.recipient_owner_id == current_user.id, Message.is_deleted_by_recipient == False),
+            and_(Message.sender_requester_id == current_user.id, Message.is_deleted_by_sender == False)
+             )
             
         ).group_by(Puzzle.id).all()
         return puzzles
@@ -603,6 +608,44 @@ def search():
     
     # converts list of dictionaries, results_data, into JSON format for sending back as response to client
     # return jsonify(results_data)
+
+@app.route('/delete/message_thread', methods=['GET','POST'])
+@login_required
+def delete_message_thread():
+    recipient_id = request.form.get('recipient_id')
+    # id of puzzle requested
+    puzzle_id = request.form.get('puzzle_id_delete')
+    # query for specific puzzle id's messages between the two users
+    messages_between_sender_recipient = []
+    # check to see if there is a conversation between the two users 
+    if recipient_id:
+        recipient = User.query.get(recipient_id)
+        messages_between_sender_recipient = db.session.query(Message).filter(
+
+                and_(
+                ((Message.is_deleted_by_sender == False) & (Message.sender_requester_id == current_user.id)) |
+                ((Message.recipient_owner_id == current_user.id) & (Message.is_deleted_by_recipient == False)),
+
+                ((Message.recipient_owner_id == current_user.id)) & ((Message.sender_requester_id == recipient.id)) |
+                ((Message.recipient_owner_id == recipient.id)) & ((Message.sender_requester_id == current_user.id)),
+                
+                (Message.puzzle_id == puzzle_id)
+            )
+            ).all()
+    if not messages_between_sender_recipient:
+        flash("No messages found.")
+        return redirect(url_for('messages'))
+    # loop through and mark each message's message.is_deleted_by_recipient=True
+    for message in messages_between_sender_recipient:
+       if message.sender_requester_id == current_user.id:
+           message.is_deleted_by_sender = True
+       if message.recipient_owner_id == current_user.id:
+           message.is_deleted_by_recipient = True
+    db.session.commit()
+    flash('Message thread successfully deleted.')   
+    return redirect(url_for('messages'))
+
+
       
 
 

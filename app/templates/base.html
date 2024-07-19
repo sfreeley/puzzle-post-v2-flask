@@ -95,14 +95,15 @@
             <div class="container-fluid">
                 <!-- Navbar brand -->
                 <a class="navbar-brand" href="{{ url_for('index') }}">PuzzlePost v2</a>
-                
+                   <!-- Search  -->
                 <form class="d-flex input-group w-auto ms-lg-3 my-3 my-lg-0" action="{{ url_for('search') }}" method="GET">
                   <input type="search" class="form-control" placeholder="Search" aria-label="Search" name="query" />
                   <button class="btn search-button" type="submit" data-bs-ripple-color="dark">
-                    Search
+                    <i class="fas fa-search"></i>
                   </button>
                 </form>
-                
+            
+              <!-- Nav links -->
                 <ul class="navbar-nav ms-auto d-flex flex-row mt-3 mt-lg-0">
                   {% if current_user.is_anonymous %}
                     <li class="nav-item text-center mx-2 mx-lg-1">
@@ -143,13 +144,13 @@
           <!-- Messages -->
           <li class="nav-item text-center mx-2 mx-lg-1">
             <a class="nav-link" href="{{url_for('messages')}}">
-<div>
+<div class="position-relative">
     
     <i class="fa-regular fa-comments fa-lg mb-1"></i>
     {% if current_user.is_authenticated %}
         {% set unread_message_count = current_user.unread_message_count() %}
             <span id="message_count" 
-            class="{% if unread_message_count == 0 %}hidden{% endif %} badge rounded-pill badge-notification bg-danger ">
+            class="{% if unread_message_count == 0 %}hidden{% endif %} position-absolute top-0 start-90 translate-middle badge rounded-pill bg-danger ">
                 {{unread_message_count}}
             </span>
     {% endif %}
