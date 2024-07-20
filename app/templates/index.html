@@ -15,7 +15,7 @@
         
         <div class="row row-cols-1 row-cols-md-3 g-4">
             {% for puzzle in puzzles_pagination.items %}
-            <div class="puzzle-item" id="puzzle-{{puzzle.id}}">
+            <div class="puzzle-item" id="puzzle-{{puzzle.id}}" style="min-width: 18rem;">
             {% include '_puzzle.html' %}
             </div>
         {% endfor %}

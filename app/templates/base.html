@@ -37,12 +37,41 @@
         </style>
         
         <script>
-            // show number of unread messages/requests
-            function set_message_count(n) {
+           
+            document.addEventListener('DOMContentLoaded', function() {
+              const timestamps = document.querySelectorAll('.timestamp');
+              const path = window.location.pathname;
+              timestamps.forEach(function(timestamp) {
+                if (timestamp) {
+                  const utcDate = timestamp.getAttribute('data-utc-date')
+                  
+                  // converts utc date string to luxon DateTime object 
+                  const luxonDate = luxon.DateTime.fromISO(utcDate, {zone: 'utc'})
+                  // converts luxon DateTime object to user's local time zone
+                  const localDate = luxonDate.setZone(luxon.DateTime.local().zoneName)
+                
+
+                  if (path.includes('/messages')) {
+                    timestamp.innerHTML = `<i class="far fa-clock"></i> ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}` 
+                  } else if (path.includes('/user')) {
+                    timestamp.innerHTML = `Last seen on : ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
+                  } 
+                  if (timestamp.closest('.puzzle-timestamp')) {
+                    timestamp.innerHTML = `<i class="fa-solid fa-signs-post"></i> ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
+                  }   
+                  
+              }
+
+        })
+         // show number of unread messages/requests
+         function set_message_count(n) {
                 const count = document.getElementById('message_count');
                 count.innerText = n;
                 count.style.visibility = n ? 'visible' : 'hidden';
             }
+              
+        })
+            
 
             
             // search functionality 

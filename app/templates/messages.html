@@ -20,6 +20,16 @@
     padding: 0;
     color: #c0392b;
   }
+
+  .content-sender-card-body {
+    background-color: hsl(186, 60%, 80%);
+  }
+
+  .content-recipient-card-body {
+    background-color: hsl(6, 63%, 80%);
+  }
+
+  
  </style>
 <h1>
     Your Messages, {{current_user.username}}
@@ -89,7 +99,7 @@
   </div>
 </div>
 
-
+<!-- show members with conversation -->
 <section >
       
     <div class="container py-5 ">
@@ -184,11 +194,10 @@
                         {% if message.author.username != current_user.username%}
               <li class="d-flex justify-content-between mb-4">
                 <div class="card w-100 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
-                  Message ID: {{message.id}}
                   <div class="card-header d-flex justify-content-between p-3">
                     <p class="fw-bold mb-0">{{message.author.username}}</p>
                     <p class="small text-muted">{{message.puzzle.title}}</p>
-                    <p class="text-muted small mb-0 timestamp" data-utc-date="{{message.timestamp.isoformat()}}">{{message.timestamp}}</p>
+                    <p class="text-muted small mb-0 timestamp" data-utc-date="{{message.timestamp.isoformat()}}"></p>
                     
                     <div class="pt-1">
                         <!-- <p class="small text-muted mb-1">Just now</p> -->
@@ -197,7 +206,7 @@
                       {%endif%}
                     </div>
                   </div>
-                  <div class="card-body">
+                  <div class="card-body content-sender-card-body">
                     <p class="mb-0">
                       {{message.content}}
                     </p>
@@ -242,7 +251,7 @@
                       {%endif%}
                     </div>
                   </div>
-                  <div class="card-body">
+                  <div class="card-body content-recipient-card-body">
                     <p class="mb-0">
                       {{message.content}}
                     </p>
@@ -265,13 +274,15 @@
                     </div>
                    
                 </div>
+                </div>
               </li>
-              
+            
      
               {% endif %}
             {% endfor %}
+          </ul>
           </div>
-            <li class="bg-white mb-3">
+            <!-- <li class="bg-white mb-3"> -->
              
               <div data-bs-input-init class="form-outline">
                   <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
@@ -285,25 +296,28 @@
               </div>
            
           
-           </li>  
+           <!-- </li>   -->
+          
             
             
           
-
+          
           {% endif %}
+        
           {% endif %}
    
-            </ul>
-         
+            
+        
             
            
           </div>
-          
-    
+        
+        
         </div>
-    
+     
       
     </div>
+  </div>
         
      
   </section>
@@ -444,23 +458,6 @@
 
       })
     }
-
-
-    
-    const timestamps = document.querySelectorAll('.timestamp')
-      timestamps.forEach(function(timestamp) {
-        if (timestamp) {
-          const utcDate = timestamp.getAttribute('data-utc-date')
-          
-          // converts utc date string to luxon DateTime object 
-          const luxonDate = luxon.DateTime.fromISO(utcDate, {zone: 'utc'})
-          // converts luxon DateTime object to user's local time zone
-          const localDate = luxonDate.setZone(luxon.DateTime.local().zoneName)
-          
-          timestamp.innerHTML = `<i class="far fa-clock"></i> ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
-      }
-
-    })
         
 });
 </script>

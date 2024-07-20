@@ -73,9 +73,8 @@
               <div class="flex-grow-1 ms-3">
                 <h5 class="mb-1">{{ user.username }}</h5>
                 <p class="mb-2 pb-1">{% if user.about_me %}<p>{{ user.about_me}}</p>{% endif %}
-                {% if user.last_seen %}<p class="last_seen" data-utc-date="{{ user.last_seen.isoformat() }}"> {{ user.last_seen }}</p>{% endif %}
+                {% if user.last_seen %}<p class="timestamp" data-utc-date="{{ user.last_seen.isoformat() }}"></p>{% endif %}
                 <div class="d-flex justify-content-start rounded-3 p-2 mb-2 bg-body-tertiary">
-                
                   <div>
                     <p class="small text-muted mb-1">Puzzles Shared</p>
                     <p class="mb-0 text-dark">{{sharing_count}} </p>
@@ -91,7 +90,7 @@
                 </div>
                 <div class="d-flex pt-1">
                   {% if user == current_user %}
-                  <button type="button" class="btn btn-outline-primary me-1 flex-grow-1" data-bs-toggle="modal" data-bs-target="#editProfileModal" data-username="{{user.username}}" data-about_me="{%if user.about_me%}{{user.about_me}}{% endif %}">Edit Profile</button>
+                  <button type="button" class="btn btn-outline-primary me-1 flex-grow-1" data-bs-toggle="modal" data-bs-target="#editProfileModal" data-username="{{user.username}}" data-about_me="{%if user.about_me%}{{user.about_me}}{% endif %}">Edit Profile <i class="fa-regular fa-pen-to-square"></i></button>
                   <a class="btn btn-primary flex-grow-1" href="{{ url_for('save_puzzle') }}">Add Puzzle</a>
                   {% endif %}
                 </div>
@@ -126,7 +125,7 @@
                    
                       {% if current_user.id == puzzle.user_id %}
                       <div class=" card-footer">
-                        <a class="btn btn-secondary" href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}">Edit</a>
+                        <a class="btn btn-secondary" href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}">Edit <i class="fa-regular fa-pen-to-square"></i></a>
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-type="puzzle" data-item-id={{puzzle.id}}>
                             Delete
                         </button>
@@ -180,20 +179,19 @@
 
     // date-time
     document.addEventListener('DOMContentLoaded', function() {
-      const last_seen = document.querySelector('.last_seen')
-      if (last_seen) {
-        const utcDate = last_seen.getAttribute('data-utc-date')
-        console.log(utcDate)
-        // converts utc date string to luxon DateTime object 
-        const luxonDate = luxon.DateTime.fromISO(utcDate, {zone: 'utc'})
-        // converts luxon DateTime object to user's local time zone
-        const localDate = luxonDate.setZone(luxon.DateTime.local().zoneName)
-        console.log(luxonDate)
-        last_seen.innerText = `Last seen on : ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
-      }
-      
-    })
-     if (confirmDeleteModal) {
+      // const last_seen = document.querySelector('.last_seen')
+      // if (last_seen) {
+      //   const utcDate = last_seen.getAttribute('data-utc-date')
+      //   console.log(utcDate)
+      //   // converts utc date string to luxon DateTime object 
+      //   const luxonDate = luxon.DateTime.fromISO(utcDate, {zone: 'utc'})
+      //   // converts luxon DateTime object to user's local time zone
+      //   const localDate = luxonDate.setZone(luxon.DateTime.local().zoneName)
+      //   console.log(luxonDate)
+      //   last_seen.innerText = `Last seen on : ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
+      // }
+
+      if (confirmDeleteModal) {
       confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
         // button that triggers modal
         const button = event.relatedTarget
@@ -224,6 +222,9 @@
       document.getElementById('aboutMe').value = about_me
       })
     }
+      
+    })
+     
 </script>
     
     

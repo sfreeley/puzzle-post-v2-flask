@@ -4,9 +4,41 @@
         window.location.href= `/messages?recipient_id=${userId}&puzzle_id=${puzzleId}`
     }
 </script>
-
+<main> 
+    <div class="container-fluid bg-trasparent my-4 p-3" style="position: relative;"> 
+        <div class="row row-cols-1 row-cols-xs-2 row-cols-sm-2 row-cols-lg-4 g-3"> 
+            <div class="col"> 
+                <div class="card h-100 shadow-sm"> 
+                    <img src="{{puzzle.image_url}}" class="card-img-top" alt="..."> 
+                    <h5 class="card-title">{{puzzle.title}}</h5>
+                    <div class="card-body"> 
+                        <div class="clearfix mb-3"> 
+                            <span class="float-start badge rounded-pill bg-primary">{{puzzle.manufacturer}}</span> 
+                            <span class="float-end price-hp">{{puzzle.pieces}} pieces </span> 
+                        </div> 
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><b>Pieces:</b> {{puzzle.pieces}}</li>
+                            
+                            
+                            <li class="list-group-item"><b>Category:</b> {% for category in puzzle.categories %}{{category.name}} {% if not loop.last %},{% endif %} {% endfor %}</li>
+                            
+                            <li class="list-group-item"><b>Details:</b> {% if puzzle.description %} {{puzzle.description}} {% else %} Nothing yet...</li>
+                            {% endif %}
+                            
+                        </ul>
+                        <div class="puzzle-timestamp {% if puzzle.author.username == current_user.username %} border-warning mb-3 {% else %} border-info mb-3 {% endif %}" style="max-width: 35rem;">
+                            <p class="timestamp" data-utc-date="{{ puzzle.timestamp.isoformat() }}"></p>
+                        </div>
+                        <div class="text-center my-4"> 
+                            <a href="#" class="btn btn-warning">Request</a> 
+                        </div>
+                     </div> 
+                    </div> 
+                </div> 
+               
 <div class="col">
-    <div class="card h-100 {% if puzzle.author.username == current_user.username %} border-warning mb-3 {% else %} border-info mb-3 {% endif %}" style="max-width: 35rem;">
+    <div class="card h-100 puzzle-timestamp {% if puzzle.author.username == current_user.username %} border-warning mb-3 {% else %} border-info mb-3 {% endif %}" style="max-width: 35rem;">
+        <p class="timestamp" data-utc-date="{{ puzzle.timestamp.isoformat() }}"></p>
         <img src="{{puzzle.image_url}}" class="card-img-top img-thumbnail" style="width: 200px" alt="puzzle-picture">
         <div class="card-body">
             <h5 class="card-title">{{puzzle.title}}</h5>
