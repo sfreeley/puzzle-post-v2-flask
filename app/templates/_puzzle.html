@@ -4,6 +4,20 @@
         window.location.href= `/messages?recipient_id=${userId}&puzzle_id=${puzzleId}`
     }
 </script>
+<style>
+    .btn-request {
+        background-color: #2BB0BF;
+    }
+
+    .info-puzzle {
+        color: #c0392b;
+    }
+
+    .card-img-top {
+        max-width: 300px;
+        align-self: center;
+    }
+</style>
 <div class="container">
     
         
@@ -21,6 +35,11 @@
                     <a href="#!.html" class="text-reset">{{puzzle.author.username}}</a>
                   </h5>
                   <span class="timestamp text-muted small d-block mb-4" data-utc-date="{{ puzzle.timestamp.isoformat() }}"></span>
+                  {% if puzzle.user_id != current_user.id %}
+                      <div class="card-footer">
+                        <a href="/messages?recipient_id={{puzzle.author.id}}&puzzle_id={{puzzle.id}}" class="btn btn-md btn-request">Request</a>
+                      </div>
+                      {% endif %}
                   <div class="row mx-0 border-top border-bottom">
                     <div class="col-6 text-center border-end py-3">
                       <h5 class="mb-0">{{puzzle.title}}</h5>
@@ -28,12 +47,11 @@
                     </div>
                     <div class="col-6 text-center py-3">
                       <h5 class="mb-0">{{puzzle.manufacturer}}</h5>
-                      <small class="btn btn-info text-muted p-0">Details </small>
-                      
-                
-                       <i class="fa-solid fa-caret-down" id="puzzleInfoLink" role="button" aria-expanded="false" data-bs-toggle="dropdown"></i>
+                      <small class="text-muted"> Manufacturer</small>
+                      <i class="fa-solid fa-circle-info fa-lg mb-1 info-puzzle" id="puzzleInfoLink" role="button" aria-expanded="false" data-bs-toggle="dropdown"></i>
                       
                         <ul class="dropdown-menu" aria-labelledby="puzzleInfoLink">
+                            
                             <li class="dropdown-item px-3 d-flex align-items-center justify-content-between">
                                 <span class="text-muted small"><b>Categories:</b> {% for category in puzzle.categories %}{{category.name}} {% if not loop.last %},{% endif %} {% endfor %}</span>  
                             </li>
@@ -52,18 +70,7 @@
                       
                     </div>
                   </div>
-                    <li class="list-group-item px-3 d-flex align-items-center justify-content-between">
-                      <span class="text-muted small d-flex align-items-center">
-                        <span class="align-middle lh-1 me-1 size-5 border border-4 border-success rounded-circle d-inline-block"></span>
-                        Online
-                      </span>
-                      {% if puzzle.user_id != current_user.id %}
-
-                      <div class="text-end">
-                        <a href="/messages?recipient_id={{puzzle.author.id}}&puzzle_id={{puzzle.id}}" class="btn btn-sm btn-primary">Request</a>
-                      </div>
-                      {% endif %}
-                    </li>
+                   
                   </ul>
                 </div>
             
