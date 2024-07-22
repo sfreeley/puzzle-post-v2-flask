@@ -1,14 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="brand_logo_container">
+    <img src="https://img.freepik.com/free-vector/illustration-jigsaw-icon_53876-5904.jpg?t=st=1721226350~exp=1721229950~hmac=3796b38e896834626bf4d9de21b091ea9c1f4bd1bbd2ba0cc9e70c2e0a5743c8&w=996" class="brand_logo" alt="Logo" style="max-width: 200px;">
+</div>
 <form action="{% if form.puzzle_id.data %}{{ url_for('save_puzzle', puzzle_id=form.puzzle_id.data )}}{% else %} {{url_for('save_puzzle')}} {%endif%}" enctype="multipart/form-data" method="POST">
     {{ form.hidden_tag() }}
 
-    {% if form.puzzle_id.data %}
-    <h1>Edit Puzzle</h1>
-    {%else%}
-    <h1>Add Puzzle</h1>
-    {% endif %}
+    
 
     <div class="mb-3">
         <label for="title" class="form-label">{{ form.title.label }}</label>

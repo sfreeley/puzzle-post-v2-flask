@@ -21,20 +21,64 @@ from config import Config
 @app.route('/index')
 @login_required
 def index():
-    
+    # include search functionality 
+    query = request.args.get('query', '')
     # try pagination
     page = request.args.get('page', 1, type=int)
-    
-    # only show puzzles that are not being requested
-    # puzzles = db.session.query(Puzzle).filter_by(is_available=True).all()
-
     per_page = 2
-    puzzles_pagination = db.session.query(Puzzle).filter_by(is_available=True).paginate(page=page, per_page=per_page, error_out=False)
+    if query:
+        results = Puzzle.query.join(Puzzle.categories).filter( 
+            or_(
+            Puzzle.title.ilike(f'%{query}%'),
+            Puzzle.pieces.ilike(f'%{query}%'),
+            Puzzle.manufacturer.ilike(f'%{query}%'),
+            Puzzle.condition.ilike(f'%{query}%'),
+            Puzzle.description.ilike(f'%{query}%'),
+            Category.name.ilike(f'%{query}%')
+        )
+    ).paginate(page=page, per_page=per_page, error_out=False)
+    else:
+        results = Puzzle.query.paginate(page=page, per_page=per_page, error_out=False)
+    # puzzles_pagination = db.session.query(Puzzle).filter_by(is_available=True).paginate(page=page, per_page=per_page, error_out=False)
     
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
-    return render_template('index.html', title='Home', puzzles_pagination=puzzles_pagination, user=user)
+    return render_template('index.html', title='Home', puzzles_pagination=results, query=query, user=user)
 
+# SEARCH
+# @app.route('/search', methods=['GET'])
+# def search():
+#     # try:
+#     # retrieve query parameter
+#     # request.args object that contains all query parameters sent with request
+#     # get('query', '') gets the value associated with the key named 'query'
+#     # if the value of query is not there, default to empty string
+#         query = request.args.get('query', '')
+#         page = request.args.get('page', 1, type=int)
+#         per_page = 2
+#         if query:
+#             results = Puzzle.query.join(Puzzle.categories).filter( 
+#                 or_(
+#                 Puzzle.title.ilike(f'%{query}%'),
+#                 Puzzle.pieces.ilike(f'%{query}%'),
+#                 Puzzle.manufacturer.ilike(f'%{query}%'),
+#                 Puzzle.condition.ilike(f'%{query}%'),
+#                 Puzzle.description.ilike(f'%{query}%'),
+#                 Category.name.ilike(f'%{query}%')
+#             )
+#             ).paginate(page=page, per_page=per_page, error_out=False)
+#         else:
+#             results = Puzzle.query.paginate(page=page, per_page=per_page, error_out=False)
+#         return render_template('index.html', puzzles_pagination=results, query=query)
+    #     results_data = [puzzle.to_dict() for puzzle in results]
+    #     # results_data = [{'title': puzzle.title, 'pieces': puzzle.pieces, 'manufacturer': puzzle.manufacturer, 'condition': puzzle.condition, 'categories': puzzle.categories} for puzzle in results]
+    #     return jsonify(results_data)
+    # except Exception as e:
+    #     return jsonify({'error': str(e)}), 500
+    # iterate through results list and creates dictionary 
+    
+    # converts list of dictionaries, results_data, into JSON format for sending back as response to client
+    # return jsonify(results_data)
 # LOGIN
 # will now accept get and post requests to server
 @app.route('/login', methods=['GET', 'POST'])
@@ -573,41 +617,6 @@ def request_action():
         
     return redirect(url_for('messages'))
     # return render_template('messages.html', form=form)
-
-# SEARCH
-@app.route('/search', methods=['GET'])
-def search():
-    # try:
-    # retrieve query parameter
-    # request.args object that contains all query parameters sent with request
-    # get('query', '') gets the value associated with the key named 'query'
-    # if the value of query is not there, default to empty string
-        query = request.args.get('query', '')
-        page = request.args.get('page', 1, type=int)
-        per_page = 2
-        if query:
-            results = Puzzle.query.join(Puzzle.categories).filter( 
-                or_(
-                Puzzle.title.ilike(f'%{query}%'),
-                Puzzle.pieces.ilike(f'%{query}%'),
-                Puzzle.manufacturer.ilike(f'%{query}%'),
-                Puzzle.condition.ilike(f'%{query}%'),
-                Puzzle.description.ilike(f'%{query}%'),
-                Category.name.ilike(f'%{query}%')
-            )
-            ).paginate(page=page, per_page=per_page, error_out=False)
-        else:
-            results = Puzzle.query.paginate(page=page, per_page=per_page, error_out=False)
-        return render_template('index.html', puzzles_pagination=results, query=query)
-    #     results_data = [puzzle.to_dict() for puzzle in results]
-    #     # results_data = [{'title': puzzle.title, 'pieces': puzzle.pieces, 'manufacturer': puzzle.manufacturer, 'condition': puzzle.condition, 'categories': puzzle.categories} for puzzle in results]
-    #     return jsonify(results_data)
-    # except Exception as e:
-    #     return jsonify({'error': str(e)}), 500
-    # iterate through results list and creates dictionary 
-    
-    # converts list of dictionaries, results_data, into JSON format for sending back as response to client
-    # return jsonify(results_data)
 
 @app.route('/delete/message_thread', methods=['GET','POST'])
 @login_required

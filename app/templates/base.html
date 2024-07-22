@@ -30,7 +30,13 @@
            
 
             .navbar {
-              background-color: #2BB0BF;
+              background-color: #cdedf6;
+              
+            }
+
+            .img-fluid-logo {
+              max-width: 175px;
+              
             }
       
        
@@ -54,7 +60,7 @@
                   if (path.includes('/messages')) {
                     timestamp.innerHTML = `<i class="far fa-clock"></i> ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}` 
                   } else if (path.includes('/user')) {
-                    timestamp.innerHTML = `Last seen on : ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
+                    timestamp.innerHTML = `Last <i class="fa-solid fa-eye"></i> : ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
                   } 
                   if (timestamp.closest('.puzzle-timestamp')) {
                     timestamp.innerHTML = `<i class="fa-solid fa-signs-post fa-lg"></i> ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
@@ -123,10 +129,12 @@
             <!-- Container wrapper -->
             <div class="container-fluid">
                 <!-- Navbar brand -->
-                <a class="navbar-brand" href="{{ url_for('index') }}">PuzzlePost v2</a>
+                <a class="navbar-brand" href="{{ url_for('index') }}">
+                  <img class="img-fluid img-fluid-logo" src="https://see.fontimg.com/api/renderfont4/MJ7p/eyJyIjoiZnMiLCJoIjo2NSwidyI6MTAwMCwiZnMiOjY1LCJmZ2MiOiIjMDAwMDAwIiwiYmdjIjoiI0ZGRkZGRiIsInQiOjF9/UHV6emxlUG9zdCB2Mg/drawing-guides.png" alt="app-title-logo"/>
+                </a>
                    <!-- Search  -->
-                <form class="d-flex input-group w-auto ms-lg-3 my-3 my-lg-0" action="{{ url_for('search') }}" method="GET">
-                  <input type="search" class="form-control" placeholder="Search" aria-label="Search" name="query" />
+                <form class="d-flex input-group w-auto ms-lg-3 my-3 my-lg-0" action="{{ url_for('index') }}" method="GET">
+                  <input type="search" class="form-control" placeholder="Search Puzzles" aria-label="Search" name="query" />
                   <button class="btn search-button" type="submit" data-bs-ripple-color="dark">
                     <i class="fas fa-search"></i>
                   </button>
