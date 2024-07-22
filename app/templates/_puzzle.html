@@ -18,11 +18,11 @@
         align-self: center;
     }
 </style>
-<div class="container">
-    
+<!-- <div class="container"> -->
+    <div class="col">
         
               <!--Card-->
-              <div class="card overflow-hidden text-center">
+              <div class="card overflow-hidden text-center" style="min-width: 18rem;">
                 <img src="{{puzzle.image_url}}" class="card-img-top img-fluid" alt="puzzle-image">
         
                 <!--Card body-->
@@ -73,12 +73,13 @@
                    
                   </ul>
                 </div>
+            </div>
             
           
 
                             
                
-<div class="col">
+<!-- <div class="col">
     <div class="card h-100 puzzle-timestamp {% if puzzle.author.username == current_user.username %} border-warning mb-3 {% else %} border-info mb-3 {% endif %}" style="max-width: 35rem;">
         <p class="timestamp" data-utc-date="{{ puzzle.timestamp.isoformat() }}"></p>
         <img src="{{puzzle.image_url}}" class="card-img-top img-thumbnail" style="width: 200px" alt="puzzle-picture">
@@ -110,7 +111,7 @@
         </div>
         {% endif %}
         
-    </div>
-</div>
+    </div> -->
+<!-- </div> -->
 
 

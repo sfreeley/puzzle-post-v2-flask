@@ -110,13 +110,48 @@
         {% elif sharing_count == 0 %}
             <p> You're not sharing any puzzles right now...</p>
         {% else %}
+            <!-- carousel -->
+            <div id="carouselPuzzle" class="carousel slide">
+              <div class="carousel-inner">
+               
+                  {% for puzzle in puzzles %}
+                    {% if puzzle.is_available %}
+                      <div class="carousel-item {% if loop.first %}active{% endif %}">
+                      {%include '_puzzle.html'%}
+                   
+                      
+                  
+                
+                {% if current_user.id == puzzle.user_id %}
+                <a class="btn btn-secondary" href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}">Edit <i class="fa-regular fa-pen-to-square"></i></a>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-type="puzzle" data-item-id={{puzzle.id}}>
+                            Delete
+                        </button>
+                        {% endif %}
+                      </div>
+                      
+
+              </div>
+              {% endif %}
+              {% endfor %}
+              
+              <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzle" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#carouselPuzzle" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
+            </div>
+            
             
                 
-                <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
+                <!-- <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto"> -->
                 {% for puzzle in puzzles %}
                     {% if puzzle.is_available %}
                     
-                        <div class="card" style="min-width: 18rem;" >
+                        <div style="min-width: 18rem;" >
                         {%include '_puzzle.html'%}
                        
                       
