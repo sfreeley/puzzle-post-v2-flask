@@ -125,7 +125,7 @@
   <!-- </section> -->
     
     <hr>
-  
+  <div>
     <h3><b>Sharing</b></h3>
         {% if puzzles|length == 0 %}
             <p> No puzzles just yet... </p>
@@ -160,24 +160,17 @@
 
               
             </div>
-
-           
-            
-            
-            
-                
-               
-           
           </div> 
+        </div>
           
           {% endif %} 
          
-
+        <div>
           <h3><b>Requested</b></h3>
     {% if requested_count == 0 %}
     <p> No puzzle requests at the moment...</p>
     {% else %}
-    <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
+    
     {% for puzzle in puzzles %}
     {% if puzzle.is_requested %}
     
@@ -191,11 +184,12 @@
     </div>
 
 
+    <div>
     <h3><b>In Progress</b></h3>
     {% if progress_count == 0 %}
     <p> You're not working on any puzzles right now...</p>
     {% else %}
-    <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
+    
     {% for puzzle in puzzles %}
     {% if puzzle.in_progress %}
     

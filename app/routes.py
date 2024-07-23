@@ -356,7 +356,7 @@ def send_message():
         # would need to edit the puzzle's is_requested value - change to true and change all other boolean values to false
         
         puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
-        if current_user.id != puzzle.user_id:
+        if current_user.id != puzzle.user_id and not puzzle.in_progress:
             puzzle.is_available = False
             puzzle.is_requested = True
             db.session.commit()
@@ -391,6 +391,18 @@ def messages():
     recipient_id = request.args.get('recipient_id')
     # id of puzzle requested
     puzzle_id = request.args.get('puzzle_id')
+    
+    
+    is_puzzle_in_progress = False
+    is_puzzle_requested = False
+    puzzle = Puzzle.query.get(puzzle_id)
+    if puzzle:
+        if puzzle.in_progress:
+            is_puzzle_in_progress = True
+        elif puzzle.is_requested:
+            is_puzzle_requested = True
+        
+   
  
 
     # get all the users that have sent current_user messages (populate the list of users on page)
@@ -464,6 +476,7 @@ def messages():
     for sender in message_senders:
         # returns list of puzzle objects 
         puzzles = get_puzzles(sender.id, current_user.id)
+        
         # most_recent_puzzle_id = get_most_recent_puzzle_id(sender.id, current_user.id)
         # get actual sender(user) object so can have access to all the functions in specific user object
         sender_object = User.query.get(sender.id)
@@ -500,7 +513,7 @@ def messages():
         last_message_ids[message.puzzle_id] = message.id
     
     
-    return render_template('messages.html', recipient=recipient, message_senders=senders_with_puzzle, conversation=messages_between_sender_recipient, puzzle_id=puzzle_id, last_message_ids=last_message_ids)
+    return render_template('messages.html', recipient=recipient, is_puzzle_in_progress=is_puzzle_in_progress, is_puzzle_requested=is_puzzle_requested, message_senders=senders_with_puzzle, conversation=messages_between_sender_recipient, puzzle_id=puzzle_id, last_message_ids=last_message_ids)
 
 # mark individual messages as read
 @app.route('/message/read/<int:message_id>', methods=['POST'])
