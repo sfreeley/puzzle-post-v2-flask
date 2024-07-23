@@ -11,6 +11,17 @@
     color: #e63946;
     border-color: #e63946;
   }
+
+  .carousel-control-prev, .carousel-control-next {
+    filter: invert(100%);
+  }
+
+  .carousel {
+    
+    max-width: 30rem;
+  }
+
+
 </style>
 <!-- Confirm Delete Modal -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
@@ -129,60 +140,38 @@
                     {% if puzzle.is_available %}
                       <div class="carousel-item {% if loop.first %}active{% endif %}">
                       {%include '_puzzle.html'%}
-                   
-                {% if current_user.id == puzzle.user_id %}
-                <a class="btn btn-secondary" href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}">Edit <i class="fa-regular fa-pen-to-square"></i></a>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-type="puzzle" data-item-id={{puzzle.id}}>
-                            Delete
-                        </button>
-                        {% endif %}
                       </div>
-                      
-
-              </div>
-              {% endif %}
-              {% endfor %}
-              
-              <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzle" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-              </button>
-              <button class="carousel-control-next" type="button" data-bs-target="#carouselPuzzle" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-              </button>
-            </div>
-            
-            
-                
-                <!-- <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto"> -->
-                {% for puzzle in puzzles %}
-                    {% if puzzle.is_available %}
-                    
-                        <div style="min-width: 18rem;" >
-                        {%include '_puzzle.html'%}
-                       
-                      
-                       
-                      
-                   
-                      {% if current_user.id == puzzle.user_id %}
-                      <div class=" card-footer">
-                        <a class="btn btn-secondary" href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}">Edit <i class="fa-regular fa-pen-to-square"></i></a>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-type="puzzle" data-item-id={{puzzle.id}}>
-                            Delete
-                        </button>
                   
-                      </div>
-                      </div>
-                
+               </div> 
+                    {% endif %}
                     
-                    {% endif %}
-                        
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-          </div>  
+                  {% endfor %}
+               
+
+                  <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzle" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true" ></span>
+                     
+                    
+                  </button>
+                  <button class="carousel-control-next" type="button" data-bs-target="#carouselPuzzle" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true" ></span>
+                    
+                  </button>
+
+              
+            </div>
+
+           
+            
+            
+            
+                
+               
+           
+          </div> 
+          
+          {% endif %} 
+         
 
           <h3><b>Requested</b></h3>
     {% if requested_count == 0 %}

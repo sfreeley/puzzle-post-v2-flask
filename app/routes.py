@@ -38,12 +38,11 @@ def index():
         )
     ).paginate(page=page, per_page=per_page, error_out=False)
     else:
-        results = Puzzle.query.paginate(page=page, per_page=per_page, error_out=False)
-    # puzzles_pagination = db.session.query(Puzzle).filter_by(is_available=True).paginate(page=page, per_page=per_page, error_out=False)
-    
+        results = db.session.query(Puzzle).filter_by(is_available=True).paginate(page=page, per_page=per_page, error_out=False)
+
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
-    return render_template('index.html', title='Home', puzzles_pagination=results, query=query, user=user)
+    return render_template('index.html', title='Home', puzzles_pagination=results, query=query, user=user, show_buttons=False)
 
 # SEARCH
 # @app.route('/search', methods=['GET'])
@@ -158,7 +157,7 @@ def user(username):
             progress_count = progress_count + 1    
         elif puzzle.is_requested == True:
             requested_count = requested_count + 1
-    return render_template('user.html', puzzles=puzzles_current_user, user=user, sharing_count=sharing_count, progress_count=progress_count, requested_count=requested_count)
+    return render_template('user.html', puzzles=puzzles_current_user, user=user, sharing_count=sharing_count, progress_count=progress_count, requested_count=requested_count, show_buttons=True)
 
 # executed before any of the view functions are executed
 # checks if the current user is logged in and lets you set last seen as that time 

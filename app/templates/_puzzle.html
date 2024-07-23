@@ -9,6 +9,14 @@
         background-color: #cdedf6;
     }
 
+    .btn-edit-puzzle {
+        background-color: #cdedf6;
+    }
+
+    .btn-delete-puzzle {
+        background-color: #ca5042;
+    }
+
     .info-puzzle {
         color: #5eb1bf;
     }
@@ -35,11 +43,22 @@
                     <a href="#!.html" class="text-reset">{{puzzle.author.username}}</a>
                   </h5>
                   <span class="timestamp text-muted small d-block mb-4" data-utc-date="{{ puzzle.timestamp.isoformat() }}"></span>
-                  {% if puzzle.user_id != current_user.id %}
+                    
                       <div class="card-footer">
+                        {% if puzzle.user_id != current_user.id %}
                         <a href="/messages?recipient_id={{puzzle.author.id}}&puzzle_id={{puzzle.id}}" class="btn btn-md btn-request">Request</a>
+                        {% elif show_buttons and puzzle.user_id == current_user.id %}
+                        <div class="d-flex justify-content-between">
+                            <a class="btn btn-edit-puzzle" href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}"><i class="fa-regular fa-pen-to-square"></i></a>
+                                <a class="btn btn-delete-puzzle" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-type="puzzle" data-item-id={{puzzle.id}}>
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>       
+                        </div> 
+                        {% endif %}
                       </div>
-                      {% endif %}
+                     
+                    
+                    
                   <div class="row mx-0 border-top border-bottom">
                     <div class="col-6 text-center border-end py-3">
                       <h5 class="mb-0">{{puzzle.title}}</h5>
