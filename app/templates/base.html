@@ -43,6 +43,12 @@
         </style>
         
         <script>
+          // show number of unread messages/requests
+         function set_message_count(n) {
+                const count = document.getElementById('message_count');
+                count.innerText = n;
+                count.style.visibility = n ? 'visible' : 'hidden';
+            }
            
             document.addEventListener('DOMContentLoaded', function() {
               const timestamps = document.querySelectorAll('.timestamp');
@@ -69,12 +75,7 @@
               }
 
         })
-         // show number of unread messages/requests
-         function set_message_count(n) {
-                const count = document.getElementById('message_count');
-                count.innerText = n;
-                count.style.visibility = n ? 'visible' : 'hidden';
-            }
+         
               
         })
             
