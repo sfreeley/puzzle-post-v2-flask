@@ -148,16 +148,23 @@ def user(username):
     requested_count = 0
     progress_count = 0
     
-    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id).all()
+    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id, is_deleted=False).all()
     
+    available_puzzles = []
+    in_progress_puzzles = []
+    requested_puzzles = []
+
     for puzzle in puzzles_current_user:
-        if puzzle.is_available == True:
-            sharing_count = sharing_count + 1
-        elif puzzle.in_progress == True:
-            progress_count = progress_count + 1    
-        elif puzzle.is_requested == True:
-            requested_count = requested_count + 1
-    return render_template('user.html', puzzles=puzzles_current_user, user=user, sharing_count=sharing_count, progress_count=progress_count, requested_count=requested_count, show_buttons=True)
+        if puzzle.is_available:
+            sharing_count += 1
+            available_puzzles.append(puzzle)
+        elif puzzle.in_progress:
+            progress_count += 1 
+            in_progress_puzzles.append(puzzle)   
+        elif puzzle.is_requested:
+            requested_count += 1
+            requested_puzzles.append(puzzle)
+    return render_template('user.html', puzzles=puzzles_current_user, available_puzzles=available_puzzles, in_progress_puzzles=in_progress_puzzles, requested_puzzles=requested_puzzles, user=user, sharing_count=sharing_count, progress_count=progress_count, requested_count=requested_count, show_buttons=True)
 
 # executed before any of the view functions are executed
 # checks if the current user is logged in and lets you set last seen as that time 
