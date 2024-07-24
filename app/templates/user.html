@@ -127,6 +127,7 @@
     <hr>
   <div>
     <h3><b>Sharing</b></h3>
+  
         {% if puzzles|length == 0 %}
             <p> No puzzles just yet... </p>
         {% elif sharing_count == 0 %}
@@ -134,10 +135,13 @@
         {% else %}
             <!-- carousel -->
             <div id="carouselPuzzle" class="carousel slide">
+              
               <div class="carousel-inner">
                
                   {% for puzzle in puzzles %}
+                 
                     {% if puzzle.is_available %}
+                    {{puzzle}}
                       <div class="carousel-item {% if loop.first %}active{% endif %}">
                       {%include '_puzzle.html'%}
                       </div>

@@ -123,7 +123,7 @@ class Puzzle(db.Model):
     categories = so.relationship(Category, secondary=puzzle_category, back_populates='puzzles')
 
     def __repr__(self):
-        return '<Puzzle {}>'.format(self.description)
+        return '<Puzzle {}>'.format(self.id)
     
     # def to_dict(self):
     #     return {

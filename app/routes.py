@@ -148,7 +148,7 @@ def user(username):
     requested_count = 0
     progress_count = 0
     
-    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id, is_deleted=False).all()
+    puzzles_current_user = db.session.query(Puzzle).filter_by(user_id=current_user.id).all()
     
     for puzzle in puzzles_current_user:
         if puzzle.is_available == True:
@@ -173,31 +173,26 @@ def before_request():
 def edit_profile():
     # form = EditProfileForm()
     # if POST-ing, save the new info into database
-
-    username = request.form.get('username') 
-    about_me = request.form.get('about_me')
+    if request.method == 'POST':
+        username = request.form.get('username') 
+        about_me = request.form.get('about_me')
 
     # make sure to check that user is not changing their current username to another already in db
-    def check_username_available(username):
+   
         if username != current_user.username:
             user = User.query.filter_by(username=username).first()
             # return True or False
-            return user 
-    if request.method == 'POST':
-        if not check_username_available(username):
+            if user:
+                 flash('Username already taken')
+                 return redirect(url_for('user', username=current_user.username))
+       
             current_user.username = username
             current_user.about_me = about_me
             db.session.commit()
+            flash('Profile updated successfully')
             return redirect(url_for('user', username=current_user.username))
-        else:
-            flash("Username already taken")
-            return redirect(url_for('edit_profile'))
-    # if GET-ing and user wants to edit the profile, show the current info first 
-    # (what's already in the db)
-    # elif request.method == 'GET':
-    #     form.username.data = current_user.username
-    #     form.about_me.data = current_user.about_me
-    # return render_template('edit_profile.html', title='Edit Profile', user=user)
+        return redirect(url_for('user', username=current_user.username))
+               
 
 # get image url 
 @app.route('/uploads/<filename>')
