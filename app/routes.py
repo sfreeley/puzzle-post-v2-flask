@@ -574,26 +574,25 @@ def request_action():
     user = db.first_or_404(sa.select(User).where(User.username == requester))
     puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
 
-    form = PersonalNote()
     if not puzzle or not user:
         flash('Puzzle or user not found')
         return redirect(url_for('messages'))
     if request.method == 'POST':
         
-        # personal_note = form.note.data
+        
         if action == 'approve':
             
             # send pre-generated message to the requester of puzzle
-            message_to_requester = f'Your request for puzzle, {puzzle.title}, has been approved! \n {personal_note}'
+            message_to_requester = f'Your request for puzzle, {puzzle.title}, has been approved! -- {personal_note}'
             puzzle.user_id = user.id
             puzzle.in_progress = True
             puzzle.is_available = False
             puzzle.is_requested = False
             db.session.commit()
-            print(f"Puzzle {puzzle_id} approved, is_requested: {puzzle.is_requested}")  # Debugging statement
+            
         elif action == 'decline':
             
-            message_to_requester = f'Your request for puzzle, {puzzle.title}, has been declined. \n {personal_note}'
+            message_to_requester = f'Your request for puzzle, {puzzle.title}, has been declined. -- {personal_note}'
             
             # puzzle user_id doesn't change
             # not in_progress
@@ -628,7 +627,7 @@ def request_action():
             flash(f'You declined the puzzle request from {user.username} for {puzzle.title}.')
         
     return redirect(url_for('messages'))
-    # return render_template('messages.html', form=form)
+    
 
 @app.route('/delete/message_thread', methods=['GET','POST'])
 @login_required
