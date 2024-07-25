@@ -36,7 +36,7 @@ def index():
             Puzzle.description.ilike(f'%{query}%'),
             Category.name.ilike(f'%{query}%')
         )
-    ).paginate(page=page, per_page=per_page, error_out=False)
+    ).distinct().paginate(page=page, per_page=per_page, error_out=False)
     else:
         results = db.session.query(Puzzle).filter_by(is_available=True).paginate(page=page, per_page=per_page, error_out=False)
 
@@ -78,6 +78,7 @@ def index():
     
     # converts list of dictionaries, results_data, into JSON format for sending back as response to client
     # return jsonify(results_data)
+
 # LOGIN
 # will now accept get and post requests to server
 @app.route('/login', methods=['GET', 'POST'])
@@ -666,6 +667,17 @@ def delete_message_thread():
     db.session.commit()
     flash('Message thread successfully deleted.')   
     return redirect(url_for('messages'))
+
+@app.route('/completed', methods=['POST'])
+@login_required
+def complete_puzzle():
+    puzzle_id = request.form.get('puzzle_id')
+    puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id).first()
+    puzzle.is_available = True
+    puzzle.in_progress = False 
+    db.session.commit()
+    return redirect(url_for('user', username=current_user.username))
+
 
 
       

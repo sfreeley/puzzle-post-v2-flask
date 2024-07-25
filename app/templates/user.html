@@ -5,6 +5,7 @@
   .btn-add-puzzle {
     color: #5eb1bf;
     border-color: #5eb1bf;
+    
   }
 
   .btn-edit-profile {
@@ -20,6 +21,8 @@
     
     max-width: 30rem;
   }
+
+ 
 
 
 </style>
@@ -47,6 +50,29 @@
     </div>
   </div>
 
+  <!-- Confirm Complete Modal -->
+<div class="modal fade" id="confirmCompleteModal" tabindex="-1" aria-labelledby="confirmCompleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="confirmCompleteModalLabel">Confirm</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you are done with this puzzle?
+      </div>
+      <form action="{{ url_for('complete_puzzle')}}" method="POST">
+          <input type="hidden" id="puzzleId" name="puzzle_id">
+          <button type="submit" class="btn btn-danger">Completed</button>
+      </form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+       
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Edit Profile Modal  -->
   <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -57,13 +83,9 @@
         </div>
         <div class="modal-body">
           <form action="{{ url_for('edit_profile')}}" enctype="multipart/form-data" method="POST">
-            
-        
             <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                
-                <input type="text" class="form-control" id="username" name="username">
-                
+                <label for="username" class="form-label">Username</label> 
+                <input type="text" class="form-control" id="username" name="username">  
             </div>
             <div class="mb-3">
                 <label for="aboutMe" class="form-label">About me</label>
@@ -82,7 +104,7 @@
   </div>
 
  <!-- profile card -->
-  <!-- <section class="w-100 px-4 py-5" style="background-color: #9de2ff; border-radius: .5rem .5rem 0 0;"> -->
+ 
     <div class="row d-flex justify-content-center">
       <div class="col-12 col-md-9 col-lg-7 col-xl-6">
         <div class="card bg-dark text-light" style="border-radius: 15px;">
@@ -122,9 +144,9 @@
         </div>
       </div>
     </div>
-  <!-- </section> -->
-    
+ 
     <hr>
+  <!-- carousels -->
   <div>
     <h3><b>Sharing</b></h3>
     Available: {{available_puzzles}}
@@ -143,6 +165,7 @@
             </div>    
         </div>  
             {% endfor %}
+            {% if sharing_count > 1 %}
           <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzle" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
@@ -151,6 +174,7 @@
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Next</span>
           </button>
+          {% endif %}
         </div>  
         {% endif %}
   </div>
@@ -170,6 +194,7 @@
             </div>    
         </div>  
             {% endfor %}
+            {% if requested_count > 1 %}
           <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzleRequested" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
@@ -178,6 +203,7 @@
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Next</span>
           </button>
+          {% endif %}
         </div>  
         {% endif %}
   </div>
@@ -197,6 +223,7 @@
             </div>    
         </div>  
             {% endfor %}
+            {% if progress_count > 1 %}
           <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzleInProgress" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
@@ -205,6 +232,7 @@
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Next</span>
           </button>
+          {% endif %}
         </div>  
         {% endif %}
   </div>
@@ -221,39 +249,53 @@
 
     // date-time
     document.addEventListener('DOMContentLoaded', function() {
+      const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+      const editProfileModal = document.getElementById('editProfileModal')
+
       if (confirmDeleteModal) {
       confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
         // button that triggers modal
         const button = event.relatedTarget
-        const delete_type = button.getAttribute('data-delete-type')
-        console.log(delete_type)
-        const item_id = button.getAttribute('data-item-id')
-        console.log(item_id)
+        const deleteType = button.getAttribute('data-delete-type')
+        console.log(deleteType)
+        const itemId = button.getAttribute('data-item-id')
+        console.log(itemId)
 
 
       // assign the value to the hidden inputs in the modal whatever the values are from the attributes above
-      document.getElementById('deleteType').value = delete_type
-      document.getElementById('itemId').value = item_id
+      document.getElementById('deleteType').value = deleteType
+      document.getElementById('itemId').value = itemId
 
       })
     
    
     }  
-
+    
     if (editProfileModal) {
-      editProfileModal.addEventListener('show.bs.modal', function(even) {
+      editProfileModal.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget
         const username = button.getAttribute('data-username')
         console.log(username)
-        const about_me = button.getAttribute('data-about_me')
-        console.log(about_me)
+        const aboutMe = button.getAttribute('data-about_me')
+        console.log(aboutMe)
 
       document.getElementById('username').value = username
-      document.getElementById('aboutMe').value = about_me
+      document.getElementById('aboutMe').value = aboutMe
+      })
+    }
+
+    const confirmCompleteModal = document.getElementById('confirmCompleteModal')
+    if (confirmCompleteModal) {
+      confirmCompleteModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget
+        const puzzleId = button.getAttribute('data-puzzle-id')
+        console.log(puzzleId)
+
+      document.getElementById('puzzleId').value = puzzleId
       })
     }
       
-    })
+  })
      
 </script>
     

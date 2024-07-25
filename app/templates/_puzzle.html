@@ -11,10 +11,16 @@
 
     .btn-edit-puzzle {
         background-color: #cdedf6;
+        z-index: 1000;
     }
 
     .btn-delete-puzzle {
         background-color: #ca5042;
+        z-index: 1000;
+    }
+
+    .btn-complete-puzzle {
+        color: #6a994e;
     }
 
     .info-puzzle {
@@ -50,15 +56,19 @@
                         {% elif show_buttons and puzzle.user_id == current_user.id %}
                         <div class="d-flex justify-content-between">
                             <a class="btn btn-edit-puzzle" href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}"><i class="fa-regular fa-pen-to-square"></i></a>
-                                <a class="btn btn-delete-puzzle" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-type="puzzle" data-item-id={{puzzle.id}}>
-                                    <i class="fa-solid fa-trash"></i>
-                                </a>       
+                            {% if not puzzle.is_available%}
+                            <a class="btn btn-complete-puzzle" data-bs-toggle="modal" data-bs-target="#confirmCompleteModal" data-puzzle-id={{puzzle.id}}>
+                                <i class="fa-solid fa-circle-check fa-lg"></i> 
+                            </a>
+                            {% endif %}
+                            <a class="btn btn-delete-puzzle" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-type="puzzle" data-item-id={{puzzle.id}}>
+                                <i class="fa-solid fa-trash"></i>
+                            </a>       
                         </div> 
                         {% endif %}
                       </div>
                      
-                    
-                    
+                        
                   <div class="row mx-0 border-top border-bottom">
                     <div class="col-6 text-center border-end py-3">
                       <h5 class="mb-0">{{puzzle.title}}</h5>
@@ -82,17 +92,11 @@
                                 <span class="text-muted small"><b>Description:</b>{{puzzle.description}}</span>  
                             </li>
                             {% endif %}
-                            
-                         
-                    
-                        </ul>
-                      
+                        </ul>  
                     </div>
-                  </div>
-                   
-                  </ul>
-                </div>
-            </div>
+                </div>  
+             </div>
+        </div>
             
             
           
