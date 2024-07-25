@@ -135,7 +135,7 @@
             <p> You're not sharing any puzzles right now...</p>
         {% else %}
   
-        <div id="carouselPuzzle" class="carousel slide carousel-available">  
+        <div id="carouselPuzzle" class="carousel carousel-available slide">  
           <div class="carousel-inner">  
             {% for puzzle in available_puzzles %}
             <div class="carousel-item {% if loop.first %}active{% endif %}"> 
@@ -153,7 +153,63 @@
           </button>
         </div>  
         {% endif %}
-  </div>          
+  </div>
+
+  <div>
+    <h3><b>Requested</b></h3>
+    Requested Puzzles: {{requested_puzzles}} Requested count: {{requested_count}}
+        {% if requested_count == 0 %}
+            <p> You have no puzzles being requested right now...</p>
+        {% else %}
+  
+        <div id="carouselPuzzleRequested" class="carousel carousel-requested slide">  
+          <div class="carousel-inner">  
+            {% for puzzle in requested_puzzles %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}"> 
+              {% include '_puzzle.html'%}
+            </div>    
+        </div>  
+            {% endfor %}
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzleRequested" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselPuzzleRequested" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>  
+        {% endif %}
+  </div>
+
+  <div>
+    <h3><b>In Progress</b></h3>
+    InProgress: {{in_progress_puzzles}} In Progress Count: {{progress_count}}
+        {% if progress_count == 0 %}
+            <p> You're not working on any puzzles right now...</p>
+        {% else %}
+  
+        <div id="carouselPuzzleInProgress" class="carousel carousel-in-progress slide">  
+          <div class="carousel-inner">  
+            {% for puzzle in in_progress_puzzles %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}"> 
+              {% include '_puzzle.html'%}
+            </div>    
+        </div>  
+            {% endfor %}
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzleInProgress" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselPuzzleInProgress" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>  
+        {% endif %}
+  </div>
+  
+  
           
             
     
