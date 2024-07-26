@@ -194,12 +194,12 @@ def edit_profile():
                  flash('Username already taken')
                  return redirect(url_for('user', username=current_user.username))
        
-            current_user.username = username
-            current_user.about_me = about_me
-            db.session.commit()
-            flash('Profile updated successfully')
-            return redirect(url_for('user', username=current_user.username))
+        current_user.username = username
+        current_user.about_me = about_me
+        db.session.commit()
+        flash('Profile updated successfully')
         return redirect(url_for('user', username=current_user.username))
+        # return redirect(url_for('user', username=current_user.username))
                
 
 # get image url 
