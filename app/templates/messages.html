@@ -34,6 +34,7 @@
 <h1>
     Your Messages, {{current_user.username}}
     puzzle_id:{{puzzle_id}}
+    requested:{{is_puzzle_requested}}
     
     
 </h1>
@@ -281,6 +282,7 @@
               {% endif %}
             {% endfor %}
           </ul>
+          {% endif %}
           </div>
             <!-- <li class="bg-white mb-3"> -->
              {% if is_puzzle_requested or is_puzzle_in_progress %}
@@ -304,7 +306,7 @@
             
           
           
-          {% endif %}
+          
         
           {% endif %}
    

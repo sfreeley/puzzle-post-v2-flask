@@ -383,6 +383,14 @@ def send_message():
         return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=puzzle_id ))
     return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=puzzle_id))
 
+@app.route('/request_puzzle/<int:puzzle_id>', methods=['GET', 'POST'])
+@login_required
+def request_puzzle(puzzle_id):
+    puzzle = Puzzle.query.get_or_404(puzzle_id)
+    puzzle.is_requested = True
+    db.session.commit()
+    return redirect(url_for('messages', recipient_id=puzzle.author.id, puzzle_id = puzzle_id))
+
 # show list of user conversations
 # show conversations
 # send messages using form

@@ -52,7 +52,7 @@
                     
                       <div class="card-footer">
                         {% if puzzle.user_id != current_user.id %}
-                        <a href="/messages?recipient_id={{puzzle.author.id}}&puzzle_id={{puzzle.id}}" class="btn btn-md btn-request">Request</a>
+                        <a href="{{ url_for('request_puzzle', puzzle_id=puzzle.id) }}" class="btn btn-md btn-request">Request</a>
                         {% elif show_buttons and puzzle.user_id == current_user.id %}
                         <div class="d-flex justify-content-between">
                             <a class="btn btn-edit-puzzle" href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}"><i class="fa-regular fa-pen-to-square"></i></a>
