@@ -1,6 +1,31 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+  .btn-add-puzzle {
+    color: #5eb1bf;
+    border-color: #5eb1bf;
+    
+  }
+
+  .btn-edit-profile {
+    color: #e63946;
+    border-color: #e63946;
+  }
+
+  .carousel-control-prev, .carousel-control-next {
+    filter: invert(100%);
+  }
+
+  .carousel {
+    
+    max-width: 30rem;
+  }
+
+ 
+
+
+</style>
 <!-- Confirm Delete Modal -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -25,6 +50,29 @@
     </div>
   </div>
 
+  <!-- Confirm Complete Modal -->
+<div class="modal fade" id="confirmCompleteModal" tabindex="-1" aria-labelledby="confirmCompleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="confirmCompleteModalLabel">Confirm</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you are done with this puzzle?
+      </div>
+      <form action="{{ url_for('complete_puzzle')}}" method="POST">
+          <input type="hidden" id="puzzleId" name="puzzle_id">
+          <button type="submit" class="btn btn-danger">Completed</button>
+      </form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+       
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Edit Profile Modal  -->
   <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -35,13 +83,9 @@
         </div>
         <div class="modal-body">
           <form action="{{ url_for('edit_profile')}}" enctype="multipart/form-data" method="POST">
-            
-        
             <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                
-                <input type="text" class="form-control" id="username" name="username">
-                
+                <label for="username" class="form-label">Username</label> 
+                <input type="text" class="form-control" id="username" name="username">  
             </div>
             <div class="mb-3">
                 <label for="aboutMe" class="form-label">About me</label>
@@ -60,7 +104,7 @@
   </div>
 
  <!-- profile card -->
-  <!-- <section class="w-100 px-4 py-5" style="background-color: #9de2ff; border-radius: .5rem .5rem 0 0;"> -->
+ 
     <div class="row d-flex justify-content-center">
       <div class="col-12 col-md-9 col-lg-7 col-xl-6">
         <div class="card bg-dark text-light" style="border-radius: 15px;">
@@ -73,9 +117,8 @@
               <div class="flex-grow-1 ms-3">
                 <h5 class="mb-1">{{ user.username }}</h5>
                 <p class="mb-2 pb-1">{% if user.about_me %}<p>{{ user.about_me}}</p>{% endif %}
-                {% if user.last_seen %}<p class="last_seen" data-utc-date="{{ user.last_seen.isoformat() }}"> {{ user.last_seen }}</p>{% endif %}
+                {% if user.last_seen %}<p class="timestamp" data-utc-date="{{ user.last_seen.isoformat() }}"></p>{% endif %}
                 <div class="d-flex justify-content-start rounded-3 p-2 mb-2 bg-body-tertiary">
-                
                   <div>
                     <p class="small text-muted mb-1">Puzzles Shared</p>
                     <p class="mb-0 text-dark">{{sharing_count}} </p>
@@ -91,8 +134,8 @@
                 </div>
                 <div class="d-flex pt-1">
                   {% if user == current_user %}
-                  <button type="button" class="btn btn-outline-primary me-1 flex-grow-1" data-bs-toggle="modal" data-bs-target="#editProfileModal" data-username="{{user.username}}" data-about_me="{%if user.about_me%}{{user.about_me}}{% endif %}">Edit Profile</button>
-                  <a class="btn btn-primary flex-grow-1" href="{{ url_for('save_puzzle') }}">Add Puzzle</a>
+                  <button type="button" class="btn btn-edit-profile me-1 flex-grow-1" data-bs-toggle="modal" data-bs-target="#editProfileModal" data-username="{{user.username}}" data-about_me="{%if user.about_me%}{{user.about_me}}{% endif %}">Profile <i class="fa-regular fa-pen-to-square"></i></button>
+                  <a class="btn btn-add-puzzle flex-grow-1" href="{{ url_for('save_puzzle') }}">Puzzle <i class="fa-solid fa-plus fa-lg"></i></a>
                   {% endif %}
                 </div>
               </div>
@@ -101,129 +144,159 @@
         </div>
       </div>
     </div>
-  <!-- </section> -->
-    
+ 
     <hr>
-  
+  <!-- carousels -->
+  <div>
     <h3><b>Sharing</b></h3>
+    Available: {{available_puzzles}}
+    Sharing_count: {{sharing_count}}
         {% if puzzles|length == 0 %}
             <p> No puzzles just yet... </p>
         {% elif sharing_count == 0 %}
             <p> You're not sharing any puzzles right now...</p>
         {% else %}
-            
-                
-                <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
-                {% for puzzle in puzzles %}
-                    {% if puzzle.is_available %}
-                    
-                        <div class="card" style="min-width: 18rem;" >
-                        {%include '_puzzle.html'%}
-                       
-                      
-                       
-                      
-                   
-                      {% if current_user.id == puzzle.user_id %}
-                      <div class=" card-footer">
-                        <a class="btn btn-secondary" href="{{ url_for('save_puzzle', puzzle_id=puzzle.id) }}">Edit</a>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-delete-type="puzzle" data-item-id={{puzzle.id}}>
-                            Delete
-                        </button>
-                  
-                      </div>
-                      </div>
-                
-                    
-                    {% endif %}
-                        
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-          </div>  
+  
+        <div id="carouselPuzzle" class="carousel carousel-available slide">  
+          <div class="carousel-inner">  
+            {% for puzzle in available_puzzles %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}"> 
+              {% include '_puzzle.html'%}
+            </div>    
+        </div>  
+            {% endfor %}
+            {% if sharing_count > 1 %}
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzle" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselPuzzle" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+          {% endif %}
+        </div>  
+        {% endif %}
+  </div>
 
-          <h3><b>Requested</b></h3>
-    {% if requested_count == 0 %}
-    <p> No puzzle requests at the moment...</p>
-    {% else %}
-    <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
-    {% for puzzle in puzzles %}
-    {% if puzzle.is_available %}
-    
-        <div class="card" style="min-width: 18rem;" >
-        {%include '_puzzle.html'%}
-        </div>
-      
-    {% endif %}
-    {% endfor %}
-    {% endif %}
-    </div>
+  <div>
+    <h3><b>Requested</b></h3>
+    Requested Puzzles: {{requested_puzzles}} Requested count: {{requested_count}}
+        {% if requested_count == 0 %}
+            <p> You have no puzzles being requested right now...</p>
+        {% else %}
+  
+        <div id="carouselPuzzleRequested" class="carousel carousel-requested slide">  
+          <div class="carousel-inner">  
+            {% for puzzle in requested_puzzles %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}"> 
+              {% include '_puzzle.html'%}
+            </div>    
+        </div>  
+            {% endfor %}
+            {% if requested_count > 1 %}
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzleRequested" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselPuzzleRequested" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+          {% endif %}
+        </div>  
+        {% endif %}
+  </div>
 
-
+  <div>
     <h3><b>In Progress</b></h3>
-    {% if progress_count == 0 %}
-    <p> You're not working on any puzzles right now...</p>
-    {% else %}
-    <div class="card-group card-group-scroll d-flex flex-nowrap overflow-auto">
-    {% for puzzle in puzzles %}
-    {% if puzzle.is_available %}
+    InProgress: {{in_progress_puzzles}} In Progress Count: {{progress_count}}
+        {% if progress_count == 0 %}
+            <p> You're not working on any puzzles right now...</p>
+        {% else %}
+  
+        <div id="carouselPuzzleInProgress" class="carousel carousel-in-progress slide">  
+          <div class="carousel-inner">  
+            {% for puzzle in in_progress_puzzles %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}"> 
+              {% include '_puzzle.html'%}
+            </div>    
+        </div>  
+            {% endfor %}
+            {% if progress_count > 1 %}
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzleInProgress" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselPuzzleInProgress" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+          {% endif %}
+        </div>  
+        {% endif %}
+  </div>
+  
+  
+          
+            
     
-        <div class="card" style="min-width: 18rem;" >
-        {%include '_puzzle.html'%}
-        </div>
-    {% endif %}
-    {% endfor %}
-    {% endif %}
-    </div>
+
+ 
+    
     
 <script>
 
     // date-time
     document.addEventListener('DOMContentLoaded', function() {
-      const last_seen = document.querySelector('.last_seen')
-      if (last_seen) {
-        const utcDate = last_seen.getAttribute('data-utc-date')
-        console.log(utcDate)
-        // converts utc date string to luxon DateTime object 
-        const luxonDate = luxon.DateTime.fromISO(utcDate, {zone: 'utc'})
-        // converts luxon DateTime object to user's local time zone
-        const localDate = luxonDate.setZone(luxon.DateTime.local().zoneName)
-        console.log(luxonDate)
-        last_seen.innerText = `Last seen on : ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
-      }
-      
-    })
-     if (confirmDeleteModal) {
+      const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+      const editProfileModal = document.getElementById('editProfileModal')
+
+      if (confirmDeleteModal) {
       confirmDeleteModal.addEventListener('show.bs.modal', function(event) {
         // button that triggers modal
         const button = event.relatedTarget
-        const delete_type = button.getAttribute('data-delete-type')
-        console.log(delete_type)
-        const item_id = button.getAttribute('data-item-id')
-        console.log(item_id)
+        const deleteType = button.getAttribute('data-delete-type')
+        console.log(deleteType)
+        const itemId = button.getAttribute('data-item-id')
+        console.log(itemId)
 
 
       // assign the value to the hidden inputs in the modal whatever the values are from the attributes above
-      document.getElementById('deleteType').value = delete_type
-      document.getElementById('itemId').value = item_id
+      document.getElementById('deleteType').value = deleteType
+      document.getElementById('itemId').value = itemId
 
       })
     
    
     }  
-
+    
     if (editProfileModal) {
-      editProfileModal.addEventListener('show.bs.modal', function(even) {
+      editProfileModal.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget
         const username = button.getAttribute('data-username')
         console.log(username)
-        const about_me = button.getAttribute('data-about_me')
-        console.log(about_me)
+        const aboutMe = button.getAttribute('data-about_me')
+        console.log(aboutMe)
 
       document.getElementById('username').value = username
-      document.getElementById('aboutMe').value = about_me
+      document.getElementById('aboutMe').value = aboutMe
       })
     }
+
+    const confirmCompleteModal = document.getElementById('confirmCompleteModal')
+    if (confirmCompleteModal) {
+      confirmCompleteModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget
+        const puzzleId = button.getAttribute('data-puzzle-id')
+        console.log(puzzleId)
+
+      document.getElementById('puzzleId').value = puzzleId
+      })
+    }
+      
+  })
+     
 </script>
     
     

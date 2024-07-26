@@ -20,10 +20,21 @@
     padding: 0;
     color: #c0392b;
   }
+
+  .content-sender-card-body {
+    background-color: hsl(186, 60%, 80%);
+  }
+
+  .content-recipient-card-body {
+    background-color: hsl(6, 63%, 80%);
+  }
+
+  
  </style>
 <h1>
     Your Messages, {{current_user.username}}
     puzzle_id:{{puzzle_id}}
+    requested:{{is_puzzle_requested}}
     
     
 </h1>
@@ -68,12 +79,14 @@
         <h1 class="modal-title fs-5" id="confirmDeleteModalLabel">Confirm</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        Are you sure you want to delete this message?
+      <div class="modal-body modal-body-delete">
+        
       </div>
-      <form action="{{ url_for('delete_message') }}" method="POST">
+      <form id="deleteForm" method="POST">
           
           <input type="hidden" id="messageId" name="message_id">
+          <input type="hidden" id="recipientId" name="recipient_id">
+          <input type="hidden" id="puzzleIdDelete" name="puzzle_id_delete">
           <div class="d-flex justify-content-center">
           <button type="submit" class="btn confirm-delete-btn btn-danger">Confirm Delete</button>
           </div>
@@ -87,7 +100,7 @@
   </div>
 </div>
 
-
+<!-- show members with conversation -->
 <section >
       
     <div class="container py-5 ">
@@ -140,6 +153,7 @@
                        </li>
                       <div class="d-flex flex-row">
                           <p class="fw-bold mb-0">{{ puzzle.title }}</p>
+                          <span><a class="btn delete-thread-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-recipient-id="{{sender.id}}" data-puzzle-id-delete="{{ puzzle.id }}"><i class="fa-solid fa-trash-can fa-sm p-1"></i></a></span>
                       </div>
                     </a>
                     {% endif%}
@@ -181,26 +195,25 @@
                         {% if message.author.username != current_user.username%}
               <li class="d-flex justify-content-between mb-4">
                 <div class="card w-100 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
-                  Message ID: {{message.id}}
                   <div class="card-header d-flex justify-content-between p-3">
                     <p class="fw-bold mb-0">{{message.author.username}}</p>
                     <p class="small text-muted">{{message.puzzle.title}}</p>
-                    <p class="text-muted small mb-0 timestamp" data-utc-date="{{message.timestamp.isoformat()}}">{{message.timestamp}}</p>
+                    <p class="text-muted small mb-0 timestamp" data-utc-date="{{message.timestamp.isoformat()}}"></p>
                     
                     <div class="pt-1">
                         <!-- <p class="small text-muted mb-1">Just now</p> -->
                       {% if not message.is_read and message.recipient_owner_id == current_user.id%}
-                      <span class="unread-indicator badge bg-danger float-end"><i class="fa-solid fa-glasses"></i>Read me</span>
+                      <span class="unread-indicator badge bg-danger float-end"><i class="fa-solid fa-glasses"></i></span>
                       {%endif%}
                     </div>
                   </div>
-                  <div class="card-body">
+                  <div class="card-body content-sender-card-body">
                     <p class="mb-0">
                       {{message.content}}
                     </p>
                     
                     <div class="d-flex justify-content-between align-items-center">
-                      {%if message.id == last_message_ids[message.puzzle_id] and current_user.id == message.puzzle.user_id and message.puzzle.is_requested %}
+                      {% if message.id == last_message_ids[message.puzzle_id] and current_user.id == message.puzzle.user_id and message.puzzle.is_requested and not message.puzzle.in_progress %}
                       <div class="d-flex">
                       <a class="btn approve-btn d-flex align-items-center me-2" data-bs-toggle="modal" data-bs-target="#personalNoteModal" data-action="approve" data-requester="{% if message.author.username == current_user.username %}{{message.recipient.username}}{% else %}{{message.author.username}}{%endif%}" data-puzzle-id="{{ message.puzzle.id }}" >
                         <i class="fa-regular fa-face-smile"></i> Approve</a>
@@ -235,11 +248,11 @@
                     <div class="pt-1">
                       <!-- <p class="small text-muted mb-1">Just now</p> -->
                       {% if not message.is_read and message.recipient_owner_id == current_user.id%}
-                      <span class="unread-indicator badge bg-danger float-end"><i class="fa-solid fa-glasses"></i>Read me</span>
+                      <span class="unread-indicator badge bg-danger float-end"><i class="fa-solid fa-glasses"></i></span>
                       {%endif%}
                     </div>
                   </div>
-                  <div class="card-body">
+                  <div class="card-body content-recipient-card-body">
                     <p class="mb-0">
                       {{message.content}}
                     </p>
@@ -262,43 +275,53 @@
                     </div>
                    
                 </div>
+                </div>
               </li>
+            
+     
               {% endif %}
             {% endfor %}
-            {% endif %}
+          </ul>
+          {% endif %}
+          </div>
+            <!-- <li class="bg-white mb-3"> -->
+             {% if is_puzzle_requested or is_puzzle_in_progress %}
+              <div data-bs-input-init class="form-outline">
+                  <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
+                      <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
+                      <input type="hidden" name="puzzle_id" value="{{puzzle_id}}">
+                      <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
+                      <label class="form-label" for="content">Message</label>
+                      <button  type="submit" data-bs-button-init data-bs-ripple-init class="btn send-button btn-rounded float-end">Send</button>
+                  </form>
+                      
+              </div>
+              {% endif %}
+              
+           
+          
+           <!-- </li>   -->
+          
             
-
-            <!-- {% if current_user.username != recipient.username%} -->
             
-            <li class="bg-white mb-3">
-            </div>  
-                <div data-bs-input-init class="form-outline">
-                    <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
-                        <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
-                        <input type="hidden" name="puzzle_id" value="{{puzzle_id}}">
-                        <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
-                        <label class="form-label" for="content">Message</label>
-                        <button  type="submit" data-bs-button-init data-bs-ripple-init class="btn send-button btn-rounded float-end">Send</button>
-                    </form>
-                        
-                </div>
-             
-            {% endif %}
-             </li>    
-     
-    {%endif%}
+          
+          
+          
+        
+          {% endif %}
    
-            </ul>
-         
+            
+        
             
            
           </div>
-          
-    
+        
+        
         </div>
-    
-      </div>
-    
+     
+      
+    </div>
+  </div>
         
      
   </section>
@@ -313,6 +336,7 @@
         const messageElements = document.querySelectorAll('div[data-message-id]');
         const personalNoteModal = document.getElementById('personalNoteModal');
         const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+        const modalBody = document.querySelector('.modal-body-delete')
         
 
         messageElements.forEach(function(messageElement) {
@@ -417,31 +441,27 @@
         const button = event.relatedTarget
         // get the data attributes
         const messageId = button.getAttribute('data-message-id')
-        console.log(messageId)
-  
+        console.log('messageId', messageId)
+        const recipientId = button.getAttribute('data-recipient-id')
+        console.log('recipientId', recipientId)
+        const puzzleIdDelete = button.getAttribute('data-puzzle-id-delete')
+        console.log('puzzleIdDelete', puzzleIdDelete)
 
-      // assign the value to the hidden inputs in the modal whatever the values are from the attributes above
-      document.getElementById('messageId').value = messageId
-      
+        const deleteForm = document.getElementById('deleteForm')
+
+        if (recipientId && puzzleId) {
+          deleteForm.action = "{{ url_for('delete_message_thread') }}"
+          modalBody.innerText = "Are you sure you want to delete this message thread?"
+          document.getElementById('recipientId').value = recipientId
+          document.getElementById('puzzleIdDelete').value = puzzleIdDelete
+        } else if (messageId) {
+          deleteForm.action = "{{ url_for('delete_message') }}"
+          modalBody.innerText = "Are you sure you want to delete this message?"
+          document.getElementById('messageId').value = messageId
+        }
+
       })
     }
-
-
-    
-    const timestamps = document.querySelectorAll('.timestamp')
-      timestamps.forEach(function(timestamp) {
-        if (timestamp) {
-          const utcDate = timestamp.getAttribute('data-utc-date')
-          console.log(utcDate)
-          // converts utc date string to luxon DateTime object 
-          const luxonDate = luxon.DateTime.fromISO(utcDate, {zone: 'utc'})
-          // converts luxon DateTime object to user's local time zone
-          const localDate = luxonDate.setZone(luxon.DateTime.local().zoneName)
-          console.log(luxonDate)
-          timestamp.innerHTML = `<i class="far fa-clock"></i> ${localDate.toLocaleString(luxon.DateTime.DATETIME_MED)}`
-      }
-
-    })
         
 });
 </script>
