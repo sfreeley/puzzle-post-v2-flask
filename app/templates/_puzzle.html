@@ -29,8 +29,13 @@
 
     .card-img-top {
         max-width: 300px;
+        /* max-height: 300px; */
         align-self: center;
     }
+
+    /* .puzzle-title, .puzzle-manufacturer {
+        max-height: 30rem;
+    } */
 </style>
 
     <div class="row">
@@ -70,11 +75,11 @@
                      
                         
                   <div class="row mx-0 border-top border-bottom">
-                    <div class="col-6 text-center border-end py-3">
+                    <div class="col-6 text-center border-end py-3 puzzle-title">
                       <h5 class="mb-0">{{puzzle.title}}</h5>
                       <small class="text-muted">{{puzzle.pieces}} pieces</small>
                     </div>
-                    <div class="col-6 text-center py-3">
+                    <div class="col-6 text-center py-3 puzzle-manufacturer">
                       <h5 class="mb-0">{{puzzle.manufacturer}}</h5>
                       <small class="text-muted"> Manufacturer</small>
                       <i class="fa-solid fa-circle-info fa-lg mb-1 info-puzzle" id="puzzleInfoLink" role="button" aria-expanded="false" data-bs-toggle="dropdown"></i>

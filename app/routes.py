@@ -217,7 +217,7 @@ def get_file(filename):
 def save_puzzle(puzzle_id=None):
     form = CreatePuzzleForm()
 
-    categories = Category.query.all()
+    categories = db.session.query(Category).order_by(Category.name.asc()).all()
     form.categories.choices = [(category.id, category.name) for category in categories]
 
     conditions = ['Excellent', 'Good', 'Fair']

@@ -48,9 +48,7 @@
     {% endfor %}
     {% for error in form.condition.errors %}
     <span style="color: red;">[{{ error }}]</span>
-    {% endfor %}
-    
-    
+    {% endfor %}   
     </p>
     <div class="form-group">
         <label for="categories"> Categories </label>
@@ -68,89 +66,8 @@
         <label for="description" class="form-label">{{ form.description.label }}</label>
         {{ form.description(class="form-control", size=32) }}
         
-    </div>
-      
-   
+    </div>  
     <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
 </form>  
 
-    </p>
-    <p>
-        {{ form.image.label }} <br>
-        {{ form.image(type='file') }} <br>
-        {% for error in form.image.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    <p>
-        {% if form.existing_image_url.data  %}
-        
-        <img src="{{ existing_image_url }}" style="max-width:200px;"> <br>
-        <input type="hidden" name="existing_image_url" value="{{existing_image_url}}">
-        {% else %}
-        <p></p>
-        {% endif %}
-        
-        {% for error in form.image.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    <p>
-        {{ form.pieces.label }} <br>
-        {{ form.pieces(size=32) }} <br>
-        {% for error in form.pieces.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    <p>
-        
-        {{form.condition.label}}  
-        {% for (condition, label) in form.condition.choices %}
-         
-            <input type="radio" name="condition" value="{{ condition }}"{% if form.condition.data == condition %}checked{% endif %}>
-            {{ label }}
-        </input>
-        {% endfor %}
-        {% for error in form.condition.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-        
-       
-         </p>
-       
-         
-       
-     </p>
-    <p>
-        {{ form.manufacturer.label }} <br>
-        {{ form.manufacturer(size=32) }} <br>
-        {% for error in form.manufacturer.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    
-    <p>
-        <label for="categories">Categories:</label>
-        <select multiple id="categories" name="categories">
-        {% for option in form.categories.choices %}
-        {% if not form.categories.data %}
-        <option value="{{ option[0] }}">{{ option[1] }}</option>
-        {%else%}
-        <option value="{{ option[0] }}" {% if option[0] in form.categories.data %}selected{% endif %}>{{ option[1] }}</option>
-        {% endif %}
-        {% endfor %}
-        </select>
-        {% for error in form.categories.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p> 
-    <p>
-        {{ form.description.label }} <br>
-        {{ form.description(size=32) }} <br>
-        {% for error in form.description.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    <p>{{ form.submit() }}</p>
-</form>
 {% endblock %}

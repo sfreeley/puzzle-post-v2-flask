@@ -17,11 +17,27 @@
     filter: invert(100%);
   }
 
-  .carousel {
-    
-    max-width: 30rem;
-  }
+  .profile-page {
+            display: flex;
+            justify-content: space-between; /* Distributes space between carousels */
+            padding: 20px;
+            gap: 20px; /* Space between carousels */
+        }
 
+        .carousel-section {
+            flex: 1; /* Each section takes equal width */
+            min-width: 300px; /* Minimum width of each section */
+            box-sizing: border-box;
+            padding: 10px;
+        }
+
+     
+
+  
+
+    
+
+      
  
 
 
@@ -147,7 +163,9 @@
  
     <hr>
   <!-- carousels -->
-  <div>
+  
+    
+    <div class="carousel-section sharing-puzzles">
     <h3><b>Sharing</b></h3>
     Available: {{available_puzzles}}
     Sharing_count: {{sharing_count}}
@@ -177,9 +195,11 @@
           {% endif %}
         </div>  
         {% endif %}
-  </div>
+      </div>
+      
+  
 
-  <div>
+    <div class="carousel-section requested-puzzles">
     <h3><b>Requested</b></h3>
     Requested Puzzles: {{requested_puzzles}} Requested count: {{requested_count}}
         {% if requested_count == 0 %}
@@ -206,9 +226,11 @@
           {% endif %}
         </div>  
         {% endif %}
-  </div>
+      </div>
+  
 
-  <div>
+
+    <div class="carousel-section in-progress-puzzles">
     <h3><b>In Progress</b></h3>
     InProgress: {{in_progress_puzzles}} In Progress Count: {{progress_count}}
         {% if progress_count == 0 %}
@@ -221,7 +243,7 @@
             <div class="carousel-item {% if loop.first %}active{% endif %}"> 
               {% include '_puzzle.html'%}
             </div>    
-        </div>  
+          </div>  
             {% endfor %}
             {% if progress_count > 1 %}
           <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzleInProgress" data-bs-slide="prev">
@@ -235,7 +257,10 @@
           {% endif %}
         </div>  
         {% endif %}
-  </div>
+      </div>
+    
+ 
+
   
   
           
