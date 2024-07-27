@@ -38,6 +38,11 @@
               max-width: 175px;
               
             }
+
+            .dropdown-menu {
+              right: 0; /* Align to the right */
+              left: auto; /* Prevent default left alignment */
+            }
       
        
         </style>
@@ -197,7 +202,7 @@
         Messages
             </a>
         </li>
-          
+        <!-- Profile Avatar Dropdown -->
           <li class="nav-item dropdown">
             <a
               class="nav-link dropdown-toggle d-flex align-items-center"
@@ -215,7 +220,7 @@
             loading="lazy"
           />
             </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
               <li>
                 <a class="dropdown-item" href="{{ url_for('user', username=current_user.username) }}">My profile</a>
               </li>
