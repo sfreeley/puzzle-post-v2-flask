@@ -8,9 +8,23 @@
     
   }
 
+  .btn-cancel-complete, .btn-cancel-delete {
+    background-color: #5eb1bf;
+  }
+
   .btn-edit-profile {
     color: #e63946;
     border-color: #e63946;
+  }
+
+
+  .btn-submit-edit-profile {
+    background-color:#5eb1bf;
+  }
+
+  .btn-completed, .btn-confirm-delete {
+    background-color: #e63946;
+    margin-top: 1rem;
   }
 
   .carousel-control-prev, .carousel-control-next {
@@ -56,10 +70,10 @@
         <form action="{{ url_for('delete_puzzle')}}" method="POST">
             <input type="hidden" id="deleteType" name="delete_type">
             <input type="hidden" id="itemId" name="item_id">
-            <button type="submit" class="btn btn-danger">Confirm Delete</button>
+            <button type="submit" class="btn btn-confirm-delete">Confirm Delete</button>
         </form>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-cancel-delete" data-bs-dismiss="modal">Close</button>
          
         </div>
       </div>
@@ -75,14 +89,20 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        
         Are you sure you are done with this puzzle?
+        <form action="{{ url_for('complete_puzzle')}}" method="POST">
+          <div>
+            <input type="hidden" id="puzzleId" name="puzzle_id">
+            <button type="submit" class="btn btn-completed">Completed</button>  
+          </div>
+            
+        </form>
+      
       </div>
-      <form action="{{ url_for('complete_puzzle')}}" method="POST">
-          <input type="hidden" id="puzzleId" name="puzzle_id">
-          <button type="submit" class="btn btn-danger">Completed</button>
-      </form>
+      
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-cancel-complete" data-bs-dismiss="modal">Close</button>
        
       </div>
     </div>
@@ -109,11 +129,11 @@
                 <input type="text" class="form-control" id="aboutMe" name="about_me">
                 
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-submit-edit-profile">Submit</button>
         </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -134,7 +154,7 @@
                 <h5 class="mb-1">{{ user.username }}</h5>
                 <p class="mb-2 pb-1">{% if user.about_me %}<p>{{ user.about_me}}</p>{% endif %}
                 {% if user.last_seen %}<p class="timestamp" data-utc-date="{{ user.last_seen.isoformat() }}"></p>{% endif %}
-                <div class="d-flex justify-content-start rounded-3 p-2 mb-2 bg-body-tertiary">
+                <div class="d-flex justify-content-between rounded-3 p-2 mb-2 bg-body-tertiary">
                   <div>
                     <p class="small text-muted mb-1">Puzzles Shared</p>
                     <p class="mb-0 text-dark">{{sharing_count}} </p>
@@ -258,18 +278,7 @@
         </div>  
         {% endif %}
       </div>
-    
- 
-
-  
-  
-          
-            
-    
-
- 
-    
-    
+     
 <script>
 
     // date-time

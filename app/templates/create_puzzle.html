@@ -1,29 +1,52 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="brand_logo_container">
-    <img src="https://img.freepik.com/free-vector/illustration-jigsaw-icon_53876-5904.jpg?t=st=1721226350~exp=1721229950~hmac=3796b38e896834626bf4d9de21b091ea9c1f4bd1bbd2ba0cc9e70c2e0a5743c8&w=996" class="brand_logo" alt="Logo" style="max-width: 200px;">
-</div>
-<form action="{% if form.puzzle_id.data %}{{ url_for('save_puzzle', puzzle_id=form.puzzle_id.data )}}{% else %} {{url_for('save_puzzle')}} {%endif%}" enctype="multipart/form-data" method="POST">
+<style>
+    .puzzle-form {
+        width: 100%;
+        max-width: 32rem;
+        margin: auto;
+    }
+    .btn-add-puzzle {
+        background-color: #cdedf6;
+    }
+    label {
+        display: block;
+    }
+    input {
+    padding: .5rem;
+    }
+   
+</style>
+
+<form action="{% if form.puzzle_id.data %}{{ url_for('save_puzzle', puzzle_id=form.puzzle_id.data )}}{% else %} {{url_for('save_puzzle')}} {%endif%}" class="puzzle-form" enctype="multipart/form-data" method="POST">
     {{ form.hidden_tag() }}
-
     
-
-    <div class="mb-3">
+    {% if form.puzzle_id.data %}
+    <h2>Edit Puzzle</h2>
+    {% else %}
+    <h2> Add a Puzzle</h2>
+    {% endif %}
+    
+    <div class="form-group mb-3">
         <label for="title" class="form-label">{{ form.title.label }}</label>
         {{ form.title(class="form-control", size=32) }}
         
     </div>
-    <div class="mb-3">
+    <div class="form-group mb-3">
         <label for="manufacturer" class="form-label">{{ form.manufacturer.label }}</label>
         {{ form.manufacturer(class="form-control", size=32) }}
         
     </div>
-    <div class="mb-3">
-        <label for="image" class="form-label">{{ form.image.label }}</label>
-        {{ form.image(class="form-control-file", size=32, type="file") }}
-        
+    <div class="form-group mb-3">
+        <label for="image" class="form-label">Image</label>
+        {% if existing_image_url %}
+        <input class="form-control" type="file" id="image" name="image">
+        {% else%}
+        <input class="form-control" type="file" id="image" name="image" required>
+        {% endif %}
     </div>
+   
+ 
     {% if form.existing_image_url.data  %}
         
         <img src="{{ existing_image_url }}" style="max-width:200px;"> <br>
@@ -31,13 +54,13 @@
         {% else %}
         <p></p>
         {% endif %}
-    <div class="mb-3">
+    <div class="form-group mb-3">
         <label for="pieces" class="form-label">{{ form.pieces.label }}</label>
         {{ form.pieces(class="form-control", size=32) }}
         
     </div>
     
-    <p>
+    <div class="form-group mb-3">
     
     {{form.condition.label}}  
     {% for (condition, label) in form.condition.choices %}
@@ -46,11 +69,9 @@
         {{ label }}
     
     {% endfor %}
-    {% for error in form.condition.errors %}
-    <span style="color: red;">[{{ error }}]</span>
-    {% endfor %}   
-    </p>
-    <div class="form-group">
+      
+    </div>
+    <div class="form-group mb-3">
         <label for="categories"> Categories </label>
         <select multiple class="form-select" id="categories" name="categories">
             {% for option in form.categories.choices %}
@@ -62,12 +83,14 @@
             {% endfor %}
         </select>
       </div>
-      <div class="mb-3">
+      <div class="form-group mb-3">
         <label for="description" class="form-label">{{ form.description.label }}</label>
         {{ form.description(class="form-control", size=32) }}
         
     </div>  
-    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+    <button type="submit" class="btn btn-add-puzzle">{{ form.submit.label.text }}</button>
+    <a href="{{url_for('user', username=current_user.username)}}" class="btn btn-cancel">Cancel</a>
+
 </form>  
 
 {% endblock %}

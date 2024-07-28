@@ -228,9 +228,11 @@ def save_puzzle(puzzle_id=None):
     
     # if puzzle id is there from the form with hiddenfield..
     if puzzle_id:
+        form.image.validators = [v for v in form.image.validators if not isinstance(v, FileRequired)]
         # get puzzle from db by that puzzle_id and belongs to the user logged in
         puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id, user_id=current_user.id).first()
         if puzzle:
+           
             # pre-populate fields with corresponding info from db
             if request.method == 'GET':
                 form.puzzle_id.data = puzzle.id
@@ -241,6 +243,7 @@ def save_puzzle(puzzle_id=None):
                 form.manufacturer.data = puzzle.manufacturer
                 form.description.data = puzzle.description
                 form.categories.data = [category.id for category in puzzle.categories]
+                
             # POST-ing as edit
             if form.validate_on_submit():
                 if not form.categories.data:
@@ -262,13 +265,15 @@ def save_puzzle(puzzle_id=None):
                     file_url = url_for('get_file', filename=saved_image)
                     puzzle.image_url = file_url
                 else:
+                    
                     puzzle.image_url = form.existing_image_url.data
+
 
                 db.session.commit()
                 return redirect(url_for('user', username=current_user.username)) 
     # creating puzzle 
     if puzzle_id is None:
-        form.image.validators.append(FileRequired())        
+               
         if form.validate_on_submit():
             puzzle = Puzzle(
                 user_id = current_user.id,
