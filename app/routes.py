@@ -25,7 +25,7 @@ def index():
     query = request.args.get('query', '')
     # try pagination
     page = request.args.get('page', 1, type=int)
-    per_page = 2
+    per_page = 5
     if query:
         results = Puzzle.query.join(Puzzle.categories).filter( 
             or_(
@@ -42,7 +42,7 @@ def index():
 
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
-    return render_template('index.html', title='Home', puzzles_pagination=results, query=query, user=user, show_buttons=False)
+    return render_template('index.html', title='Home', puzzles_pagination=results, query=query, user=user, show_buttons=False, small_card_size=True)
 
 # SEARCH
 # @app.route('/search', methods=['GET'])
@@ -272,7 +272,7 @@ def save_puzzle(puzzle_id=None):
                 db.session.commit()
                 return redirect(url_for('user', username=current_user.username)) 
     # creating puzzle 
-    if puzzle_id is None:
+    else:
                
         if form.validate_on_submit():
             puzzle = Puzzle(

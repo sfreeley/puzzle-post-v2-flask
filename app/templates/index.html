@@ -1,4 +1,5 @@
 <!doctype html>
+{% extends "base.html" %}
 <style>
    .pagination .page-link {
         color: #5eb1bf;
@@ -8,6 +9,8 @@
         background-color: #ab5147;
         border-color: #ab5147;
    }
+
+  
 </style>
 <html>
     <head>
@@ -18,21 +21,29 @@
         {% endif %}
     </head>
     <body>
-        {% extends "base.html" %}
+       
         
         {% block content %}
         <h1>Greetings, {{ current_user.username }}!</h1>
         
-        <div class="row row-cols-1 row-cols-md-3 g-4">
+        
+        <div class="row row-cols-1 row-cols-md-3 g-1">
             {% for puzzle in puzzles_pagination.items %}
-            <div class="puzzle-item" id="puzzle-{{puzzle.id}}" style="min-width: 18rem;">
+            
+            
+            <div class="puzzle-item" id="puzzle-{{puzzle.id}}">
+            
             {% include '_puzzle.html' %}
             </div>
-        {% endfor %}
-        </div>
+         
+
+        
+        
+    </div> 
+    {% endfor %}
 
         <nav aria-label="page-navigation">
-            <ul class="pagination justify-content-center mt-3">
+            <ul class="pagination justify-content-center">
                 {% if puzzles_pagination.has_prev%}
                 <li class="page-item">
                     <a class="page-link" href="{{ url_for('index', page=puzzles_pagination.prev_num, query=query) }}">Previous</a>

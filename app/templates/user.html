@@ -31,19 +31,6 @@
     filter: invert(100%);
   }
 
-  .profile-page {
-            display: flex;
-            justify-content: space-between; /* Distributes space between carousels */
-            padding: 20px;
-            gap: 20px; /* Space between carousels */
-        }
-
-        .carousel-section {
-            flex: 1; /* Each section takes equal width */
-            min-width: 300px; /* Minimum width of each section */
-            box-sizing: border-box;
-            padding: 10px;
-        }
 
      
 
@@ -66,12 +53,13 @@
         </div>
         <div class="modal-body">
           Are you sure you want to delete this puzzle?
-        </div>
-        <form action="{{ url_for('delete_puzzle')}}" method="POST">
+          <form action="{{ url_for('delete_puzzle')}}" method="POST">
             <input type="hidden" id="deleteType" name="delete_type">
             <input type="hidden" id="itemId" name="item_id">
             <button type="submit" class="btn btn-confirm-delete">Confirm Delete</button>
-        </form>
+        </form> 
+        </div>
+        
         <div class="modal-footer">
           <button type="button" class="btn btn-cancel-delete" data-bs-dismiss="modal">Close</button>
          
@@ -183,9 +171,10 @@
  
     <hr>
   <!-- carousels -->
+  <!-- <div class="container-fluid"> -->
+  <div class="row row-cols-1 row-cols-md-3 g-1">
+    <div class="col">
   
-    
-    <div class="carousel-section sharing-puzzles">
     <h3><b>Sharing</b></h3>
     Available: {{available_puzzles}}
     Sharing_count: {{sharing_count}}
@@ -194,7 +183,8 @@
         {% elif sharing_count == 0 %}
             <p> You're not sharing any puzzles right now...</p>
         {% else %}
-  
+       
+        
         <div id="carouselPuzzle" class="carousel carousel-available slide">  
           <div class="carousel-inner">  
             {% for puzzle in available_puzzles %}
@@ -216,14 +206,15 @@
         </div>  
         {% endif %}
       </div>
-      
+   
   
-
-    <div class="carousel-section requested-puzzles">
+    <div class="col">
+    
     <h3><b>Requested</b></h3>
     Requested Puzzles: {{requested_puzzles}} Requested count: {{requested_count}}
         {% if requested_count == 0 %}
             <p> You have no puzzles being requested right now...</p>
+            {% include '_placeholder.html' %}
         {% else %}
   
         <div id="carouselPuzzleRequested" class="carousel carousel-requested slide">  
@@ -247,10 +238,11 @@
         </div>  
         {% endif %}
       </div>
+    
   
 
-
-    <div class="carousel-section in-progress-puzzles">
+    <div class="col">
+    
     <h3><b>In Progress</b></h3>
     InProgress: {{in_progress_puzzles}} In Progress Count: {{progress_count}}
         {% if progress_count == 0 %}
@@ -278,7 +270,9 @@
         </div>  
         {% endif %}
       </div>
-     
+      </div>
+    <!-- </div> -->
+      
 <script>
 
     // date-time
