@@ -7,8 +7,12 @@
     background-color: #c0392b
     
   }
+
+  .btn-cancel {
+    background-color: #cdedf6 ;
+  }
   .send-button {
-    background-color: #2BB0BF;
+    background-color: #cdedf6;
   }
 
   .approve-btn {
@@ -22,21 +26,18 @@
   }
 
   .content-sender-card-body {
-    background-color: hsl(186, 60%, 80%);
+    background-color: #cdedf6;
   }
 
   .content-recipient-card-body {
-    background-color: hsl(6, 63%, 80%);
+    background-color: hsl(6, 75%, 72%);
   }
+
 
   
  </style>
-<h1>
-    Your Messages, {{current_user.username}}
-    puzzle_id:{{puzzle_id}}
-    requested:{{is_puzzle_requested}}
-    
-    
+<h1 class="text-center">
+    Messaging    
 </h1>
 <!-- personal note modal -->
 <div class="modal fade" id="personalNoteModal" tabindex="-1" aria-labelledby="personalNoteLabel" aria-hidden="true">
@@ -93,7 +94,7 @@
       </form>
       <div class="modal-footer">
         
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Close</button>
        
       </div>
     </div>
@@ -104,14 +105,15 @@
 <section >
       
     <div class="container py-5 ">
+     
+      <div class="row d-flex">
   
-      <div class="row">
-  
-        <div class="col-md-6 col-lg-5 col-xl-4 mb-4 mb-md-0">
-  
-          <h5 class="font-weight-bold mb-3 text-center text-lg-start">Member</h5>
+        <div class="col-md-6 col-lg-5 col-xl-4 mb-4 mb-md-0 center-column ">
           
-          <div class="card ">
+          <h4 class="font-weight-bold mb-3 text-center text-lg-center">Member</h4>
+          <h6 class="mb-3 text-center text-lg-start">Select a member and puzzle to view conversation</h6>
+          
+          <div class="card">
             
             <div class="card-body">
               
@@ -183,6 +185,7 @@
           </div>
   
         </div>
+        <!-- end col -->
     
        
         <div class="col-md-6 col-lg-7 col-xl-8">
@@ -235,12 +238,11 @@
               </li>
               
               {% else %}
-              <li class="d-flex justify-content-between mb-4">
+              <li class="d-flex justify-content-start mb-4">
                 <img src="{{ message.author.create_avatar(128) }}" alt="avatar"
-                  class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
-                <div class="card {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
-                  <div class="card-header d-flex justify-content-between p-3">
-                   Message ID: {{message.id}}
+                  class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
+                <div class="card flex-grow-1 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
+                  <div class="card-header d-flex justify-content-between flex-grow-1 p-3">
                     <p class="fw-bold mb-0">{{message.author.username}}</p>
                     <p class="small text-muted">{{message.puzzle.title}}</p>
                     <p class="text-muted small mb-0 timestamp" data-utc-date="{{message.timestamp.isoformat()}}">{{message.timestamp}}</p>
@@ -284,14 +286,14 @@
           </ul>
           {% endif %}
           </div>
-            <!-- <li class="bg-white mb-3"> -->
+            
              {% if is_puzzle_requested or is_puzzle_in_progress %}
               <div data-bs-input-init class="form-outline">
                   <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
                       <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
                       <input type="hidden" name="puzzle_id" value="{{puzzle_id}}">
                       <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
-                      <label class="form-label" for="content">Message</label>
+                      <label class="form-label" for="content"></label>
                       <button  type="submit" data-bs-button-init data-bs-ripple-init class="btn send-button btn-rounded float-end">Send</button>
                   </form>
                       
@@ -300,7 +302,7 @@
               
            
           
-           <!-- </li>   -->
+          
           
             
             

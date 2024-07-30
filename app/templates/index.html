@@ -1,5 +1,5 @@
-<!doctype html>
 {% extends "base.html" %}
+{% block content %}
 <style>
    .pagination .page-link {
         color: #5eb1bf;
@@ -9,6 +9,7 @@
         background-color: #ab5147;
         border-color: #ab5147;
    }
+   
 
   
 </style>
@@ -23,25 +24,8 @@
     <body>
        
         
-        {% block content %}
+        
         <h1>Greetings, {{ current_user.username }}!</h1>
-        
-        
-        <div class="row row-cols-1 row-cols-md-3 g-1">
-            {% for puzzle in puzzles_pagination.items %}
-            
-            
-            <div class="puzzle-item" id="puzzle-{{puzzle.id}}">
-            
-            {% include '_puzzle.html' %}
-            </div>
-         
-
-        
-        
-    </div> 
-    {% endfor %}
-
         <nav aria-label="page-navigation">
             <ul class="pagination justify-content-center">
                 {% if puzzles_pagination.has_prev%}
@@ -84,6 +68,22 @@
 
             </ul>
         </nav>
+        
+        
+        <div class="row row-cols-1 row-cols-md-3 g-1">
+            {% for puzzle in puzzles_pagination.items %}
+            
+            
+            <div class="puzzle-item" id="puzzle-{{puzzle.id}}">
+            
+            {% include '_puzzle.html' %}
+            </div>
+   
+    </div> 
+    {% endfor %}
+    
+   
+
         
         {% endblock %}
     </body>

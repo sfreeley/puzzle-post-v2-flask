@@ -31,31 +31,31 @@
                 </div>
             </div>
             <div class="d-flex justify-content-center form_container">
-                <form action="{{ url_for('register') }}" method="POST" novalidate>
+                <form action="{{ url_for('register') }}" method="POST">
                     {{ form.hidden_tag() }}
                     <div class="input-group mb-3 align-items-center">
                         <div class="input-group-append">
                             <span class="input-group-text"><i class="fas fa-user"></i></span>
                         </div>
-                        <input type="text" name="username" class="form-control input_username" placeholder="username">
+                        <input type="text" name="username" class="form-control input_username" placeholder="username" required>
                     </div>
                     <div class="input-group mb-3 align-items-center">
                         <div class="input-group-append">
                             <span class="input-group-text"><i class="fa-solid fa-envelope"></i></span>
                         </div>
-                        <input type="email" name="email" class="form-control input_email" placeholder="email">
+                        <input type="email" name="email" class="form-control input_email" placeholder="email" required>
                     </div>
                     <div class="input-group mb-3 align-items-center">
                         <div class="input-group-append">
                             <span class="input-group-text"><i class="fa-solid fa-unlock"></i></i></span>
                         </div>
-                        <input type="password" name="password" class="form-control input_password" placeholder="password">
+                        <input type="password" name="password" class="form-control input_password" placeholder="password" required>
                     </div>
                     <div class="input-group mb-3 align-items-center">
                         <div class="input-group-append">
                             <span class="input-group-text"><i class="fa-solid fa-lock"></i></i></span>
                         </div>
-                        <input type="password" name="confirm_password" class="form-control input_confirm_password" placeholder="confirm password">
+                        <input type="password" name="confirm_password" class="form-control input_confirm_password" placeholder="confirm password" required>
                     </div>
                 
                         <div class="d-flex justify-content-center mt-3 register_container">
@@ -64,61 +64,6 @@
                 </form>
             </div>
 
-            <form action="{{ url_for('register')}}" enctype="multipart/form-data" method="POST">
-    {{ form.hidden_tag() }}
+          
 
-    <div class="mb-3">
-        <label for="username" class="form-label">{{ form.username.label }}</label>
-        {{ form.username(class="form-control", size=32) }}
-        
-    </div>
-    <div class="mb-3">
-        <label for="email" class="form-label">{{ form.email.label }}</label>
-        {{ form.email(class="form-control", size=32) }}
-        
-    </div>
-    <div class="mb-3">
-        <label for="password" class="form-label">{{ form.password.label }}</label>
-        {{ form.password(class="form-control", size=32) }}
-        
-    </div>
-    <div class="mb-3">
-        <label for="confirm_password" class="form-label">{{ form.confirm_password.label }}</label>
-        {{ form.confirm_password(class="form-control", size=32) }}
-        
-    </div>
-    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
-</form>
-<form action="" method="post">
-    {{ form.hidden_tag() }}
-    <p>
-        {{ form.username.label }}<br>
-        {{ form.username(size=32) }}<br>
-        {% for error in form.username.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    <p>
-        {{ form.email.label }}<br>
-        {{ form.email(size=32) }}<br>
-        {% for error in form.email.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    <p>
-        {{ form.password.label }}<br>
-        {{ form.password(size=32) }}<br>
-        {% for error in form.password.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    <p>
-        {{ form.confirm_password.label }}<br>
-        {{ form.confirm_password(size=32) }}<br>
-        {% for error in form.confirm_password.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </p>
-    <p> {{ form.submit() }}</p>
-</form>
 {% endblock %}

@@ -16,9 +16,6 @@
         
     }
 
-    /* .input-group .form-control {
-        height: 100%; 
-    } */
 
 </style>
 <div class="container h-100">
@@ -30,19 +27,19 @@
                 </div>
             </div>
             <div class="d-flex justify-content-center form_container">
-                <form action="{{ url_for('login') }}" method="POST" novalidate>
+                <form action="{{ url_for('login') }}" method="POST">
                     {{ form.hidden_tag() }}
                     <div class="input-group mb-3 align-items-center">
                         <div class="input-group-append">
                             <span class="input-group-text"><i class="fas fa-user"></i></span>
                         </div>
-                        <input type="text" name="username" class="form-control input_username" placeholder="username">
+                        <input type="text" name="username" class="form-control input_username" placeholder="username" required>
                     </div>
                     <div class="input-group mb-2 align-items-center">
                         <div class="input-group-append">
                             <span class="input-group-text"><i class="fas fa-key"></i></span>
                         </div>
-                        <input type="password" name="password" class="form-control input_password" placeholder="password">
+                        <input type="password" name="password" class="form-control input_password" placeholder="password" required>
                     </div>
                     <div class="form-group">
                         <div class="custom-control custom-checkbox">

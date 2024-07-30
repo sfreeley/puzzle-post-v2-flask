@@ -25,7 +25,7 @@ def index():
     query = request.args.get('query', '')
     # try pagination
     page = request.args.get('page', 1, type=int)
-    per_page = 5
+    per_page = 6
     if query:
         results = Puzzle.query.join(Puzzle.categories).filter( 
             or_(
@@ -38,7 +38,7 @@ def index():
         )
     ).distinct().paginate(page=page, per_page=per_page, error_out=False)
     else:
-        results = db.session.query(Puzzle).filter_by(is_available=True).paginate(page=page, per_page=per_page, error_out=False)
+        results = db.session.query(Puzzle).filter(Puzzle.is_available==True, Puzzle.user_id!=current_user.id).paginate(page=page, per_page=per_page, error_out=False)
 
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
@@ -555,6 +555,9 @@ def mark_message_as_read(message_id):
 @login_required
 def delete_message():
     item_id = request.form.get('message_id')
+    # recipient_id = request.form.get('recipient_id')
+    # puzzle_id = request.form.get('puzzle_id_delete')
+
     if request.method == 'POST':
         try:
             message = db.session.query(Message).filter_by(id=item_id).first()
@@ -565,17 +568,22 @@ def delete_message():
             if message:
                 # if the sender is the current_user...
                 if message.sender_requester_id == current_user.id:
+                    # then recipient will be recipient_owner
+                    recipient_id = message.recipient_owner_id
                     # change specific boolean to True so will only delete that current user's message, but not recipient
                     message.is_deleted_by_sender = True
                     db.session.commit()
+                    # if message recipient is the current user...
                 elif message.recipient_owner_id == current_user.id:
+                    # recipient will be the sender of the message
+                    recipient_id = message.sender_requester_id
                     message.is_deleted_by_recipient = True
                     db.session.commit()    
                 else:
                     flash("Something went wrong") 
-                    return redirect(url_for('messages')) 
+                    return redirect(url_for('messages'))
                 flash("Your delete was successful")              
-    return redirect(url_for('messages'))
+    return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=message.puzzle_id))
 
 
 # ACCEPT/DECLINE Request

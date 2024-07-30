@@ -1,35 +1,77 @@
-<div id="carousel placeholder" class="carousel slide placeholder-glow">  
-    <div class="carousel-inner">  
-      
-      <div class="carousel-item active placeholder-glow"> 
-        <div class="card" aria-hidden="true">
-          <img src="..." class="card-img-top" alt="...">
-          <div class="card-body">
-            <h5 class="card-title placeholder-glow">
-              <span class="placeholder col-6"></span>
-            </h5>
-            <p class="card-text placeholder-glow">
-              <span class="placeholder col-7"></span>
-              <span class="placeholder col-4"></span>
-              <span class="placeholder col-4"></span>
-              <span class="placeholder col-6"></span>
-              <span class="placeholder col-8"></span>
-            </p>
-            <a class="btn btn-primary disabled placeholder col-6" aria-disabled="true"></a>
+<!-- Carousel Container -->
+<div id="carousel" class="carousel slide placeholder-carousel">
+  <div class="carousel-inner">
+      <!-- Carousel Item -->
+      <div class="carousel-item active">
+          <!-- Card -->
+          <div class="card card-puzzle overflow-hidden text-center h-100" style="max-width: 40rem">
+            <h5 class="mb-0">No puzzles at the moment...</h5>
+              <!-- Card Image -->
+              <img src="https://img.freepik.com/free-vector/illustration-jigsaw-icon_53876-5904.jpg?t=st=1721226350~exp=1721229950~hmac=3796b38e896834626bf4d9de21b091ea9c1f4bd1bbd2ba0cc9e70c2e0a5743c8&w=996" class="brand_logo card-img-top img-fluid" alt="Logo" style="max-width: 14rem; align-self: center;">
+              
+              <!-- Card Body -->
+              <div class="card-body card-body-puzzle p-0 puzzle-timestamp">
+                  <!-- Avatar -->
+                  <a href="#" class="avatar xl rounded-circle bg-gray bg-opacity-10 p-1 position-relative mt-n5 d-block mx-auto">
+                      <img src="{{current_user.create_avatar(64)}}" class="avatar-img img-fluid rounded-circle" alt="Avatar">
+                  </a>
+                  
+                  
+                  <h5 class="mb-0 pt-3 placeholder-glow">
+                      <a href="#" class="text-reset">{{current_user.username}}</a>
+                  </h5>
+                  
+
+                  <!-- Card Footer -->
+                  <div class="card-footer">
+                      
+                      <div class="d-flex justify-content-between">
+                          <a class="btn btn-edit-puzzle placeholder-glow" href="#"><i class="fa-regular fa-pen-to-square placeholder"></i></a>
+                         
+                          <a class="btn btn-delete-puzzle" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                              <i class="fa-solid fa-trash placeholder"></i>
+                          </a>
+                      </div>
+                  </div>
+                  
+                  <!-- Card Details -->
+                  <div class="row mx-0 border-top border-bottom">
+                      <div class="col-6 text-center border-end py-3 puzzle-title">
+                          <h5 class="mb-0 placeholder-glow">
+                            <span class="placeholder col-6"></span>
+                          </h5>
+                          <small class="text-muted">
+                            <span class="placeholder col-6"></span>
+                          </small>
+                      </div>
+                      <div class="col-6 text-center py-3 puzzle-manufacturer">
+                          <h5 class="mb-0 card-title placeholder-glow">
+                            <span class="placeholder col-6"></span>
+                          </h5>
+                          <small class="text-muted">
+                            <span class="placeholder col-6"></span>
+                          </small>
+                          <i class="fa-solid fa-circle-info fa-lg mb-1 info-puzzle" id="puzzleInfoLink" role="button" aria-expanded="false" data-bs-toggle="dropdown"></i>
+                          <ul class="dropdown-menu" aria-labelledby="puzzleInfoLink">
+                              <li class="dropdown-item px-3 d-flex align-items-center justify-content-between">
+                                  <span class="text-muted small placeholder col-6 "></span>
+                              </li>
+                              <li class="dropdown-item px-3 d-flex align-items-center justify-content-between">
+                                  <span class="text-muted small placeholder col-6"> </span>
+                              </li>
+                              <li class="dropdown-item px-3 d-flex align-items-center justify-content-between">
+                                  <span class="text-muted small placeholder col-6"> </span>
+                              </li>
+                          </ul>
+                      </div>
+                  </div>
+              </div>
+              <!-- Card End -->
           </div>
-        </div>
-      </div>    
-  </div>  
-     
-    <button class="carousel-control-prev placeholder-glow" type="button" data-bs-target="#carousel" data-bs-slide="prev">
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="carousel-control-next  placeholder-glow" type="button" data-bs-target="#carousel" data-bs-slide="next">
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Next</span>
-    </button>
-    
-  </div>  
-  
+      </div>
+      <!-- Carousel Item End -->
+
+      
+  </div>
 </div>
+<!-- Carousel Container End -->
