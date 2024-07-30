@@ -8,7 +8,6 @@ import sqlalchemy as sa
 from sqlalchemy import or_, and_, func, case
 from datetime import datetime, timezone
 from flask_wtf.file import FileRequired
-from werkzeug.utils import secure_filename
 from config import Config
 
 
@@ -21,7 +20,7 @@ from config import Config
 @app.route('/index')
 @login_required
 def index():
-    # include search functionality 
+    # include search functionality -server side 
     query = request.args.get('query', '')
     # try pagination
     page = request.args.get('page', 1, type=int)
@@ -38,7 +37,7 @@ def index():
         )
     ).distinct().paginate(page=page, per_page=per_page, error_out=False)
     else:
-        results = db.session.query(Puzzle).filter(Puzzle.is_available==True, Puzzle.user_id!=current_user.id).paginate(page=page, per_page=per_page, error_out=False)
+        results = db.session.query(Puzzle).filter(Puzzle.is_available==True, Puzzle.user_id!=current_user.id).order_by(Puzzle.timestamp.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values

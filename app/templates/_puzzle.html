@@ -28,33 +28,20 @@
     }
 
 
-
-  
-   
-
     .card-img-top {
         max-width: 15rem;
-        /* max-height: 300px; */
+        max-height: 12rem;
         align-self: center;
     }
-    /* .puzzle-title, .puzzle-manufacturer {
-       
-        overflow: hidden;
-        
-        white-space: nowrap;
-    } */
 
-  
 </style>
 
    
         <div class="col">
               <!--Card-->
-             {% if small_card_size %}
-              <div class="card card-puzzle overflow-hidden text-center h-100" style="max-width: 18rem">
-             {% else %}
-             <div class="card card-puzzle overflow-hidden text-center h-100" style="max-width: 40rem">
-             {% endif %}
+           
+              <div class="card card-puzzle overflow-hidden text-center h-100" {% if small_card_size %} style="max-width: 19rem;" {% else %} style="max-width: 40rem;" {% endif%}>
+            
                 <img src="{{puzzle.image_url}}" class="card-img-top img-fluid" alt="puzzle-image">
         
                 <!--Card body-->
