@@ -162,6 +162,7 @@
                           <span><a class="btn delete-thread-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-recipient-id="{{sender.id}}" data-puzzle-id-delete="{{ puzzle.id }}"><i class="fa-solid fa-trash-can fa-sm p-1"></i></a></span>
                       </div>
                     </a>
+                   
                     {% endif%}
                     {% endfor %}
                       </ul>
@@ -393,6 +394,7 @@
                 unreadCountBadge.textContent = data.unread_count
                 if (data.unread_count == 0) {
                     unreadCountBadge.style.display = 'none'
+                    console.log('0 no show')
                 }
             } else {
                 console.log("error!!!!!")

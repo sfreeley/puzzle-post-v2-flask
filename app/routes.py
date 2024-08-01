@@ -1,11 +1,11 @@
 from app import app, db
-from flask import render_template, flash, redirect, url_for, request, send_from_directory, jsonify, session
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, PersonalNote
+from flask import render_template, flash, redirect, url_for, request, send_from_directory, jsonify
+from app.forms import LoginForm, RegistrationForm, CreatePuzzleForm
 from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
-from sqlalchemy import or_, and_, func, case
+from sqlalchemy import or_, and_, func
 from datetime import datetime, timezone
 from flask_wtf.file import FileRequired
 from config import Config
@@ -34,7 +34,9 @@ def index():
             Puzzle.condition.ilike(f'%{query}%'),
             Puzzle.description.ilike(f'%{query}%'),
             Category.name.ilike(f'%{query}%')
-        )
+        ),
+        Puzzle.user_id != current_user.id,
+        Puzzle.is_deleted == False
     ).distinct().paginate(page=page, per_page=per_page, error_out=False)
     else:
         results = db.session.query(Puzzle).filter(Puzzle.is_available==True, Puzzle.user_id!=current_user.id).order_by(Puzzle.timestamp.desc()).paginate(page=page, per_page=per_page, error_out=False)
@@ -581,7 +583,7 @@ def delete_message():
                 else:
                     flash("Something went wrong") 
                     return redirect(url_for('messages'))
-                flash("Your delete was successful")              
+                flash("Your message was successfully deleted")              
     return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=message.puzzle_id))
 
 
