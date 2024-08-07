@@ -44,17 +44,25 @@ class User(UserMixin, db.Model):
         back_populates='author')
     
     def unread_message_count(self):
-        # last_message_read_time will have last time user visited messages page
-        # if it's none, then it will assign last_read_time to it, otherwise if None then assign 1990-01-01 (handles missing or undefined values) 
-        # last_read_time = self.last_message_read_time or datetime(1990, 1, 1)
-
         # query all the messages received and filter by unread messages and count rows 
-        count_query = sa.select(sa.func.count()).where(Message.recipient == self, Message.is_read == False)
+        
         # execute and return the count query and get one result with scalar()
-        return db.session.scalar(count_query)
+        return db.session.query(Message).filter_by(recipient_owner_id=self.id, is_read=False).count() 
 
-        
-        
+    def unread_message_counts_by_sender(self):
+        unread_counts_by_sender = db.session.query(
+            Message.sender_requester_id,
+            sa.func.count(Message.id).label('unread_count')
+        ).filter(
+            
+                Message.recipient_owner_id == self.id,
+         
+            
+            Message.is_read == False
+        ).group_by(
+            Message.sender_requester_id
+        ).all()   
+        return {sender_id: count for sender_id, count in unread_counts_by_sender}
     # this built in function of objects returns printable representation of the object
     # generally used to make debugging easier
     def __repr__(self):
@@ -125,25 +133,6 @@ class Puzzle(db.Model):
     def __repr__(self):
         return '<Puzzle {}>'.format(self.id)
     
-    # def to_dict(self):
-    #     return {
-    #         'id': self.id,
-    #         'image_url': self.image_url,
-    #         'pieces': self.pieces,
-    #         'condition': self.condition,
-    #         'title': self.title,
-    #         'manufacturer': self.manufacturer,
-    #         'description': self.description,
-    #         'timestamp': self.timestamp.isoformat(),
-    #         'is_available': self.is_available,
-    #         'is_requested': self.is_requested,
-    #         'in_progress': self.in_progress,
-    #         'is_deleted': self.is_deleted,
-    #         'user_id': self.user_id,
-    #         'categories': [category.to_dict() for category in self.categories]
-    #     }
-    
-
 # Message
 class Message(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)

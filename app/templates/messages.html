@@ -168,7 +168,7 @@
                       </ul>
                         
                         {% if unread_count > 0 %}
-                        <span class="badge bg-danger" id="unread-count-badge">{{ unread_count }}</span>
+                        <span class="badge bg-danger" id="unread-count-badge-{{sender.id}}">{{ unread_count }}</span>
                         {% endif %}
                         
                       </div>
@@ -202,7 +202,7 @@
                     {% for message in conversation%}
                         {% if message.author.username != current_user.username%}
               <li class="d-flex justify-content-between mb-4">
-                <div class="card w-100 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
+                <div class="card w-100 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}" data-sender-id="{{message.author.id}}">
                   <div class="card-header d-flex justify-content-between p-3">
                     <p class="fw-bold mb-0">{{message.author.username}}</p>
                     <p class="small text-muted">{{message.puzzle.title}}</p>
@@ -216,6 +216,7 @@
                     </div>
                   </div>
                   <div class="card-body content-sender-card-body">
+                    {{message.id}}
                     <p class="mb-0">
                       {{message.content}}
                     </p>
@@ -246,7 +247,7 @@
               <li class="d-flex justify-content-start mb-4">
                 <img src="{{ message.author.create_avatar(128) }}" alt="avatar"
                   class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
-                <div class="card flex-grow-1 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
+                <div class="card flex-grow-1 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}" data-sender-id="{{message.author.id}}">
                   <div class="card-header d-flex justify-content-between flex-grow-1 p-3">
                     <p class="fw-bold mb-0">{{message.author.username}}</p>
                     <p class="small text-muted">{{message.puzzle.title}}</p>
@@ -260,6 +261,7 @@
                     </div>
                   </div>
                   <div class="card-body content-recipient-card-body">
+                    {{message.id}}
                     <p class="mb-0">
                       {{message.content}}
                     </p>
@@ -345,6 +347,7 @@
         const confirmDeleteModal = document.getElementById('confirmDeleteModal');
         const modalBody = document.querySelector('.modal-body-delete')
         
+        
 
         messageElements.forEach(function(messageElement) {
        // how to prevent user from sending fetch request every time they click the the message issue
@@ -363,6 +366,7 @@
             // target is the messageElement
         const messageElement = event.currentTarget;
         const messageId = messageElement.getAttribute('data-message-id');
+        const senderId = messageElement.getAttribute('data-sender-id');
         fetch('/message/read/' + messageId, {
             method: 'POST',
             headers: {
@@ -378,25 +382,37 @@
             // allows you to access the response data, headers, status...
             return response.json();
     }).then(function(data){
+        
         // this function will use the JSON object from the response...
         // from the view function in routes file, if the server has marked the message as read if will be status success
         // otherwise, status will be failure 
         if (data.status === 'success') {
             console.log('data status come back success')
+            const unreadCountsBySender = data.unread_counts
+            console.log('unread counts by sender:', unreadCountsBySender)
+            
             // unread indicator on individual message 
             const unreadIndicator = messageElement.querySelector('.unread-indicator');
             // badge by username of number of unread message(s)
-            const unreadCountBadge = document.getElementById('unread-count-badge');
+            const unreadCountBadge = document.getElementById(`unread-count-badge-${senderId}`)
             // need to check if unread indicator element is present first
             // otherwise if it's already been read will cause runtime error (cannot read property 'style' of null because there will be no unread indicator)
             if (unreadIndicator && unreadCountBadge) {
                 unreadIndicator.style.display = 'none'
-                unreadCountBadge.textContent = data.unread_count
+                for (const sender_id in unreadCountsBySender) {
+                  if (unreadCountsBySender.hasOwnProperty(sender_id)) {
+                      const unread_count = unreadCountsBySender[sender_id];
+                      unreadCountBadge.textContent = unread_count
+                  }
+                }
+                
                 if (data.unread_count == 0) {
                     unreadCountBadge.style.display = 'none'
                     console.log('0 no show')
                 }
+                
             } else {
+              
                 console.log("error!!!!!")
             }
           

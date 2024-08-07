@@ -458,49 +458,37 @@ def messages():
     ).group_by(User.id).all()
 
     def get_puzzles(sender_id, recipient_id):
+        # query puzzles and join with messages table to get puzzles that matches what puzzle_id the message is referring to
         puzzles = db.session.query(Puzzle).join(
             Message,
             Puzzle.id == Message.puzzle_id
+        # filter sender id of message is sender id and recipient is the recipient id OR sender is the recipient id and recipient is sender id  
         ).filter(
             or_(
                 and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
                 and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
             ),
-             or_(
-            and_(Message.recipient_owner_id == current_user.id, Message.is_deleted_by_recipient == False),
-            and_(Message.sender_requester_id == current_user.id, Message.is_deleted_by_sender == False)
-             )
-            
+        # filter out all the puzzles where the recipient or sender if the current user and the messages have been deleted by the current user 
+            or_(
+                and_(Message.recipient_owner_id == current_user.id, Message.is_deleted_by_recipient == False),
+                and_(Message.sender_requester_id == current_user.id, Message.is_deleted_by_sender == False)
+            )  
+            # ensures only unique puzzle ids are returned    
         ).group_by(Puzzle.id).all()
         return puzzles
 
     
-    
-    # def get_most_recent_puzzle_id(sender_id, recipient_id):    
-    #         most_recent_message = db.session.query(Message).filter(
-    #             # get all correspondence between the users, whether they are senders or recipients 
-    #             or_(
-    #                 and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
-    #                 and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
-    #             ),
-    #             Message.is_automated == False
-    #         ).order_by(Message.timestamp.desc()).first()
-
-    #         return most_recent_message.puzzle_id if most_recent_message else None
-    
     senders_with_puzzle = []
     # sender = tuple
     for sender in message_senders:
-        # returns list of puzzle objects 
+        # returns list of puzzle objects- pass in sender id and current_user id is the recipient id
         puzzles = get_puzzles(sender.id, current_user.id)
         
-        # most_recent_puzzle_id = get_most_recent_puzzle_id(sender.id, current_user.id)
         # get actual sender(user) object so can have access to all the functions in specific user object
         sender_object = User.query.get(sender.id)
         senders_with_puzzle.append({
             'sender': sender_object, 
-            'puzzles': puzzles,
-            # 'most_recent_puzzle_id': most_recent_puzzle_id, 
+            'puzzles': puzzles, 
             'unread_count': sender.unread_count
         })
     
@@ -545,9 +533,11 @@ def mark_message_as_read(message_id):
         # then stored as the response body
         # will be processed by the JS code in the messages.html page 
     # also need to somehow update user's unread message count...
-    # use function from models? 
+    # use function from models?
         unread_count = current_user.unread_message_count()
-        return jsonify({'status': 'success', 'unread_count':unread_count})
+        
+        unread_counts_by_sender = current_user.unread_message_counts_by_sender()
+        return jsonify({'status': 'success', 'unread_count':unread_count, 'unread_counts': unread_counts_by_sender})
     return jsonify({'status': 'failure'})
 
 
