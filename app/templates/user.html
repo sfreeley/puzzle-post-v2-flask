@@ -8,20 +8,39 @@
     
   }
 
+  .btn-cancel-complete, .btn-cancel-delete {
+    background-color: #5eb1bf;
+  }
+
   .btn-edit-profile {
     color: #e63946;
     border-color: #e63946;
+  }
+
+
+  .btn-submit-edit-profile {
+    background-color:#5eb1bf;
+  }
+
+  .btn-completed, .btn-confirm-delete {
+    background-color: #e63946;
+    margin-top: 1rem;
   }
 
   .carousel-control-prev, .carousel-control-next {
     filter: invert(100%);
   }
 
-  .carousel {
-    
-    max-width: 30rem;
-  }
 
+
+
+     
+
+  
+
+    
+
+      
  
 
 
@@ -36,14 +55,15 @@
         </div>
         <div class="modal-body">
           Are you sure you want to delete this puzzle?
-        </div>
-        <form action="{{ url_for('delete_puzzle')}}" method="POST">
+          <form action="{{ url_for('delete_puzzle')}}" method="POST">
             <input type="hidden" id="deleteType" name="delete_type">
             <input type="hidden" id="itemId" name="item_id">
-            <button type="submit" class="btn btn-danger">Confirm Delete</button>
-        </form>
+            <button type="submit" class="btn btn-confirm-delete">Confirm Delete</button>
+        </form> 
+        </div>
+        
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-cancel-delete" data-bs-dismiss="modal">Close</button>
          
         </div>
       </div>
@@ -59,14 +79,20 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        
         Are you sure you are done with this puzzle?
+        <form action="{{ url_for('complete_puzzle')}}" method="POST">
+          <div>
+            <input type="hidden" id="puzzleId" name="puzzle_id">
+            <button type="submit" class="btn btn-completed">Completed</button>  
+          </div>
+            
+        </form>
+      
       </div>
-      <form action="{{ url_for('complete_puzzle')}}" method="POST">
-          <input type="hidden" id="puzzleId" name="puzzle_id">
-          <button type="submit" class="btn btn-danger">Completed</button>
-      </form>
+      
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-cancel-complete" data-bs-dismiss="modal">Close</button>
        
       </div>
     </div>
@@ -93,11 +119,11 @@
                 <input type="text" class="form-control" id="aboutMe" name="about_me">
                 
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-submit-edit-profile">Submit</button>
         </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -118,7 +144,7 @@
                 <h5 class="mb-1">{{ user.username }}</h5>
                 <p class="mb-2 pb-1">{% if user.about_me %}<p>{{ user.about_me}}</p>{% endif %}
                 {% if user.last_seen %}<p class="timestamp" data-utc-date="{{ user.last_seen.isoformat() }}"></p>{% endif %}
-                <div class="d-flex justify-content-start rounded-3 p-2 mb-2 bg-body-tertiary">
+                <div class="d-flex justify-content-between rounded-3 p-2 mb-2 bg-body-tertiary">
                   <div>
                     <p class="small text-muted mb-1">Puzzles Shared</p>
                     <p class="mb-0 text-dark">{{sharing_count}} </p>
@@ -146,17 +172,28 @@
     </div>
  
     <hr>
-  <!-- carousels -->
-  <div>
-    <h3><b>Sharing</b></h3>
-    Available: {{available_puzzles}}
-    Sharing_count: {{sharing_count}}
-        {% if puzzles|length == 0 %}
-            <p> No puzzles just yet... </p>
-        {% elif sharing_count == 0 %}
-            <p> You're not sharing any puzzles right now...</p>
-        {% else %}
+    {% if puzzles|length == 0 %}
+    <div class="row-cols-md-2 d-flex justify-content-center">
+      <div class="col">
+     {% include '_placeholder.html'%}
+      </div>
+    </div>
+    {% else %}
   
+  <!-- carousels -->
+ 
+  <div class="row row-cols-1 row-cols-md-2 g-1 justify-content-center">
+    <!-- Sharing -->
+      
+    {%if sharing_count == 0 %}   
+        <div class="col">
+          <h3 class="text-center"><b>Sharing</b></h3>
+              {% include '_placeholder.html' %}
+        </div>
+        {% else %}
+        
+        <div class="col">
+          <h3 class="text-center"><b>Sharing</b></h3>
         <div id="carouselPuzzle" class="carousel carousel-available slide">  
           <div class="carousel-inner">  
             {% for puzzle in available_puzzles %}
@@ -177,51 +214,27 @@
           {% endif %}
         </div>  
         {% endif %}
-  </div>
-
-  <div>
-    <h3><b>Requested</b></h3>
-    Requested Puzzles: {{requested_puzzles}} Requested count: {{requested_count}}
-        {% if requested_count == 0 %}
-            <p> You have no puzzles being requested right now...</p>
-        {% else %}
-  
-        <div id="carouselPuzzleRequested" class="carousel carousel-requested slide">  
-          <div class="carousel-inner">  
-            {% for puzzle in requested_puzzles %}
-            <div class="carousel-item {% if loop.first %}active{% endif %}"> 
-              {% include '_puzzle.html'%}
-            </div>    
-        </div>  
-            {% endfor %}
-            {% if requested_count > 1 %}
-          <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzleRequested" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#carouselPuzzleRequested" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-          </button>
-          {% endif %}
-        </div>  
-        {% endif %}
-  </div>
-
-  <div>
-    <h3><b>In Progress</b></h3>
-    InProgress: {{in_progress_puzzles}} In Progress Count: {{progress_count}}
+      </div>
+   
+      <!-- In Progress -->
         {% if progress_count == 0 %}
-            <p> You're not working on any puzzles right now...</p>
+       
+            <div class="col">
+              
+              <h3 class="text-center"><b>In Progress</b></h3>
+              {% include '_placeholder.html' %}
+            </div>
         {% else %}
-  
+       
+        <div class="col">
+          <h3 class="text-center"><b>In Progress</b></h3>
         <div id="carouselPuzzleInProgress" class="carousel carousel-in-progress slide">  
           <div class="carousel-inner">  
             {% for puzzle in in_progress_puzzles %}
             <div class="carousel-item {% if loop.first %}active{% endif %}"> 
               {% include '_puzzle.html'%}
             </div>    
-        </div>  
+          </div>  
             {% endfor %}
             {% if progress_count > 1 %}
           <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzleInProgress" data-bs-slide="prev">
@@ -235,16 +248,43 @@
           {% endif %}
         </div>  
         {% endif %}
-  </div>
-  
-  
-          
-            
-    
+      </div>
+      
 
- 
-    
-    
+      <!-- Requested -->
+      {% if requested_count == 0 %}
+      <div class="col">
+        <h3 class="text-center"><b>Requested</b></h3>
+        {% include '_placeholder.html' %}
+      </div>
+      {% else %} 
+      
+      <div class="col">
+        <h3 class="text-center"><b>Requested</b></h3>
+      <div id="carouselPuzzleRequested" class="carousel carousel-requested slide">  
+        <div class="carousel-inner">  
+          {% for puzzle in requested_puzzles %}
+          <div class="carousel-item {% if loop.first %}active{% endif %}"> 
+            {% include '_puzzle.html'%}
+          </div>    
+      </div>  
+          {% endfor %}
+          {% if requested_count > 1 %}
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselPuzzleRequested" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselPuzzleRequested" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+        {% endif %}
+      </div>  
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+      
 <script>
 
     // date-time

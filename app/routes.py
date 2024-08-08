@@ -1,14 +1,13 @@
 from app import app, db
-from flask import render_template, flash, redirect, url_for, request, send_from_directory, jsonify, session
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, CreatePuzzleForm, PersonalNote
+from flask import render_template, flash, redirect, url_for, request, send_from_directory, jsonify
+from app.forms import LoginForm, RegistrationForm, CreatePuzzleForm
 from app.models import User, Puzzle, Category, Message
 from flask_login import current_user, login_user, logout_user, login_required
 from urllib.parse import urlsplit 
 import sqlalchemy as sa
-from sqlalchemy import or_, and_, func, case
+from sqlalchemy import or_, and_, func
 from datetime import datetime, timezone
 from flask_wtf.file import FileRequired
-from werkzeug.utils import secure_filename
 from config import Config
 
 
@@ -21,11 +20,11 @@ from config import Config
 @app.route('/index')
 @login_required
 def index():
-    # include search functionality 
+    # include search functionality -server side 
     query = request.args.get('query', '')
     # try pagination
     page = request.args.get('page', 1, type=int)
-    per_page = 2
+    per_page = 6
     if query:
         results = Puzzle.query.join(Puzzle.categories).filter( 
             or_(
@@ -35,14 +34,16 @@ def index():
             Puzzle.condition.ilike(f'%{query}%'),
             Puzzle.description.ilike(f'%{query}%'),
             Category.name.ilike(f'%{query}%')
-        )
+        ),
+        Puzzle.user_id != current_user.id,
+        Puzzle.is_deleted == False
     ).distinct().paginate(page=page, per_page=per_page, error_out=False)
     else:
-        results = db.session.query(Puzzle).filter_by(is_available=True).paginate(page=page, per_page=per_page, error_out=False)
+        results = db.session.query(Puzzle).filter(Puzzle.is_available==True, Puzzle.user_id!=current_user.id).order_by(Puzzle.timestamp.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
     # rendertemplate() function included with Flask that uses Jinja template engine takes template filename
     # and returns html with placeholders replaced with values
-    return render_template('index.html', title='Home', puzzles_pagination=results, query=query, user=user, show_buttons=False)
+    return render_template('index.html', title='Home', puzzles_pagination=results, query=query, user=user, show_buttons=False, small_card_size=True)
 
 # SEARCH
 # @app.route('/search', methods=['GET'])
@@ -194,12 +195,12 @@ def edit_profile():
                  flash('Username already taken')
                  return redirect(url_for('user', username=current_user.username))
        
-            current_user.username = username
-            current_user.about_me = about_me
-            db.session.commit()
-            flash('Profile updated successfully')
-            return redirect(url_for('user', username=current_user.username))
+        current_user.username = username
+        current_user.about_me = about_me
+        db.session.commit()
+        flash('Profile updated successfully')
         return redirect(url_for('user', username=current_user.username))
+        # return redirect(url_for('user', username=current_user.username))
                
 
 # get image url 
@@ -217,7 +218,7 @@ def get_file(filename):
 def save_puzzle(puzzle_id=None):
     form = CreatePuzzleForm()
 
-    categories = Category.query.all()
+    categories = db.session.query(Category).order_by(Category.name.asc()).all()
     form.categories.choices = [(category.id, category.name) for category in categories]
 
     conditions = ['Excellent', 'Good', 'Fair']
@@ -228,9 +229,11 @@ def save_puzzle(puzzle_id=None):
     
     # if puzzle id is there from the form with hiddenfield..
     if puzzle_id:
+        form.image.validators = [v for v in form.image.validators if not isinstance(v, FileRequired)]
         # get puzzle from db by that puzzle_id and belongs to the user logged in
         puzzle = db.session.query(Puzzle).filter_by(id=puzzle_id, user_id=current_user.id).first()
         if puzzle:
+           
             # pre-populate fields with corresponding info from db
             if request.method == 'GET':
                 form.puzzle_id.data = puzzle.id
@@ -241,6 +244,7 @@ def save_puzzle(puzzle_id=None):
                 form.manufacturer.data = puzzle.manufacturer
                 form.description.data = puzzle.description
                 form.categories.data = [category.id for category in puzzle.categories]
+                
             # POST-ing as edit
             if form.validate_on_submit():
                 if not form.categories.data:
@@ -262,13 +266,15 @@ def save_puzzle(puzzle_id=None):
                     file_url = url_for('get_file', filename=saved_image)
                     puzzle.image_url = file_url
                 else:
+                    
                     puzzle.image_url = form.existing_image_url.data
+
 
                 db.session.commit()
                 return redirect(url_for('user', username=current_user.username)) 
     # creating puzzle 
-    if puzzle_id is None:
-        form.image.validators.append(FileRequired())        
+    else:
+               
         if form.validate_on_submit():
             puzzle = Puzzle(
                 user_id = current_user.id,
@@ -452,49 +458,37 @@ def messages():
     ).group_by(User.id).all()
 
     def get_puzzles(sender_id, recipient_id):
+        # query puzzles and join with messages table to get puzzles that matches what puzzle_id the message is referring to
         puzzles = db.session.query(Puzzle).join(
             Message,
             Puzzle.id == Message.puzzle_id
+        # filter sender id of message is sender id and recipient is the recipient id OR sender is the recipient id and recipient is sender id  
         ).filter(
             or_(
                 and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
                 and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
             ),
-             or_(
-            and_(Message.recipient_owner_id == current_user.id, Message.is_deleted_by_recipient == False),
-            and_(Message.sender_requester_id == current_user.id, Message.is_deleted_by_sender == False)
-             )
-            
+        # filter out all the puzzles where the recipient or sender if the current user and the messages have been deleted by the current user 
+            or_(
+                and_(Message.recipient_owner_id == current_user.id, Message.is_deleted_by_recipient == False),
+                and_(Message.sender_requester_id == current_user.id, Message.is_deleted_by_sender == False)
+            )  
+            # ensures only unique puzzle ids are returned    
         ).group_by(Puzzle.id).all()
         return puzzles
 
     
-    
-    # def get_most_recent_puzzle_id(sender_id, recipient_id):    
-    #         most_recent_message = db.session.query(Message).filter(
-    #             # get all correspondence between the users, whether they are senders or recipients 
-    #             or_(
-    #                 and_(Message.sender_requester_id == sender_id, Message.recipient_owner_id == recipient_id),
-    #                 and_(Message.sender_requester_id == recipient_id, Message.recipient_owner_id == sender_id)
-    #             ),
-    #             Message.is_automated == False
-    #         ).order_by(Message.timestamp.desc()).first()
-
-    #         return most_recent_message.puzzle_id if most_recent_message else None
-    
     senders_with_puzzle = []
     # sender = tuple
     for sender in message_senders:
-        # returns list of puzzle objects 
+        # returns list of puzzle objects- pass in sender id and current_user id is the recipient id
         puzzles = get_puzzles(sender.id, current_user.id)
         
-        # most_recent_puzzle_id = get_most_recent_puzzle_id(sender.id, current_user.id)
         # get actual sender(user) object so can have access to all the functions in specific user object
         sender_object = User.query.get(sender.id)
         senders_with_puzzle.append({
             'sender': sender_object, 
-            'puzzles': puzzles,
-            # 'most_recent_puzzle_id': most_recent_puzzle_id, 
+            'puzzles': puzzles, 
             'unread_count': sender.unread_count
         })
     
@@ -540,9 +534,11 @@ def mark_message_as_read(message_id):
         # then stored as the response body
         # will be processed by the JS code in the messages.html page 
     # also need to somehow update user's unread message count...
-    # use function from models? 
+    # use function from models?
         unread_count = current_user.unread_message_count()
-        return jsonify({'status': 'success', 'unread_count':unread_count})
+        
+        unread_counts_by_sender = current_user.unread_message_counts_by_sender()
+        return jsonify({'status': 'success', 'unread_count':unread_count, 'unread_counts': unread_counts_by_sender})
     return jsonify({'status': 'failure'})
 
 
@@ -551,6 +547,9 @@ def mark_message_as_read(message_id):
 @login_required
 def delete_message():
     item_id = request.form.get('message_id')
+    # recipient_id = request.form.get('recipient_id')
+    # puzzle_id = request.form.get('puzzle_id_delete')
+
     if request.method == 'POST':
         try:
             message = db.session.query(Message).filter_by(id=item_id).first()
@@ -562,17 +561,22 @@ def delete_message():
             if message:
                 # if the sender is the current_user...
                 if message.sender_requester_id == current_user.id:
+                    # then recipient will be recipient_owner
+                    recipient_id = message.recipient_owner_id
                     # change specific boolean to True so will only delete that current user's message, but not recipient
                     message.is_deleted_by_sender = True
                     db.session.commit()
+                    # if message recipient is the current user...
                 elif message.recipient_owner_id == current_user.id:
+                    # recipient will be the sender of the message
+                    recipient_id = message.sender_requester_id
                     message.is_deleted_by_recipient = True
                     db.session.commit()    
                 else:
                     flash("Something went wrong") 
-                    return redirect(url_for('messages')) 
-                flash("Your delete was successful")              
-    return redirect(url_for('messages'))
+                    return redirect(url_for('messages'))
+                flash("Your message was successfully deleted")              
+    return redirect(url_for('messages', recipient_id=recipient_id, puzzle_id=message.puzzle_id))
 
 # ACCEPT/DECLINE Request
 @app.route('/request_action', methods=['GET', 'POST'])

@@ -7,8 +7,12 @@
     background-color: #c0392b
     
   }
+
+  .btn-cancel {
+    background-color: #cdedf6 ;
+  }
   .send-button {
-    background-color: #2BB0BF;
+    background-color: #cdedf6;
   }
 
   .approve-btn {
@@ -21,22 +25,23 @@
     color: #c0392b;
   }
 
+  .btn-cancel-note {
+    background-color: #c0392b;
+  }
+
   .content-sender-card-body {
-    background-color: hsl(186, 60%, 80%);
+    background-color: #cdedf6;
   }
 
   .content-recipient-card-body {
-    background-color: hsl(6, 63%, 80%);
+    background-color: hsl(6, 75%, 72%);
   }
+
 
   
  </style>
-<h1>
-    Your Messages, {{current_user.username}}
-    puzzle_id:{{puzzle_id}}
-    requested:{{is_puzzle_requested}}
-    
-    
+<h1 class="text-center">
+    Messaging    
 </h1>
 <!-- personal note modal -->
 <div class="modal fade" id="personalNoteModal" tabindex="-1" aria-labelledby="personalNoteLabel" aria-hidden="true">
@@ -59,11 +64,11 @@
           <input type="hidden" id="actionType" name="action">
           <input type="hidden" id="requester" name="requester">
           <input type="hidden" id="puzzleId" name="puzzle_id">
-          <button type="submit" class="btn btn-primary" >Send</button>
+          <button type="submit" class="btn send-button" >Send</button>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-cancel-note" data-bs-dismiss="modal">Close</button>
         
         
       </div>
@@ -93,7 +98,7 @@
       </form>
       <div class="modal-footer">
         
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Close</button>
        
       </div>
     </div>
@@ -104,14 +109,15 @@
 <section >
       
     <div class="container py-5 ">
+     
+      <div class="row d-flex">
   
-      <div class="row">
-  
-        <div class="col-md-6 col-lg-5 col-xl-4 mb-4 mb-md-0">
-  
-          <h5 class="font-weight-bold mb-3 text-center text-lg-start">Member</h5>
+        <div class="col-md-6 col-lg-5 col-xl-4 mb-4 mb-md-0 center-column ">
           
-          <div class="card ">
+          <h4 class="font-weight-bold mb-3 text-center text-lg-center">Member</h4>
+          <h6 class="mb-3 text-center text-lg-start">Select a member and puzzle to view conversation</h6>
+          
+          <div class="card">
             
             <div class="card-body">
               
@@ -156,12 +162,13 @@
                           <span><a class="btn delete-thread-btn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-recipient-id="{{sender.id}}" data-puzzle-id-delete="{{ puzzle.id }}"><i class="fa-solid fa-trash-can fa-sm p-1"></i></a></span>
                       </div>
                     </a>
+                   
                     {% endif%}
                     {% endfor %}
                       </ul>
                         
                         {% if unread_count > 0 %}
-                        <span class="badge bg-danger" id="unread-count-badge">{{ unread_count }}</span>
+                        <span class="badge bg-danger" id="unread-count-badge-{{sender.id}}">{{ unread_count }}</span>
                         {% endif %}
                         
                       </div>
@@ -183,6 +190,7 @@
           </div>
   
         </div>
+        <!-- end col -->
     
        
         <div class="col-md-6 col-lg-7 col-xl-8">
@@ -194,7 +202,7 @@
                     {% for message in conversation%}
                         {% if message.author.username != current_user.username%}
               <li class="d-flex justify-content-between mb-4">
-                <div class="card w-100 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
+                <div class="card w-100 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}" data-sender-id="{{message.author.id}}">
                   <div class="card-header d-flex justify-content-between p-3">
                     <p class="fw-bold mb-0">{{message.author.username}}</p>
                     <p class="small text-muted">{{message.puzzle.title}}</p>
@@ -208,6 +216,7 @@
                     </div>
                   </div>
                   <div class="card-body content-sender-card-body">
+                    {{message.id}}
                     <p class="mb-0">
                       {{message.content}}
                     </p>
@@ -235,12 +244,11 @@
               </li>
               
               {% else %}
-              <li class="d-flex justify-content-between mb-4">
+              <li class="d-flex justify-content-start mb-4">
                 <img src="{{ message.author.create_avatar(128) }}" alt="avatar"
-                  class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
-                <div class="card {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}">
-                  <div class="card-header d-flex justify-content-between p-3">
-                   Message ID: {{message.id}}
+                  class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
+                <div class="card flex-grow-1 {% if not message.is_read and message.recipient_owner_id == current_user.id%}unread{%endif%}" data-message-id="{{message.id}}" data-sender-id="{{message.author.id}}">
+                  <div class="card-header d-flex justify-content-between flex-grow-1 p-3">
                     <p class="fw-bold mb-0">{{message.author.username}}</p>
                     <p class="small text-muted">{{message.puzzle.title}}</p>
                     <p class="text-muted small mb-0 timestamp" data-utc-date="{{message.timestamp.isoformat()}}">{{message.timestamp}}</p>
@@ -253,6 +261,7 @@
                     </div>
                   </div>
                   <div class="card-body content-recipient-card-body">
+                    {{message.id}}
                     <p class="mb-0">
                       {{message.content}}
                     </p>
@@ -284,14 +293,14 @@
           </ul>
           {% endif %}
           </div>
-            <!-- <li class="bg-white mb-3"> -->
+            
              {% if is_puzzle_requested or is_puzzle_in_progress %}
               <div data-bs-input-init class="form-outline">
                   <form action="{{ url_for('send_message')}}" enctype="multipart/form-data" method="POST">
                       <textarea class="form-control bg-body-tertiary" name="content" id="content" rows="4" placeholder="Send message to {{recipient.username}}"></textarea>
                       <input type="hidden" name="puzzle_id" value="{{puzzle_id}}">
                       <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
-                      <label class="form-label" for="content">Message</label>
+                      <label class="form-label" for="content"></label>
                       <button  type="submit" data-bs-button-init data-bs-ripple-init class="btn send-button btn-rounded float-end">Send</button>
                   </form>
                       
@@ -300,7 +309,7 @@
               
            
           
-           <!-- </li>   -->
+          
           
             
             
@@ -338,6 +347,7 @@
         const confirmDeleteModal = document.getElementById('confirmDeleteModal');
         const modalBody = document.querySelector('.modal-body-delete')
         
+        
 
         messageElements.forEach(function(messageElement) {
        // how to prevent user from sending fetch request every time they click the the message issue
@@ -356,6 +366,7 @@
             // target is the messageElement
         const messageElement = event.currentTarget;
         const messageId = messageElement.getAttribute('data-message-id');
+        const senderId = messageElement.getAttribute('data-sender-id');
         fetch('/message/read/' + messageId, {
             method: 'POST',
             headers: {
@@ -371,24 +382,41 @@
             // allows you to access the response data, headers, status...
             return response.json();
     }).then(function(data){
+        
         // this function will use the JSON object from the response...
         // from the view function in routes file, if the server has marked the message as read if will be status success
         // otherwise, status will be failure 
         if (data.status === 'success') {
             console.log('data status come back success')
+            const unreadCountsBySender = data.unread_counts
+            console.log('unread counts by sender:', unreadCountsBySender)
+            
             // unread indicator on individual message 
             const unreadIndicator = messageElement.querySelector('.unread-indicator');
             // badge by username of number of unread message(s)
-            const unreadCountBadge = document.getElementById('unread-count-badge');
+            const unreadCountBadge = document.getElementById(`unread-count-badge-${senderId}`)
             // need to check if unread indicator element is present first
             // otherwise if it's already been read will cause runtime error (cannot read property 'style' of null because there will be no unread indicator)
             if (unreadIndicator && unreadCountBadge) {
                 unreadIndicator.style.display = 'none'
-                unreadCountBadge.textContent = data.unread_count
+                // loop through the keys in the dictionary
+                for (const sender_id in unreadCountsBySender) {
+                  
+                      const unread_count = unreadCountsBySender[sender_id]
+                      if (unread_count) {
+                        unreadCountBadge.textContent = unread_count
+                      }
+                      
+                  }
+                
+                
                 if (data.unread_count == 0) {
                     unreadCountBadge.style.display = 'none'
+                    console.log('0 no show')
                 }
+                
             } else {
+              
                 console.log("error!!!!!")
             }
           
