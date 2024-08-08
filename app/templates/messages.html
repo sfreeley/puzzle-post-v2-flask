@@ -399,12 +399,16 @@
             // otherwise if it's already been read will cause runtime error (cannot read property 'style' of null because there will be no unread indicator)
             if (unreadIndicator && unreadCountBadge) {
                 unreadIndicator.style.display = 'none'
+                // loop through the keys in the dictionary
                 for (const sender_id in unreadCountsBySender) {
-                  if (unreadCountsBySender.hasOwnProperty(sender_id)) {
-                      const unread_count = unreadCountsBySender[sender_id];
-                      unreadCountBadge.textContent = unread_count
+                  
+                      const unread_count = unreadCountsBySender[sender_id]
+                      if (unread_count) {
+                        unreadCountBadge.textContent = unread_count
+                      }
+                      
                   }
-                }
+                
                 
                 if (data.unread_count == 0) {
                     unreadCountBadge.style.display = 'none'
